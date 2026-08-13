@@ -19,7 +19,7 @@ export default function ExploreCoursesLemonAcademy() {
                                     <span className="font-body-md text-body-md text-on-surface-variant group-hover:text-primary transition-colors">Mosaic Art</span>
                                 </label>
                                 <label className="flex items-center gap-3 cursor-pointer group">
-                                    <input checked className="form-checkbox text-primary rounded border-outline-variant focus:ring-primary w-5 h-5" type="checkbox" />
+                                    <input defaultChecked className="form-checkbox text-primary rounded border-outline-variant focus:ring-primary w-5 h-5" type="checkbox" />
                                     <span className="font-body-md text-body-md text-on-surface-variant group-hover:text-primary transition-colors">Crochet</span>
                                 </label>
                                 <label className="flex items-center gap-3 cursor-pointer group">

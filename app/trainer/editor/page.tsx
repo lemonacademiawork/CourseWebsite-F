@@ -135,9 +135,9 @@ export default function TrainerCourseContentEditor() {
 </div>
 <div>
 <label className="block font-label-md text-label-md text-on-surface-variant mb-2">Select Module</label>
-<select className="w-full bg-surface border-outline-variant rounded-lg p-3 text-on-surface focus:ring-primary focus:border-primary">
+<select defaultValue="Module 2: Preparing the Clay Dough" className="w-full bg-surface border-outline-variant rounded-lg p-3 text-on-surface focus:ring-primary focus:border-primary">
 <option>Module 1: Introduction to Mud Work</option>
-<option selected>Module 2: Preparing the Clay Dough</option>
+<option>Module 2: Preparing the Clay Dough</option>
 <option>Module 3: Shaping and Patterns</option>
 </select>
 </div>
@@ -145,7 +145,7 @@ export default function TrainerCourseContentEditor() {
 <label className="block font-label-md text-label-md text-on-surface-variant mb-3">Content Type</label>
 <div className="grid grid-cols-2 gap-3 mb-4">
 <label className="flex items-center justify-center gap-2 p-3 border border-primary bg-primary-container/10 rounded-lg cursor-pointer transition-colors">
-<input checked className="hidden" name="content_type" type="radio" />
+<input defaultChecked className="hidden" name="content_type" type="radio" />
 <span className="material-symbols-outlined text-primary">play_circle</span>
 <span className="font-label-md text-label-md text-primary">Video</span>
 </label>

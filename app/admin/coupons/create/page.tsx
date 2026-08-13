@@ -38,7 +38,7 @@ export default function AdminCreateConfigureCoupon() {
 <label className="form-label mb-3">Discount Type</label>
 <div className="flex p-1 bg-surface-container-low rounded-lg inline-flex w-full md:w-auto">
 <label className="flex-1 cursor-pointer">
-<input checked className="peer sr-only" name="discount-type" type="radio" />
+<input defaultChecked className="peer sr-only" name="discount-type" type="radio" />
 <div className="px-6 py-2.5 rounded-md text-center font-label-md text-label-md text-on-surface-variant peer-checked:bg-surface-container-lowest peer-checked:shadow-sm peer-checked:text-on-surface transition-all">
                                     Fixed Amount (₹)
                                 </div>
@@ -85,7 +85,7 @@ export default function AdminCreateConfigureCoupon() {
 <label className="form-label mb-4">Applicable To</label>
 <div className="space-y-3">
 <label className="flex items-center gap-3 p-3 rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors cursor-pointer">
-<input checked className="text-primary focus:ring-primary h-5 w-5 border-outline-variant" name="applicable-to" type="radio" />
+<input defaultChecked className="text-primary focus:ring-primary h-5 w-5 border-outline-variant" name="applicable-to" type="radio" />
 <span className="font-body-md text-on-surface">All Courses</span>
 </label>
 <label className="flex items-center gap-3 p-3 rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors cursor-pointer">
