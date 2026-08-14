@@ -9,10 +9,10 @@ export default function AdminDashboardOverview() {
                 <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-surface-variant/30 pb-6">
                     <div>
                         <p className="font-label-md text-label-md text-secondary uppercase tracking-widest mb-1">Creative Workspace</p>
-                        <h2 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface flex items-center gap-2">
-                            Good morning, Admin <span className="text-3xl animate-bounce">👋</span>
+                        <h2 className="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+                            Good morning, Admin <span className="text-2xl animate-bounce">👋</span>
                         </h2>
-                        <p className="font-body-lg text-body-lg text-on-surface-variant mt-1">Here’s what’s happening at Lemon Academy today.</p>
+                        <p className="font-body-md text-body-md text-on-surface-variant mt-1">Here’s what’s happening at Lemon Academy today.</p>
                     </div>
                     <div className="flex items-center gap-4">
                         <button className="w-12 h-12 rounded-full glass-card flex items-center justify-center text-on-surface hover:text-primary transition-all">
