@@ -8,11 +8,11 @@ export default function AdminTrainerApplicationsDashboard() {
                 {/* Welcome Header */}
                 <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-surface-variant/30 pb-6">
                     <div>
-                        <p className="font-label-md text-label-md text-secondary uppercase tracking-widest mb-1">Creative Workspace</p>
-                        <h2 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface flex items-center gap-2">
-                            Trainer Applications <span className="text-3xl">📝</span>
+                        <p className="font-label-md text-secondary uppercase tracking-widest mb-1 text-xs">Creative Workspace</p>
+                        <h2 className="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+                            Trainer Applications <span className="text-2xl">📝</span>
                         </h2>
-                        <p className="font-body-lg text-body-lg text-on-surface-variant mt-1">Review and manage new instructor requests to join Lemon Academy.</p>
+                        <p className="font-body-md text-body-md text-on-surface-variant mt-1">Review and manage new instructor requests to join Lemon Academy.</p>
                     </div>
                     <div className="flex items-center gap-4 w-full md:w-auto">
                         <div className="relative w-full md:w-64">
@@ -28,16 +28,16 @@ export default function AdminTrainerApplicationsDashboard() {
                 {/* KPI Cards Bento Grid */}
                 <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter mb-10">
                     {/* Stat Card 1 */}
-                    <div className="glass-card rounded-[16px] p-6 flex flex-col justify-between min-h-[160px] shadow-organic">
+                    <div className="glass-card rounded-[16px] p-6 flex flex-col justify-between min-h-[150px] shadow-organic">
                         <div className="flex justify-between items-start">
-                            <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Applications</span>
-                            <div className="w-10 h-10 rounded-xl bg-surface-container-low flex items-center justify-center text-on-surface">
-                                <span className="material-symbols-outlined">inbox</span>
+                            <span className="font-label-md text-xs text-on-surface-variant uppercase tracking-wider">Total Applications</span>
+                            <div className="w-9 h-9 rounded-xl bg-surface-container-low flex items-center justify-center text-on-surface">
+                                <span className="material-symbols-outlined text-xl">inbox</span>
                             </div>
                         </div>
-                        <div className="mt-4">
-                            <div className="font-display-lg text-display-lg text-on-surface font-semibold leading-none">142</div>
-                            <div className="flex items-center gap-1 font-label-md text-label-md text-tertiary mt-2">
+                        <div className="mt-3">
+                            <div className="font-headline-md text-headline-md text-on-surface font-semibold leading-none">142</div>
+                            <div className="flex items-center gap-1 font-label-md text-xs text-tertiary mt-2">
                                 <span className="material-symbols-outlined text-sm">trending_up</span>
                                 <span>+12% from last month</span>
                             </div>
@@ -45,31 +45,31 @@ export default function AdminTrainerApplicationsDashboard() {
                     </div>
 
                     {/* Stat Card 2 */}
-                    <div className="glass-card rounded-[16px] p-6 flex flex-col justify-between min-h-[160px] shadow-organic relative overflow-hidden group">
+                    <div className="glass-card rounded-[16px] p-6 flex flex-col justify-between min-h-[150px] shadow-organic relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-20 h-20 bg-primary-container/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110 duration-500"></div>
                         <div className="flex justify-between items-start">
-                            <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider font-semibold">New This Week</span>
-                            <div className="w-10 h-10 rounded-xl bg-primary-container/20 flex items-center justify-center text-primary">
-                                <span className="material-symbols-outlined">fiber_new</span>
+                            <span className="font-label-md text-xs text-on-surface-variant uppercase tracking-wider font-semibold">New This Week</span>
+                            <div className="w-9 h-9 rounded-xl bg-primary-container/20 flex items-center justify-center text-primary">
+                                <span className="material-symbols-outlined text-xl">fiber_new</span>
                             </div>
                         </div>
-                        <div className="mt-4">
-                            <div className="font-display-lg text-display-lg text-on-surface font-semibold leading-none">28</div>
-                            <p className="text-xs text-on-surface-variant mt-2 font-label-md">Awaiting initial triage</p>
+                        <div className="mt-3">
+                            <div className="font-headline-md text-headline-md text-on-surface font-semibold leading-none">28</div>
+                            <p className="text-[11px] text-on-surface-variant mt-2 font-label-md">Awaiting initial triage</p>
                         </div>
                     </div>
 
                     {/* Stat Card 3 */}
-                    <div className="glass-card rounded-[16px] p-6 flex flex-col justify-between min-h-[160px] shadow-organic">
+                    <div className="glass-card rounded-[16px] p-6 flex flex-col justify-between min-h-[150px] shadow-organic">
                         <div className="flex justify-between items-start">
-                            <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">In Review</span>
-                            <div className="w-10 h-10 rounded-xl bg-tertiary-container/30 flex items-center justify-center text-tertiary">
-                                <span className="material-symbols-outlined">pending_actions</span>
+                            <span className="font-label-md text-xs text-on-surface-variant uppercase tracking-wider">In Review</span>
+                            <div className="w-9 h-9 rounded-xl bg-tertiary-container/30 flex items-center justify-center text-tertiary">
+                                <span className="material-symbols-outlined text-xl">pending_actions</span>
                             </div>
                         </div>
-                        <div className="mt-4">
-                            <div className="font-display-lg text-display-lg text-on-surface font-semibold leading-none">15</div>
-                            <div className="flex items-center gap-1 font-label-md text-label-md text-secondary mt-2">
+                        <div className="mt-3">
+                            <div className="font-headline-md text-headline-md text-on-surface font-semibold leading-none">15</div>
+                            <div className="flex items-center gap-1 font-label-md text-xs text-secondary mt-2">
                                 <span className="material-symbols-outlined text-sm">priority_high</span>
                                 <span>Requires Attention</span>
                             </div>
@@ -77,16 +77,16 @@ export default function AdminTrainerApplicationsDashboard() {
                     </div>
 
                     {/* Stat Card 4 */}
-                    <div className="glass-card rounded-[16px] p-6 flex flex-col justify-between min-h-[160px] shadow-organic">
+                    <div className="glass-card rounded-[16px] p-6 flex flex-col justify-between min-h-[150px] shadow-organic">
                         <div className="flex justify-between items-start">
-                            <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Approved YTD</span>
-                            <div className="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center text-on-surface">
-                                <span className="material-symbols-outlined">check_circle</span>
+                            <span className="font-label-md text-xs text-on-surface-variant uppercase tracking-wider">Approved YTD</span>
+                            <div className="w-9 h-9 rounded-xl bg-surface-container-high flex items-center justify-center text-on-surface">
+                                <span className="material-symbols-outlined text-xl">check_circle</span>
                             </div>
                         </div>
-                        <div className="mt-4">
-                            <div className="font-display-lg text-display-lg text-on-surface font-semibold leading-none">98</div>
-                            <p className="text-xs text-on-surface-variant mt-2 font-label-md">Onboarded successfully</p>
+                        <div className="mt-3">
+                            <div className="font-headline-md text-headline-md text-on-surface font-semibold leading-none">98</div>
+                            <p className="text-[11px] text-on-surface-variant mt-2 font-label-md">Onboarded successfully</p>
                         </div>
                     </div>
                 </section>
