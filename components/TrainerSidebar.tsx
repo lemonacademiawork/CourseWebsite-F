@@ -16,10 +16,10 @@ export default function TrainerSidebar() {
     return (
         <nav className="bg-surface-container-low dark:bg-surface-container-lowest h-screen w-64 fixed left-0 top-0 hidden md:flex flex-col py-8 px-4 gap-2 z-40 flat no shadows border-r border-outline-variant/20">
             <div className="mb-8 px-3">
-                <Link href="/" className="font-sans text-base font-bold text-primary tracking-tight block whitespace-nowrap">
+                <Link href="/" className="text-primary block whitespace-nowrap font-bold hover:opacity-85 transition-opacity" style={{ fontFamily: "'Inter', sans-serif", fontSize: "14px", letterSpacing: "0.15em", textTransform: "uppercase" }}>
                     Lemon Academy
                 </Link>
-                <p className="font-label-md text-[10px] text-on-surface-variant mt-0.5">Trainer Portal</p>
+                <p className="text-[10px] text-on-surface-variant mt-0.5 tracking-wider uppercase" style={{ fontFamily: "'Inter', sans-serif" }}>Trainer Portal</p>
             </div>
             <ul className="flex flex-col gap-2 flex-grow">
                 <li>
