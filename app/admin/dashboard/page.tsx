@@ -191,7 +191,8 @@ export default function AdminDashboardOverview() {
                                     <span>Crochet</span>
                                     <span className="font-bold text-on-surface">40%</span>
                                 </div>
-                                <div className="w-full bg-surface-variant h-full rounded-full" style={{ width: '40%' }}></div>
+                                <div className="w-full bg-surface-container-low h-3 rounded-full overflow-hidden">
+                                    <div className="bg-surface-variant h-full rounded-full" style={{ width: '40%' }}></div>
                                 </div>
                             </div>
                             {/* Bar 5 */}
