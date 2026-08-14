@@ -1,254 +1,158 @@
-export default function AdminDashboardOverview() {
+export default function AdminDashboardOverviewReimagined() {
     return (
-        <main className="p-margin-mobile md:p-margin-desktop min-h-screen">
+        <section className="flex-grow flex flex-col gap-8 w-full min-w-0 p-margin-mobile md:p-margin-desktop min-h-screen">
+            {/* Journal CMS Header */}
+            <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-primary/20 pb-8 relative">
+                <div className="flex flex-col gap-2 max-w-2xl">
+                    <div className="flex items-center gap-4">
+                        <span className="font-display-xl text-display-xl text-surface-tint/20 absolute -z-10 -mt-12 -ml-8 select-none">03</span>
+                        <h1 className="font-headline-md text-headline-md text-primary leading-tight">Journal CMS</h1>
+                    </div>
+                    <p className="font-body-lg text-body-lg text-on-surface-variant mt-4">Curate and manage the artistic monographs and editorial pieces published in the academy's journal.</p>
+                </div>
+                <button className="flex items-center gap-2 bg-primary text-on-primary px-6 py-3 font-label-mono text-label-mono uppercase tracking-widest hover:bg-secondary transition-colors duration-300 flex-shrink-0">
+                    <span className="material-symbols-outlined text-[18px]">add</span>
+                    New Entry
+                </button>
+            </header>
 
-<header className="mb-10 bento-grid items-end">
-<div className="bento-col-12 md:col-span-8">
-<h2 className="font-headline-md text-headline-md text-on-surface">Good morning, Admin <span className="text-3xl">👋</span></h2>
-<p className="font-body-lg text-body-lg text-on-surface-variant mt-2">Here’s what’s happening at Lemon Academy today.</p>
-</div>
-<div className="bento-col-12 md:col-span-4 flex md:justify-end mt-4 md:mt-0 gap-4">
-<button className="p-3 bg-surface-container-lowest rounded-full organic-shadow text-on-surface hover:text-primary transition-colors">
-<span className="material-symbols-outlined" data-icon="search">search</span>
-</button>
-<button className="p-3 bg-surface-container-lowest rounded-full organic-shadow text-on-surface hover:text-primary transition-colors relative">
-<span className="material-symbols-outlined" data-icon="notifications">notifications</span>
-<span className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
-</button>
-</div>
-</header>
+            {/* Bento Grid Dashboard */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+                {/* Stats Card 1 */}
+                <div className="col-span-1 md:col-span-4 bg-surface-container-lowest border border-primary/20 p-6 flex flex-col justify-between min-h-[160px] relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-tertiary-fixed/30 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110 duration-500"></div>
+                    <span className="font-label-mono text-label-mono text-on-surface-variant uppercase tracking-widest relative z-10">Total Entries</span>
+                    <div className="flex items-baseline gap-2 relative z-10 mt-4">
+                        <span className="font-headline-md text-headline-md text-primary">142</span>
+                        <span className="font-annotation text-annotation text-on-tertiary-container ml-2">+12 this month</span>
+                    </div>
+                </div>
+                {/* Stats Card 2 */}
+                <div className="col-span-1 md:col-span-4 bg-surface-container-lowest border border-primary/20 p-6 flex flex-col justify-between min-h-[160px] relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-secondary-container/20 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110 duration-500"></div>
+                    <span className="font-label-mono text-label-mono text-on-surface-variant uppercase tracking-widest relative z-10">Drafts Pending</span>
+                    <div className="flex items-baseline gap-2 relative z-10 mt-4">
+                        <span className="font-headline-md text-headline-md text-primary">08</span>
+                        <span className="font-annotation text-annotation text-secondary ml-2">Requires review</span>
+                    </div>
+                </div>
+                {/* Quick Action */}
+                <div className="col-span-1 md:col-span-4 bg-surface-container-lowest border border-primary/20 p-6 flex flex-col justify-between min-h-[160px] cursor-pointer hover:bg-surface-container transition-colors duration-300">
+                    <div className="flex justify-between items-start">
+                        <span className="font-label-mono text-label-mono text-on-surface-variant uppercase tracking-widest">Recent Activity</span>
+                        <span className="material-symbols-outlined text-primary/50">arrow_outward</span>
+                    </div>
+                    <p className="font-body-md text-body-md text-primary font-medium mt-4">"The Aesthetics of Silence" was published by E. Chief 2 hours ago.</p>
+                </div>
 
-<section className="bento-grid mb-10">
-
-<div className="bento-col-12 md:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-gutter">
-<div className="bg-surface-container-lowest rounded-[16px] p-6 organic-shadow hover:-translate-y-1 transition-transform duration-300 group flex flex-col justify-between">
-<div className="flex justify-between items-start">
-<div>
-<p className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Revenue</p>
-<h3 className="font-display-lg-mobile text-display-lg-mobile text-on-surface mt-2">$45,200</h3>
-</div>
-<div className="p-3 bg-primary-container/20 rounded-xl text-primary-fixed-dim">
-<span className="material-symbols-outlined text-3xl" data-icon="payments">payments</span>
-</div>
-</div>
-<div className="mt-6 flex items-center gap-2 text-tertiary">
-<span className="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span>
-<span className="font-label-md text-label-md text-sm">+8.4% from last month</span>
-</div>
-</div>
-<div className="bg-surface-container-lowest rounded-[16px] p-6 organic-shadow hover:-translate-y-1 transition-transform duration-300 group flex flex-col justify-between">
-<div className="flex justify-between items-start">
-<div>
-<p className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Students</p>
-<h3 className="font-display-lg-mobile text-display-lg-mobile text-on-surface mt-2">1,284</h3>
-</div>
-<div className="p-3 bg-tertiary-container/30 rounded-xl text-tertiary">
-<span className="material-symbols-outlined text-3xl" data-icon="group">group</span>
-</div>
-</div>
-<div className="mt-6 flex items-center gap-2 text-tertiary">
-<span className="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span>
-<span className="font-label-md text-label-md text-sm">+12.4% from last month</span>
-</div>
-</div>
-</div>
-
-<div className="bento-col-12 md:col-span-4 bg-secondary-fixed/30 rounded-[16px] p-6 organic-shadow border border-secondary/10 flex flex-col justify-center">
-<h4 className="font-headline-sm text-headline-sm text-on-surface mb-6 flex items-center gap-2">
-<span className="material-symbols-outlined text-secondary" data-icon="priority_high">priority_high</span>
-                    Action Needed
-                </h4>
-<div className="space-y-4">
-<div className="flex justify-between items-center bg-surface-container-lowest p-4 rounded-xl shadow-sm">
-<div className="flex items-center gap-3">
-<span className="material-symbols-outlined text-on-surface-variant" data-icon="verified">verified</span>
-<span className="font-label-md text-label-md text-on-surface">Pending Certificates</span>
-</div>
-<span className="bg-error text-on-error font-label-md text-sm px-3 py-1 rounded-full">12</span>
-</div>
-<div className="flex justify-between items-center bg-surface-container-lowest p-4 rounded-xl shadow-sm">
-<div className="flex items-center gap-3">
-<span className="material-symbols-outlined text-on-surface-variant" data-icon="palette">palette</span>
-<span className="font-label-md text-label-md text-on-surface">Gallery Approvals</span>
-</div>
-<span className="bg-secondary text-on-secondary font-label-md text-sm px-3 py-1 rounded-full">8</span>
-</div>
-</div>
-</div>
-
-<div className="bento-col-12 md:col-span-12 grid grid-cols-2 md:grid-cols-4 gap-gutter">
-<div className="bg-surface-container-lowest rounded-[16px] p-5 organic-shadow flex items-center gap-4">
-<div className="p-3 bg-surface-container-low rounded-xl text-on-surface-variant">
-<span className="material-symbols-outlined" data-icon="person_play">person_play</span>
-</div>
-<div>
-<p className="font-label-md text-label-md text-on-surface-variant text-sm uppercase">Trainers</p>
-<p className="font-headline-sm text-headline-sm text-on-surface">24</p>
-</div>
-</div>
-<div className="bg-surface-container-lowest rounded-[16px] p-5 organic-shadow flex items-center gap-4">
-<div className="p-3 bg-surface-container-low rounded-xl text-on-surface-variant">
-<span className="material-symbols-outlined" data-icon="library_books">library_books</span>
-</div>
-<div>
-<p className="font-label-md text-label-md text-on-surface-variant text-sm uppercase">Courses</p>
-<p className="font-headline-sm text-headline-sm text-on-surface">18</p>
-</div>
-</div>
-<div className="bg-surface-container-lowest rounded-[16px] p-5 organic-shadow flex items-center gap-4">
-<div className="p-3 bg-surface-container-low rounded-xl text-on-surface-variant">
-<span className="material-symbols-outlined" data-icon="how_to_reg">how_to_reg</span>
-</div>
-<div>
-<p className="font-label-md text-label-md text-on-surface-variant text-sm uppercase">Enrollments</p>
-<p className="font-headline-sm text-headline-sm text-on-surface">3,420</p>
-</div>
-</div>
-<div className="bg-surface-container-lowest rounded-[16px] p-5 organic-shadow flex items-center gap-4 justify-center hover:bg-surface-variant/30 cursor-pointer transition-colors border border-dashed border-outline-variant">
-<span className="material-symbols-outlined text-on-surface-variant" data-icon="add">add</span>
-<span className="font-label-md text-label-md text-on-surface-variant">Add Widget</span>
-</div>
-</div>
-</section>
-
-<section className="bento-grid mb-10">
-
-<div className="bento-col-12 md:col-span-8 space-y-gutter">
-
-<div className="bg-surface-container-lowest rounded-[16px] p-6 organic-shadow">
-<div className="flex justify-between items-center mb-6">
-<h4 className="font-headline-sm text-headline-sm text-on-surface">Revenue Overview</h4>
-<select className="bg-surface-container-low border-none text-on-surface font-label-md text-label-md rounded-lg py-2 pl-4 pr-8 focus:ring-primary">
-<option>This Year</option>
-<option>Last 6 Months</option>
-<option>This Month</option>
-</select>
-</div>
-
-<div className="w-full h-64 chart-placeholder rounded-xl relative overflow-hidden flex items-end px-4 pb-4">
-
-<svg className="absolute inset-0 w-full h-full stroke-primary fill-primary-container/20" preserveAspectRatio="none" viewBox="0 0 100 100">
-<path d="M0,100 L0,70 Q20,80 40,50 T80,30 L100,20 L100,100 Z" strokeWidth="2" vectorEffect="non-scaling-stroke"></path>
-</svg>
-<div className="relative w-full flex justify-between text-on-surface-variant font-label-md text-xs z-10 border-t border-outline-variant pt-2 mt-auto">
-<span>Jan</span><span>Mar</span><span>May</span><span>Jul</span><span>Sep</span><span>Nov</span>
-</div>
-</div>
-</div>
-
-<div className="bg-surface-container-lowest rounded-[16px] p-6 organic-shadow">
-<h4 className="font-headline-sm text-headline-sm text-on-surface mb-6">Course Sales Distribution</h4>
-<div className="flex items-end h-48 gap-4 mb-4 mt-8 px-4">
-
-<div className="flex-1 h-full flex flex-col items-center justify-end gap-2 group">
-<div className="w-full bg-secondary-container rounded-t-md h-[80%] group-hover:opacity-80 transition-opacity relative">
-<span className="absolute -top-6 left-1/2 -translate-x-1/2 font-label-md text-xs opacity-0 group-hover:opacity-100 transition-opacity">80%</span>
-</div>
-<span className="font-label-md text-[10px] md:text-xs text-center text-on-surface-variant rotate-[-45deg] md:rotate-0 mt-4 md:mt-0">Candle Making</span>
-</div>
-<div className="flex-1 h-full flex flex-col items-center justify-end gap-2 group">
-<div className="w-full bg-tertiary-container rounded-t-md h-[65%] group-hover:opacity-80 transition-opacity relative">
-<span className="absolute -top-6 left-1/2 -translate-x-1/2 font-label-md text-xs opacity-0 group-hover:opacity-100 transition-opacity">65%</span>
-</div>
-<span className="font-label-md text-[10px] md:text-xs text-center text-on-surface-variant rotate-[-45deg] md:rotate-0 mt-4 md:mt-0">Lippan Art</span>
-</div>
-<div className="flex-1 h-full flex flex-col items-center justify-end gap-2 group">
-<div className="w-full bg-primary-container rounded-t-md h-[95%] group-hover:opacity-80 transition-opacity relative">
-<span className="absolute -top-6 left-1/2 -translate-x-1/2 font-label-md text-xs opacity-0 group-hover:opacity-100 transition-opacity">95%</span>
-</div>
-<span className="font-label-md text-[10px] md:text-xs text-center text-on-surface-variant rotate-[-45deg] md:rotate-0 mt-4 md:mt-0">Resin Art</span>
-</div>
-<div className="flex-1 h-full flex flex-col items-center justify-end gap-2 group">
-<div className="w-full bg-surface-variant rounded-t-md h-[40%] group-hover:opacity-80 transition-opacity relative">
-<span className="absolute -top-6 left-1/2 -translate-x-1/2 font-label-md text-xs opacity-0 group-hover:opacity-100 transition-opacity">40%</span>
-</div>
-<span className="font-label-md text-[10px] md:text-xs text-center text-on-surface-variant rotate-[-45deg] md:rotate-0 mt-4 md:mt-0">Crochet</span>
-</div>
-<div className="flex-1 h-full flex flex-col items-center justify-end gap-2 group">
-<div className="w-full bg-surface-variant rounded-t-md h-[55%] group-hover:opacity-80 transition-opacity relative">
-<span className="absolute -top-6 left-1/2 -translate-x-1/2 font-label-md text-xs opacity-0 group-hover:opacity-100 transition-opacity">55%</span>
-</div>
-<span className="font-label-md text-[10px] md:text-xs text-center text-on-surface-variant rotate-[-45deg] md:rotate-0 mt-4 md:mt-0">Mosaic Art</span>
-</div>
-</div>
-</div>
-</div>
-
-<div className="bento-col-12 md:col-span-4 space-y-gutter">
-
-<div className="bg-surface-container-lowest rounded-[16px] p-6 organic-shadow h-[400px] flex flex-col">
-<div className="flex justify-between items-center mb-6">
-<h4 className="font-headline-sm text-headline-sm text-on-surface">Recent Activity</h4>
-<button className="text-primary font-label-md text-sm hover:underline">View All</button>
-</div>
-<div className="flex-grow overflow-y-auto pr-2 space-y-6">
-
-<div className="flex gap-4 relative">
-<div className="absolute left-4 top-10 bottom-[-24px] w-[1px] bg-outline-variant/30"></div>
-<div className="w-8 h-8 rounded-full bg-secondary-fixed/50 flex items-center justify-center shrink-0 z-10 border-2 border-surface-container-lowest">
-<span className="material-symbols-outlined text-[16px] text-secondary" data-icon="person_add">person_add</span>
-</div>
-<div>
-<p className="font-body-md text-body-md text-on-surface text-sm"><span className="font-bold">Emma Watson</span> registered as a new student.</p>
-<span className="font-label-md text-xs text-on-surface-variant mt-1 block">10 mins ago</span>
-</div>
-</div>
-
-<div className="flex gap-4 relative">
-<div className="absolute left-4 top-10 bottom-[-24px] w-[1px] bg-outline-variant/30"></div>
-<div className="w-8 h-8 rounded-full bg-primary-container/50 flex items-center justify-center shrink-0 z-10 border-2 border-surface-container-lowest">
-<span className="material-symbols-outlined text-[16px] text-primary" data-icon="shopping_cart">shopping_cart</span>
-</div>
-<div>
-<p className="font-body-md text-body-md text-on-surface text-sm"><span className="font-bold">David Chen</span> purchased <span className="italic text-secondary">Advanced Resin Art</span>.</p>
-<span className="font-label-md text-xs text-on-surface-variant mt-1 block">45 mins ago</span>
-</div>
-</div>
-
-<div className="flex gap-4 relative">
-<div className="w-8 h-8 rounded-full bg-tertiary-container/50 flex items-center justify-center shrink-0 z-10 border-2 border-surface-container-lowest">
-<span className="material-symbols-outlined text-[16px] text-tertiary" data-icon="brush">brush</span>
-</div>
-<div>
-<p className="font-body-md text-body-md text-on-surface text-sm"><span className="font-bold">Sophia Miller</span> submitted artwork to Student Gallery.</p>
-<span className="font-label-md text-xs text-on-surface-variant mt-1 block">2 hours ago</span>
-</div>
-</div>
-</div>
-</div>
-
-<div className="bg-surface-container-low border border-outline-variant/30 rounded-[16px] p-6">
-<h4 className="font-headline-sm text-headline-sm text-on-surface mb-6 flex items-center gap-2">
-<span className="material-symbols-outlined" data-icon="event">event</span>
-                        Live Classes Today
-                    </h4>
-<div className="space-y-4">
-<div className="bg-surface-container-lowest p-4 rounded-xl shadow-sm border-l-4 border-primary">
-<div className="flex justify-between items-start mb-2">
-<h5 className="font-label-md text-label-md text-on-surface">Intro to Candle Making</h5>
-<span className="bg-primary/10 text-primary font-label-md text-[10px] px-2 py-1 rounded">10:00 AM</span>
-</div>
-<p className="font-body-md text-xs text-on-surface-variant mb-3">Trainer: Sarah Jenkins</p>
-<button className="w-full bg-surface-variant text-on-surface-variant font-label-md text-sm py-2 rounded flex justify-center items-center gap-2 hover:bg-surface-variant/80 transition-colors">
-<span className="material-symbols-outlined text-[16px]" data-icon="videocam">videocam</span>
-                                Join Zoom
-                            </button>
-</div>
-<div className="bg-surface-container-lowest p-4 rounded-xl shadow-sm border-l-4 border-secondary">
-<div className="flex justify-between items-start mb-2">
-<h5 className="font-label-md text-label-md text-on-surface">Mastering Lippan Art</h5>
-<span className="bg-secondary/10 text-secondary font-label-md text-[10px] px-2 py-1 rounded">2:30 PM</span>
-</div>
-<p className="font-body-md text-xs text-on-surface-variant mb-3">Trainer: Priya Patel</p>
-<button className="w-full bg-secondary text-on-secondary font-label-md text-sm py-2 rounded flex justify-center items-center gap-2 hover:bg-secondary/90 transition-colors">
-<span className="material-symbols-outlined text-[16px]" data-icon="videocam">videocam</span>
-                                Join Zoom
-                            </button>
-</div>
-</div>
-</div>
-</div>
-</section>
-</main>
+                {/* Main Table Section */}
+                <div className="col-span-1 md:col-span-12 bg-surface-container-lowest border border-primary/20 flex flex-col mt-8">
+                    <div className="p-6 border-b border-primary/10 flex justify-between items-center bg-surface-container/30">
+                        <h2 className="font-headline-md text-headline-md text-primary">Published Monologues</h2>
+                        <div className="flex items-center gap-4">
+                            <div className="relative">
+                                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary/50 text-[18px]">search</span>
+                                <input className="pl-10 pr-4 py-2 bg-transparent border-b border-primary/30 focus:border-primary focus:outline-none font-body-md text-body-md w-64 text-primary placeholder:text-primary/40 rounded-none transition-colors duration-300" placeholder="Search entries..." type="text" />
+                            </div>
+                            <button className="material-symbols-outlined text-primary/70 hover:text-primary transition-colors">filter_list</button>
+                        </div>
+                    </div>
+                    <div className="overflow-x-auto custom-scrollbar">
+                        <table className="w-full text-left border-collapse min-w-[800px]">
+                            <thead>
+                                <tr className="border-b border-primary/10 bg-background/50">
+                                    <th className="py-4 px-6 font-label-mono text-label-mono uppercase tracking-widest text-on-surface-variant font-normal w-12">No.</th>
+                                    <th className="py-4 px-6 font-label-mono text-label-mono uppercase tracking-widest text-on-surface-variant font-normal">Title &amp; Author</th>
+                                    <th className="py-4 px-6 font-label-mono text-label-mono uppercase tracking-widest text-on-surface-variant font-normal">Category</th>
+                                    <th className="py-4 px-6 font-label-mono text-label-mono uppercase tracking-widest text-on-surface-variant font-normal">Status</th>
+                                    <th className="py-4 px-6 font-label-mono text-label-mono uppercase tracking-widest text-on-surface-variant font-normal">Date</th>
+                                    <th className="py-4 px-6 font-label-mono text-label-mono uppercase tracking-widest text-on-surface-variant font-normal text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-primary/5">
+                                {/* Row 1 */}
+                                <tr className="hover:bg-surface-container-low transition-colors duration-200 group">
+                                    <td className="py-4 px-6 font-label-mono text-label-mono text-primary/40">01</td>
+                                    <td className="py-4 px-6">
+                                        <div className="flex items-center gap-4">
+                                            <img alt="The Architecture of Nothingness Artwork" className="w-12 h-16 object-cover border border-primary/10 grayscale group-hover:grayscale-0 transition-all duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMwaww_eznpyrMTpqzfx26vdOP7PMjM1LibVeIjS7lMygzClEibTBLA6xT4879En2ybMegEQ_CR_JWlDCpFom4DSXG1_ooUD-co5lQFuM64x-MyVJ6TCSKXSPSGDOyFxx5xhgDph7KVrMnKadpd1SGwaGjYl1nhH2Tu5zYxIBGcCVtVdjXdD2eEFqvsPiBjc1uC68xYRksyzVioWsZGGKR0Xge0-6b5WZFmpWcz5zAHOC5JBv58Sap" />
+                                            <div className="flex flex-col">
+                                                <span className="font-body-md text-body-md font-medium text-primary">The Architecture of Nothingness</span>
+                                                <span className="font-annotation text-annotation text-on-surface-variant">by Julian K.</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="py-4 px-6 font-body-md text-body-md text-on-surface-variant">Philosophy</td>
+                                    <td className="py-4 px-6">
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-tertiary-fixed text-tertiary-container font-label-mono text-[10px] uppercase tracking-widest bg-tertiary-fixed/10">
+                                            <span className="w-1.5 h-1.5 bg-tertiary-fixed rounded-none"></span> Published
+                                        </span>
+                                    </td>
+                                    <td className="py-4 px-6 font-label-mono text-label-mono text-on-surface-variant">Oct 24, 2024</td>
+                                    <td className="py-4 px-6 text-right">
+                                        <button className="text-primary hover:text-secondary font-label-mono text-[12px] uppercase tracking-widest border-b border-transparent hover:border-secondary transition-all">Edit</button>
+                                    </td>
+                                </tr>
+                                {/* Row 2 */}
+                                <tr className="hover:bg-surface-container-low transition-colors duration-200 group">
+                                    <td className="py-4 px-6 font-label-mono text-label-mono text-primary/40">02</td>
+                                    <td className="py-4 px-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-16 bg-surface-container border border-primary/10 flex items-center justify-center">
+                                                <span className="material-symbols-outlined text-primary/20">image</span>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="font-body-md text-body-md font-medium text-primary">Tactile Textures in Digital Spaces</span>
+                                                <span className="font-annotation text-annotation text-on-surface-variant">by Sarah Jenkins</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="py-4 px-6 font-body-md text-body-md text-on-surface-variant">Design</td>
+                                    <td className="py-4 px-6">
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-secondary-container text-secondary font-label-mono text-[10px] uppercase tracking-widest bg-secondary-container/10">
+                                            <span className="w-1.5 h-1.5 bg-secondary-container rounded-none"></span> Draft
+                                        </span>
+                                    </td>
+                                    <td className="py-4 px-6 font-label-mono text-label-mono text-on-surface-variant">Oct 22, 2024</td>
+                                    <td className="py-4 px-6 text-right">
+                                        <button className="text-primary hover:text-secondary font-label-mono text-[12px] uppercase tracking-widest border-b border-transparent hover:border-secondary transition-all">Edit</button>
+                                    </td>
+                                </tr>
+                                {/* Row 3 */}
+                                <tr className="hover:bg-surface-container-low transition-colors duration-200 group">
+                                    <td className="py-4 px-6 font-label-mono text-label-mono text-primary/40">03</td>
+                                    <td className="py-4 px-6">
+                                        <div className="flex items-center gap-4">
+                                            <img alt="Curating the Void Artwork" className="w-12 h-16 object-cover border border-primary/10 grayscale group-hover:grayscale-0 transition-all duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3WSW9py--uzFdj0jt0BjpwLU6b85_ZTCcwzBrf2wMHPGCExTFxNl1XkBmAhRrfyBSDnLjDfhqLvapUb6fRdn2HOGCrfpBGGbeFwOYnBJIRlH8yl0e1_AfUNAmcUdCt2xUuHSGZJqsT3ZiXwlGfDYOuXb0B8hlgsjo-Xt4RPzPG-CPSmDo7nmXBIF1wW3lXrflbqmDSg1Mw5nIjBl4nz77E6GTR3QCrhVJGHdJLkpftHXZ6D1ubva9" />
+                                            <div className="flex flex-col">
+                                                <span className="font-body-md text-body-md font-medium text-primary">Curating the Void</span>
+                                                <span className="font-annotation text-annotation text-on-surface-variant">by Marcus Thorne</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="py-4 px-6 font-body-md text-body-md text-on-surface-variant">Exhibition</td>
+                                    <td className="py-4 px-6">
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-tertiary-fixed text-tertiary-container font-label-mono text-[10px] uppercase tracking-widest bg-tertiary-fixed/10">
+                                            <span className="w-1.5 h-1.5 bg-tertiary-fixed rounded-none"></span> Published
+                                        </span>
+                                    </td>
+                                    <td className="py-4 px-6 font-label-mono text-label-mono text-on-surface-variant">Oct 15, 2024</td>
+                                    <td className="py-4 px-6 text-right">
+                                        <button className="text-primary hover:text-secondary font-label-mono text-[12px] uppercase tracking-widest border-b border-transparent hover:border-secondary transition-all">Edit</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="p-4 border-t border-primary/10 flex justify-between items-center bg-surface-container-low/50">
+                        <span className="font-label-mono text-label-mono text-on-surface-variant">Showing 1-3 of 142</span>
+                        <div className="flex gap-2">
+                            <button className="px-3 py-1 border border-primary/20 text-primary font-label-mono text-[12px] hover:bg-primary hover:text-on-primary transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-primary">Prev</button>
+                            <button className="px-3 py-1 border border-primary/20 text-primary font-label-mono text-[12px] hover:bg-primary hover:text-on-primary transition-colors">Next</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
     );
 }
