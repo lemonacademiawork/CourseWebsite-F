@@ -208,78 +208,36 @@ export default function AdminDashboardOverview() {
                         </div>
                     </div>
 
-                    {/* Recent Studio Vibes (Activity Feed) */}
-                    <div className="md:col-span-8 bg-surface-container-lowest border border-outline-variant/30 rounded-[16px] p-8 shadow-sm mt-4">
-                        <div className="flex justify-between items-center mb-6 border-b border-surface-variant/30 pb-4">
-                            <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold">Recent Studio Vibes</h3>
-                            <button className="text-sm font-label-md text-primary hover:underline font-bold">View All</button>
-                        </div>
-                        <div className="flex flex-col gap-6">
-                            {/* Feed Item 1 */}
-                            <div className="flex items-start gap-4">
-                                <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-surface-variant">
-                                    <img alt="Student Sarah Jenkins Avatar" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSdg39ix0SJRvJCL0yOZgTOPmnwqSeqaR1qRKcZz-RulA8Se3AHNQEa3dsV9aRlGa1EnOc_pDniYjfQIy0lMOk0uGCQYXSA6QwSYzLLP8CJ296n_0hySC1JN30AzyflfL-wLeA837OPD3V9GgG8WE1Y94-YwGWzZsH2ZHOHcM9VL3q57_8dkqUNZ-AimkDQlsLebgmMREB0CcuXxRbNYMCDXHMF5_UJMRt0nZrd9IMTIt1qgyl91gl" />
-                                </div>
-                                <div className="flex-grow pb-4 border-b border-surface-variant/40">
-                                    <p className="font-body-md text-on-surface"><span className="font-label-md text-label-md font-semibold text-primary">Sarah Jenkins</span> enrolled in <span className="text-secondary italic font-semibold">Advanced Typography</span>.</p>
-                                    <p className="text-xs text-on-surface-variant mt-1 flex items-center gap-1">
-                                        <span className="material-symbols-outlined text-xs">schedule</span> 2 hours ago
-                                    </p>
-                                </div>
-                            </div>
-                            {/* Feed Item 2 */}
-                            <div className="flex items-start gap-4">
-                                <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-surface-variant">
-                                    <img alt="Student Marcus Thorne Avatar" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2zRYMKB_3dcjvCr1-QgpeXpTmWGkWy2tkVI_PFXX3XaptPZFxTfD-r98jJELmNSLhhwO_ze_tTQptik497wHO7-NWWyFylNnuhxBc22peChfNiE1gp7fkLPX0DD3-oirHYxh9ZbZ7L_M3Qs6ycoQhu0rKDpa531gWJJGeUG84qxGXBfIeQIxmQ4euENGzuBqMUx1BrP4MyJ8Y8TaL3Ha-Qt3ncZs6aggzMEZyLMI7kZVgBz-4kNOw" />
-                                </div>
-                                <div className="flex-grow pb-4 border-b border-surface-variant/40">
-                                    <p className="font-body-md text-on-surface"><span className="font-label-md text-label-md font-semibold text-primary">Marcus Thorne</span> submitted a project to the <span className="text-tertiary italic font-semibold">Student Gallery</span>.</p>
-                                    <p className="text-xs text-on-surface-variant mt-1 flex items-center gap-1">
-                                        <span className="material-symbols-outlined text-xs">schedule</span> 5 hours ago
-                                    </p>
-                                </div>
-                            </div>
-                            {/* Feed Item 3 */}
-                            <div className="flex items-start gap-4">
-                                <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 bg-primary-container flex items-center justify-center text-primary-fixed-dim">
-                                    <span className="material-symbols-outlined text-lg">campaign</span>
-                                </div>
-                                <div className="flex-grow">
-                                    <p className="font-body-md text-on-surface">System generated <span className="font-label-md text-label-md font-semibold text-primary">Monthly Earnings Report</span> for trainers.</p>
-                                    <p className="text-xs text-on-surface-variant mt-1 flex items-center gap-1">
-                                        <span className="material-symbols-outlined text-xs">schedule</span> Yesterday
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     {/* Live Classes Today */}
-                    <div className="md:col-span-4 bg-surface-container-low border border-outline-variant/30 rounded-[16px] p-6 shadow-sm mt-4">
+                    <div className="md:col-span-12 bg-surface-container-low border border-outline-variant/30 rounded-[16px] p-6 shadow-sm mt-4">
                         <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold mb-6 flex items-center gap-2">
                             <span className="material-symbols-outlined text-secondary">event</span>
                             Live Classes Today
                         </h3>
-                        <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Live Card 1 */}
-                            <div className="bg-surface-container-lowest p-4 rounded-xl shadow-sm border-l-4 border-primary">
-                                <div className="flex justify-between items-start mb-2">
-                                    <h4 className="font-label-md text-label-md text-on-surface font-bold">Intro to Candle Making</h4>
-                                    <span className="bg-primary/10 text-primary font-label-mono text-[10px] px-2 py-0.5 rounded font-bold">10:00 AM</span>
+                            <div className="bg-surface-container-lowest p-4 rounded-xl shadow-sm border-l-4 border-primary flex flex-col justify-between">
+                                <div>
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h4 className="font-label-md text-label-md text-on-surface font-bold">Intro to Candle Making</h4>
+                                        <span className="bg-primary/10 text-primary font-label-mono text-[10px] px-2 py-0.5 rounded font-bold">10:00 AM</span>
+                                    </div>
+                                    <p className="font-body-md text-xs text-on-surface-variant mb-4">Trainer: Sarah Jenkins</p>
                                 </div>
-                                <p className="font-body-md text-xs text-on-surface-variant mb-4">Trainer: Sarah Jenkins</p>
                                 <button className="w-full bg-surface-variant text-on-surface-variant font-label-md text-sm py-2 rounded flex justify-center items-center gap-2 hover:bg-surface-variant/80 transition-colors font-semibold">
                                     <span className="material-symbols-outlined text-base">videocam</span>
                                     Join Zoom
                                 </button>
                             </div>
                             {/* Live Card 2 */}
-                            <div className="bg-surface-container-lowest p-4 rounded-xl shadow-sm border-l-4 border-secondary">
-                                <div className="flex justify-between items-start mb-2">
-                                    <h4 className="font-label-md text-label-md text-on-surface font-bold">Mastering Lippan Art</h4>
-                                    <span className="bg-secondary/10 text-secondary font-label-mono text-[10px] px-2 py-0.5 rounded font-bold">2:30 PM</span>
+                            <div className="bg-surface-container-lowest p-4 rounded-xl shadow-sm border-l-4 border-secondary flex flex-col justify-between">
+                                <div>
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h4 className="font-label-md text-label-md text-on-surface font-bold">Mastering Lippan Art</h4>
+                                        <span className="bg-secondary/10 text-secondary font-label-mono text-[10px] px-2 py-0.5 rounded font-bold">2:30 PM</span>
+                                    </div>
+                                    <p className="font-body-md text-xs text-on-surface-variant mb-4">Trainer: Priya Patel</p>
                                 </div>
-                                <p className="font-body-md text-xs text-on-surface-variant mb-4">Trainer: Priya Patel</p>
                                 <button className="w-full bg-secondary text-on-secondary font-label-md text-sm py-2 rounded flex justify-center items-center gap-2 hover:bg-secondary/90 transition-colors font-semibold shadow-sm">
                                     <span className="material-symbols-outlined text-base">videocam</span>
                                     Join Zoom
