@@ -30,16 +30,16 @@ export default function AdminDashboardOverview() {
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter auto-rows-min">
                     
                     {/* KPI 1: Revenue (Visible Separate Box) */}
-                    <div className="md:col-span-4 bg-surface-container-lowest border border-outline-variant/40 rounded-[16px] p-6 flex flex-col justify-between min-h-[180px] shadow-sm">
+                    <div className="md:col-span-4 bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col justify-between">
                         <div className="flex justify-between items-start">
-                            <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Revenue</span>
-                            <div className="w-10 h-10 rounded-xl bg-primary-container/20 flex items-center justify-center text-primary">
-                                <span className="material-symbols-outlined">payments</span>
+                            <span className="font-label-md text-xs text-on-surface-variant uppercase tracking-wider">Total Revenue</span>
+                            <div className="w-8 h-8 rounded-lg bg-primary-container/20 flex items-center justify-center text-primary">
+                                <span className="material-symbols-outlined text-lg">payments</span>
                             </div>
                         </div>
                         <div className="mt-4">
-                            <div className="font-display-lg text-display-lg text-on-surface font-semibold leading-none">$45,200</div>
-                            <div className="flex items-center gap-1 font-label-md text-label-md text-tertiary mt-2">
+                            <div className="text-3xl font-semibold text-on-surface font-headline-sm leading-none">$45,200</div>
+                            <div className="flex items-center gap-1 text-[11px] text-tertiary mt-2">
                                 <span className="material-symbols-outlined text-sm">trending_up</span>
                                 <span>+8.4% from last month</span>
                             </div>
@@ -47,16 +47,16 @@ export default function AdminDashboardOverview() {
                     </div>
 
                     {/* KPI 2: Students (Visible Separate Box) */}
-                    <div className="md:col-span-4 bg-surface-container-lowest border border-outline-variant/40 rounded-[16px] p-6 flex flex-col justify-between min-h-[180px] shadow-sm">
+                    <div className="md:col-span-4 bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col justify-between">
                         <div className="flex justify-between items-start">
-                            <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Students</span>
-                            <div className="w-10 h-10 rounded-xl bg-tertiary-container/30 flex items-center justify-center text-tertiary">
-                                <span className="material-symbols-outlined">group</span>
+                            <span className="font-label-md text-xs text-on-surface-variant uppercase tracking-wider">Total Students</span>
+                            <div className="w-8 h-8 rounded-lg bg-tertiary-container/30 flex items-center justify-center text-tertiary">
+                                <span className="material-symbols-outlined text-lg">group</span>
                             </div>
                         </div>
                         <div className="mt-4">
-                            <div className="font-display-lg text-display-lg text-on-surface font-semibold leading-none">1,284</div>
-                            <div className="flex items-center gap-1 font-label-md text-label-md text-tertiary mt-2">
+                            <div className="text-3xl font-semibold text-on-surface font-headline-sm leading-none">1,284</div>
+                            <div className="flex items-center gap-1 text-[11px] text-tertiary mt-2">
                                 <span className="material-symbols-outlined text-sm">trending_up</span>
                                 <span>+12.4% from last month</span>
                             </div>
@@ -64,61 +64,61 @@ export default function AdminDashboardOverview() {
                     </div>
 
                     {/* KPI 3: Action Needed */}
-                    <div className="md:col-span-4 bg-secondary-fixed/10 border border-secondary/15 rounded-[16px] p-6 flex flex-col justify-between min-h-[180px] shadow-sm">
-                        <div className="flex items-center gap-2 mb-3 border-b border-secondary/10 pb-2">
-                            <span className="material-symbols-outlined text-secondary font-bold">priority_high</span>
-                            <span className="font-headline-sm text-[20px] font-semibold text-on-surface">Action Needed</span>
+                    <div className="md:col-span-4 bg-secondary-fixed/5 border border-secondary/15 rounded-xl p-5 flex flex-col justify-between shadow-sm">
+                        <div className="flex items-center gap-1.5 mb-2 border-b border-secondary/10 pb-1.5">
+                            <span className="material-symbols-outlined text-secondary text-sm font-bold">priority_high</span>
+                            <span className="font-label-md text-xs font-semibold text-on-surface uppercase tracking-wider">Action Needed</span>
                         </div>
-                        <div className="space-y-3 flex-grow flex flex-col justify-center">
-                            <div className="flex justify-between items-center bg-surface-container-lowest p-3 rounded-lg shadow-sm border border-outline-variant/10">
+                        <div className="space-y-2 flex-grow flex flex-col justify-center">
+                            <div className="flex justify-between items-center bg-surface-container-lowest px-3 py-2 rounded-lg border border-outline-variant/15 hover:border-outline-variant/30 transition-colors">
                                 <div className="flex items-center gap-2">
                                     <span className="material-symbols-outlined text-on-surface-variant text-base">verified</span>
-                                    <span className="font-label-md text-label-md text-on-surface text-sm">Pending Certificates</span>
+                                    <span className="font-body-md text-xs text-on-surface">Pending Certificates</span>
                                 </div>
-                                <span className="bg-error text-on-error font-label-md text-xs px-2.5 py-0.5 rounded-full font-bold">12</span>
+                                <span className="bg-error text-on-error font-label-md text-[10px] px-2 py-0.5 rounded-full font-bold">12</span>
                             </div>
-                            <div className="flex justify-between items-center bg-surface-container-lowest p-3 rounded-lg shadow-sm border border-outline-variant/10">
+                            <div className="flex justify-between items-center bg-surface-container-lowest px-3 py-2 rounded-lg border border-outline-variant/15 hover:border-outline-variant/30 transition-colors">
                                 <div className="flex items-center gap-2">
                                     <span className="material-symbols-outlined text-on-surface-variant text-base">palette</span>
-                                    <span className="font-label-md text-label-md text-on-surface text-sm">Gallery Approvals</span>
+                                    <span className="font-body-md text-xs text-on-surface">Gallery Approvals</span>
                                 </div>
-                                <span className="bg-secondary text-on-secondary font-label-md text-xs px-2.5 py-0.5 rounded-full font-bold">8</span>
+                                <span className="bg-secondary text-on-secondary font-label-md text-[10px] px-2 py-0.5 rounded-full font-bold">8</span>
                             </div>
                         </div>
                     </div>
 
                     {/* Smaller Metrics Cards Row (Span 12) */}
                     <div className="md:col-span-12 grid grid-cols-2 md:grid-cols-4 gap-gutter mt-2">
-                        <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-[16px] p-5 shadow-sm flex items-center gap-4 hover:-translate-y-0.5 transition-transform duration-200">
-                            <div className="p-3 bg-surface-container-low rounded-xl text-on-surface-variant flex items-center justify-center">
-                                <span className="material-symbols-outlined">person_play</span>
+                        <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-4 shadow-sm flex items-center gap-3 hover:-translate-y-0.5 transition-transform duration-200">
+                            <div className="p-2 bg-surface-container-low rounded-lg text-on-surface-variant flex items-center justify-center">
+                                <span className="material-symbols-outlined text-lg">person_play</span>
                             </div>
                             <div>
-                                <p className="font-label-md text-label-md text-on-surface-variant text-xs uppercase tracking-wider">Trainers</p>
-                                <p className="font-headline-sm text-headline-sm text-on-surface font-semibold">24</p>
+                                <p className="font-label-md text-on-surface-variant text-[10px] uppercase tracking-wider">Trainers</p>
+                                <p className="text-lg font-bold text-on-surface leading-tight">24</p>
                             </div>
                         </div>
-                        <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-[16px] p-5 shadow-sm flex items-center gap-4 hover:-translate-y-0.5 transition-transform duration-200">
-                            <div className="p-3 bg-surface-container-low rounded-xl text-on-surface-variant flex items-center justify-center">
-                                <span className="material-symbols-outlined">library_books</span>
+                        <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-4 shadow-sm flex items-center gap-3 hover:-translate-y-0.5 transition-transform duration-200">
+                            <div className="p-2 bg-surface-container-low rounded-lg text-on-surface-variant flex items-center justify-center">
+                                <span className="material-symbols-outlined text-lg">library_books</span>
                             </div>
                             <div>
-                                <p className="font-label-md text-label-md text-on-surface-variant text-xs uppercase tracking-wider">Courses</p>
-                                <p className="font-headline-sm text-headline-sm text-on-surface font-semibold">18</p>
+                                <p className="font-label-md text-on-surface-variant text-[10px] uppercase tracking-wider">Courses</p>
+                                <p className="text-lg font-bold text-on-surface leading-tight">18</p>
                             </div>
                         </div>
-                        <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-[16px] p-5 shadow-sm flex items-center gap-4 hover:-translate-y-0.5 transition-transform duration-200">
-                            <div className="p-3 bg-surface-container-low rounded-xl text-on-surface-variant flex items-center justify-center">
-                                <span className="material-symbols-outlined">how_to_reg</span>
+                        <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-4 shadow-sm flex items-center gap-3 hover:-translate-y-0.5 transition-transform duration-200">
+                            <div className="p-2 bg-surface-container-low rounded-lg text-on-surface-variant flex items-center justify-center">
+                                <span className="material-symbols-outlined text-lg">how_to_reg</span>
                             </div>
                             <div>
-                                <p className="font-label-md text-label-md text-on-surface-variant text-xs uppercase tracking-wider">Enrollments</p>
-                                <p className="font-headline-sm text-headline-sm text-on-surface font-semibold">3,420</p>
+                                <p className="font-label-md text-on-surface-variant text-[10px] uppercase tracking-wider">Enrollments</p>
+                                <p className="text-lg font-bold text-on-surface leading-tight">3,420</p>
                             </div>
                         </div>
-                        <div className="bg-surface-container-lowest rounded-[16px] p-5 shadow-sm flex items-center gap-3 justify-center hover:bg-surface-variant/30 cursor-pointer transition-all border border-dashed border-outline-variant">
-                            <span className="material-symbols-outlined text-on-surface-variant">add</span>
-                            <span className="font-label-md text-label-md text-on-surface-variant">Add Widget</span>
+                        <div className="bg-surface-container-lowest rounded-xl p-4 shadow-sm flex items-center gap-2 justify-center hover:bg-surface-variant/30 cursor-pointer transition-all border border-dashed border-outline-variant/40">
+                            <span className="material-symbols-outlined text-on-surface-variant text-base">add</span>
+                            <span className="font-label-md text-[11px] text-on-surface-variant uppercase tracking-wider">Add Widget</span>
                         </div>
                     </div>
 
