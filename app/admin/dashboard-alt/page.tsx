@@ -140,31 +140,31 @@ export default function AdminDashboardUpdatedNavigation() {
 <h4 className="font-headline-sm text-headline-sm text-on-surface mb-6">Course Sales Distribution</h4>
 <div className="flex items-end h-48 gap-4 mb-4 mt-8 px-4">
 
-<div className="flex-1 flex flex-col items-center justify-end gap-2 group">
+<div className="flex-1 h-full flex flex-col items-center justify-end gap-2 group">
 <div className="w-full bg-secondary-container rounded-t-md h-[80%] group-hover:opacity-80 transition-opacity relative">
 <span className="absolute -top-6 left-1/2 -translate-x-1/2 font-label-md text-xs opacity-0 group-hover:opacity-100 transition-opacity">80%</span>
 </div>
 <span className="font-label-md text-[10px] md:text-xs text-center text-on-surface-variant rotate-[-45deg] md:rotate-0 mt-4 md:mt-0">Candle Making</span>
 </div>
-<div className="flex-1 flex flex-col items-center justify-end gap-2 group">
+<div className="flex-1 h-full flex flex-col items-center justify-end gap-2 group">
 <div className="w-full bg-tertiary-container rounded-t-md h-[65%] group-hover:opacity-80 transition-opacity relative">
 <span className="absolute -top-6 left-1/2 -translate-x-1/2 font-label-md text-xs opacity-0 group-hover:opacity-100 transition-opacity">65%</span>
 </div>
 <span className="font-label-md text-[10px] md:text-xs text-center text-on-surface-variant rotate-[-45deg] md:rotate-0 mt-4 md:mt-0">Lippan Art</span>
 </div>
-<div className="flex-1 flex flex-col items-center justify-end gap-2 group">
+<div className="flex-1 h-full flex flex-col items-center justify-end gap-2 group">
 <div className="w-full bg-primary-container rounded-t-md h-[95%] group-hover:opacity-80 transition-opacity relative">
 <span className="absolute -top-6 left-1/2 -translate-x-1/2 font-label-md text-xs opacity-0 group-hover:opacity-100 transition-opacity">95%</span>
 </div>
 <span className="font-label-md text-[10px] md:text-xs text-center text-on-surface-variant rotate-[-45deg] md:rotate-0 mt-4 md:mt-0">Resin Art</span>
 </div>
-<div className="flex-1 flex flex-col items-center justify-end gap-2 group">
+<div className="flex-1 h-full flex flex-col items-center justify-end gap-2 group">
 <div className="w-full bg-surface-variant rounded-t-md h-[40%] group-hover:opacity-80 transition-opacity relative">
 <span className="absolute -top-6 left-1/2 -translate-x-1/2 font-label-md text-xs opacity-0 group-hover:opacity-100 transition-opacity">40%</span>
 </div>
 <span className="font-label-md text-[10px] md:text-xs text-center text-on-surface-variant rotate-[-45deg] md:rotate-0 mt-4 md:mt-0">Crochet</span>
 </div>
-<div className="flex-1 flex flex-col items-center justify-end gap-2 group">
+<div className="flex-1 h-full flex flex-col items-center justify-end gap-2 group">
 <div className="w-full bg-surface-variant rounded-t-md h-[55%] group-hover:opacity-80 transition-opacity relative">
 <span className="absolute -top-6 left-1/2 -translate-x-1/2 font-label-md text-xs opacity-0 group-hover:opacity-100 transition-opacity">55%</span>
 </div>
