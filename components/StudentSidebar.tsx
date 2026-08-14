@@ -16,7 +16,7 @@ export default function StudentSidebar() {
     return (
         <nav className="bg-surface-container-low dark:bg-surface-container-lowest h-screen w-64 fixed left-0 top-0 hidden md:flex flex-col py-8 px-4 gap-2 z-40 flat no shadows border-r border-outline-variant/20">
             <div className="mb-8 px-3">
-                <Link href="/" className="font-display-lg text-display-lg-mobile text-primary block">
+                <Link href="/" className="font-headline-sm text-headline-sm text-primary font-bold block whitespace-nowrap">
                     Lemon Academy
                 </Link>
                 <p className="font-label-md text-label-md text-on-surface-variant mt-1">Student Portal</p>

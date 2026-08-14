@@ -8,11 +8,9 @@ export default function AdminDashboardOverview() {
                 {/* Welcome Header */}
                 <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-surface-variant/30 pb-6">
                     <div>
-                        <p className="font-label-md text-label-md text-secondary uppercase tracking-widest mb-1">Creative Workspace</p>
-                        <h2 className="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
-                            Good morning, Admin <span className="text-2xl animate-bounce">👋</span>
+                        <h2 className="font-headline-md text-headline-md text-on-surface">
+                            Welcome Admin
                         </h2>
-                        <p className="font-body-md text-body-md text-on-surface-variant mt-1">Here’s what’s happening at Lemon Academy today.</p>
                     </div>
                     <div className="flex items-center gap-4">
                         <button className="w-12 h-12 rounded-full glass-card flex items-center justify-center text-on-surface hover:text-primary transition-all">
@@ -31,8 +29,8 @@ export default function AdminDashboardOverview() {
                 {/* Bento Grid Layout */}
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter auto-rows-min">
                     
-                    {/* KPI 1: Revenue */}
-                    <div className="md:col-span-4 glass-card rounded-[16px] p-6 flex flex-col justify-between min-h-[180px] shadow-organic">
+                    {/* KPI 1: Revenue (Visible Separate Box) */}
+                    <div className="md:col-span-4 bg-surface-container-lowest border border-outline-variant/40 rounded-[16px] p-6 flex flex-col justify-between min-h-[180px] shadow-sm">
                         <div className="flex justify-between items-start">
                             <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Revenue</span>
                             <div className="w-10 h-10 rounded-xl bg-primary-container/20 flex items-center justify-center text-primary">
@@ -48,8 +46,8 @@ export default function AdminDashboardOverview() {
                         </div>
                     </div>
 
-                    {/* KPI 2: Students */}
-                    <div className="md:col-span-4 glass-card rounded-[16px] p-6 flex flex-col justify-between min-h-[180px] shadow-organic">
+                    {/* KPI 2: Students (Visible Separate Box) */}
+                    <div className="md:col-span-4 bg-surface-container-lowest border border-outline-variant/40 rounded-[16px] p-6 flex flex-col justify-between min-h-[180px] shadow-sm">
                         <div className="flex justify-between items-start">
                             <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Students</span>
                             <div className="w-10 h-10 rounded-xl bg-tertiary-container/30 flex items-center justify-center text-tertiary">
@@ -66,7 +64,7 @@ export default function AdminDashboardOverview() {
                     </div>
 
                     {/* KPI 3: Action Needed */}
-                    <div className="md:col-span-4 bg-secondary-fixed/10 border border-secondary/15 rounded-[16px] p-6 flex flex-col justify-between min-h-[180px] shadow-organic">
+                    <div className="md:col-span-4 bg-secondary-fixed/10 border border-secondary/15 rounded-[16px] p-6 flex flex-col justify-between min-h-[180px] shadow-sm">
                         <div className="flex items-center gap-2 mb-3 border-b border-secondary/10 pb-2">
                             <span className="material-symbols-outlined text-secondary font-bold">priority_high</span>
                             <span className="font-headline-sm text-[20px] font-semibold text-on-surface">Action Needed</span>
@@ -153,40 +151,58 @@ export default function AdminDashboardOverview() {
                         </div>
                     </div>
 
-                    {/* Course Sales Distribution (Bar Chart) */}
-                    <div className="md:col-span-4 bg-surface-container-lowest border border-outline-variant/30 rounded-[16px] p-6 shadow-sm flex flex-col mt-4">
-                        <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold mb-6">Course Sales Distribution</h3>
-                        <div className="flex items-end h-48 gap-4 mb-4 mt-8 px-2">
-                            {/* Bars */}
-                            <div className="flex-1 h-full flex flex-col items-center justify-end gap-2 group">
-                                <div className="w-full bg-secondary-container rounded-t-md h-[80%] group-hover:opacity-85 transition-opacity relative shadow-sm">
-                                    <span className="absolute -top-6 left-1/2 -translate-x-1/2 font-label-md text-xs opacity-0 group-hover:opacity-100 transition-opacity font-bold">80%</span>
+                    {/* Course Sales Distribution (Horizontal Progress Chart - Avoids Div Overflow) */}
+                    <div className="md:col-span-4 bg-surface-container-lowest border border-outline-variant/30 rounded-[16px] p-6 shadow-sm flex flex-col mt-4 justify-between min-h-[360px]">
+                        <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold mb-6">Course Sales</h3>
+                        <div className="space-y-4 flex-grow flex flex-col justify-center">
+                            {/* Bar 1 */}
+                            <div className="space-y-1">
+                                <div className="flex justify-between text-xs font-label-md text-on-surface-variant">
+                                    <span>Candle Making</span>
+                                    <span className="font-bold text-on-surface">80%</span>
                                 </div>
-                                <span className="font-label-md text-[10px] md:text-xs text-center text-on-surface-variant tracking-tighter truncate w-full mt-2">Candle Making</span>
+                                <div className="w-full bg-surface-container-low h-3 rounded-full overflow-hidden">
+                                    <div className="bg-secondary-container h-full rounded-full" style={{ width: '80%' }}></div>
+                                </div>
                             </div>
-                            <div className="flex-1 h-full flex flex-col items-center justify-end gap-2 group">
-                                <div className="w-full bg-tertiary-container rounded-t-md h-[65%] group-hover:opacity-85 transition-opacity relative shadow-sm">
-                                    <span className="absolute -top-6 left-1/2 -translate-x-1/2 font-label-md text-xs opacity-0 group-hover:opacity-100 transition-opacity font-bold">65%</span>
+                            {/* Bar 2 */}
+                            <div className="space-y-1">
+                                <div className="flex justify-between text-xs font-label-md text-on-surface-variant">
+                                    <span>Lippan Art</span>
+                                    <span className="font-bold text-on-surface">65%</span>
                                 </div>
-                                <span className="font-label-md text-[10px] md:text-xs text-center text-on-surface-variant tracking-tighter truncate w-full mt-2">Lippan Art</span>
+                                <div className="w-full bg-surface-container-low h-3 rounded-full overflow-hidden">
+                                    <div className="bg-tertiary-container h-full rounded-full" style={{ width: '65%' }}></div>
+                                </div>
                             </div>
-                            <div className="flex-1 h-full flex flex-col items-center justify-end gap-2 group">
-                                <div className="w-full bg-primary-container rounded-t-md h-[95%] group-hover:opacity-85 transition-opacity relative shadow-sm">
-                                    <span className="absolute -top-6 left-1/2 -translate-x-1/2 font-label-md text-xs opacity-0 group-hover:opacity-100 transition-opacity font-bold">95%</span>
+                            {/* Bar 3 */}
+                            <div className="space-y-1">
+                                <div className="flex justify-between text-xs font-label-md text-on-surface-variant">
+                                    <span>Resin Art</span>
+                                    <span className="font-bold text-on-surface">95%</span>
                                 </div>
-                                <span className="font-label-md text-[10px] md:text-xs text-center text-on-surface-variant tracking-tighter truncate w-full mt-2">Resin Art</span>
+                                <div className="w-full bg-surface-container-low h-3 rounded-full overflow-hidden">
+                                    <div className="bg-primary-container h-full rounded-full" style={{ width: '95%' }}></div>
+                                </div>
                             </div>
-                            <div className="flex-1 h-full flex flex-col items-center justify-end gap-2 group">
-                                <div className="w-full bg-surface-variant rounded-t-md h-[40%] group-hover:opacity-85 transition-opacity relative shadow-sm">
-                                    <span className="absolute -top-6 left-1/2 -translate-x-1/2 font-label-md text-xs opacity-0 group-hover:opacity-100 transition-opacity font-bold">40%</span>
+                            {/* Bar 4 */}
+                            <div className="space-y-1">
+                                <div className="flex justify-between text-xs font-label-md text-on-surface-variant">
+                                    <span>Crochet</span>
+                                    <span className="font-bold text-on-surface">40%</span>
                                 </div>
-                                <span className="font-label-md text-[10px] md:text-xs text-center text-on-surface-variant tracking-tighter truncate w-full mt-2">Crochet</span>
+                                <div className="w-full bg-surface-variant h-full rounded-full" style={{ width: '40%' }}></div>
+                                </div>
                             </div>
-                            <div className="flex-1 h-full flex flex-col items-center justify-end gap-2 group">
-                                <div className="w-full bg-surface-variant rounded-t-md h-[55%] group-hover:opacity-85 transition-opacity relative shadow-sm">
-                                    <span className="absolute -top-6 left-1/2 -translate-x-1/2 font-label-md text-xs opacity-0 group-hover:opacity-100 transition-opacity font-bold">55%</span>
+                            {/* Bar 5 */}
+                            <div className="space-y-1">
+                                <div className="flex justify-between text-xs font-label-md text-on-surface-variant">
+                                    <span>Mosaic Art</span>
+                                    <span className="font-bold text-on-surface">55%</span>
                                 </div>
-                                <span className="font-label-md text-[10px] md:text-xs text-center text-on-surface-variant tracking-tighter truncate w-full mt-2">Mosaic Art</span>
+                                <div className="w-full bg-surface-container-low h-3 rounded-full overflow-hidden">
+                                    <div className="bg-surface-variant h-full rounded-full" style={{ width: '55%' }}></div>
+                                </div>
                             </div>
                         </div>
                     </div>
