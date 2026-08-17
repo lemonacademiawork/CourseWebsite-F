@@ -14,44 +14,7 @@ interface CouponInfo {
     validUntil: string;
 }
 
-const INITIAL_COUPONS: CouponInfo[] = [
-    {
-        id: 1,
-        code: "INDEPENDENCE80",
-        discountValue: 80,
-        discountType: "Fixed Amount",
-        uses: 342,
-        limit: 1000,
-        salesGenerated: 45200,
-        discountGiven: 27360,
-        status: "Active",
-        validUntil: "2026-08-31"
-    },
-    {
-        id: 2,
-        code: "SUMMER20",
-        discountValue: 20,
-        discountType: "Percentage",
-        uses: 150,
-        limit: 200,
-        salesGenerated: 38500,
-        discountGiven: 7700,
-        status: "Active",
-        validUntil: "2026-08-31"
-    },
-    {
-        id: 3,
-        code: "NEWUSER500",
-        discountValue: 500,
-        discountType: "Fixed Amount",
-        uses: 500,
-        limit: 500,
-        salesGenerated: 250000,
-        discountGiven: 250000,
-        status: "Expired",
-        validUntil: "2026-07-01"
-    }
-];
+const INITIAL_COUPONS: CouponInfo[] = [];
 
 export default function AdminCouponManagementDashboard() {
     const [coupons, setCoupons] = useState<CouponInfo[]>(INITIAL_COUPONS);

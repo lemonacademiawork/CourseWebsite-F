@@ -13,30 +13,7 @@ interface EnrolledCourse {
     slug: string;
 }
 
-const ENROLLED_COURSES: EnrolledCourse[] = [
-    {
-        id: 1,
-        title: "Advanced Layouts & Grid Systems",
-        category: "Typography",
-        instructor: "Sarah Jenkins",
-        progress: 65,
-        imageUrl: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&q=80&w=600&h=300",
-        lessonsCompleted: 13,
-        totalLessons: 20,
-        slug: "layouts-grid-systems"
-    },
-    {
-        id: 2,
-        title: "Digital Painting Fundamentals",
-        category: "Illustration",
-        instructor: "Emma Lin",
-        progress: 20,
-        imageUrl: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=600&h=300",
-        lessonsCompleted: 4,
-        totalLessons: 20,
-        slug: "digital-painting-fundamentals"
-    }
-];
+const ENROLLED_COURSES: EnrolledCourse[] = [];
 
 export default function StudentEnrolledCourses() {
     return (
@@ -57,41 +34,14 @@ export default function StudentEnrolledCourses() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {ENROLLED_COURSES.map((course) => (
                         <div key={course.id} className="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant/30 shadow-sm flex flex-col h-full">
-                            <div className="relative h-40 w-full bg-surface-container">
-                                <img 
-                                    alt={course.title} 
-                                    className="w-full h-full object-cover" 
-                                    src={course.imageUrl} 
-                                />
-                                <div className="absolute top-3 left-3 bg-primary/20 backdrop-blur-md border border-white/20 px-2.5 py-0.5 rounded-full text-[10px] text-white font-bold uppercase tracking-wider">
-                                    {course.category}
-                                </div>
-                            </div>
-                            <div className="p-4 flex flex-col flex-grow">
-                                <h3 className="text-sm font-bold text-on-surface leading-snug">{course.title}</h3>
-                                <p className="text-[10px] text-on-surface-variant mt-1">Instructor: {course.instructor}</p>
-                                
-                                <div className="mt-6 space-y-1.5">
-                                    <div className="flex justify-between text-[10px] text-on-surface-variant">
-                                        <span>Progress: {course.lessonsCompleted}/{course.totalLessons} Lessons</span>
-                                        <span className="font-bold">{course.progress}%</span>
-                                    </div>
-                                    <div className="w-full bg-surface-variant h-1.5 rounded-full overflow-hidden">
-                                        <div className="bg-primary h-full rounded-full" style={{ width: `${course.progress}%` }}></div>
-                                    </div>
-                                </div>
-
-                                <div className="mt-4 pt-3 border-t border-outline-variant/20 flex gap-2">
-                                    <Link 
-                                        href={`/student/dashboard`}
-                                        className="flex-1 text-center bg-primary text-on-primary font-semibold text-xs py-2 rounded-lg hover:opacity-95 transition-opacity"
-                                    >
-                                        Resume Course
-                                    </Link>
-                                </div>
-                            </div>
+                            {/* ... */}
                         </div>
                     ))}
+                    {ENROLLED_COURSES.length === 0 && (
+                        <div className="col-span-2 py-12 text-center text-on-surface-variant text-xs">
+                            You are not enrolled in any courses yet. Browse classes to start learning!
+                        </div>
+                    )}
                 </div>
 
             </div>

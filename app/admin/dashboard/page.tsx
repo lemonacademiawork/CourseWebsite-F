@@ -38,10 +38,9 @@ export default function AdminDashboardOverview() {
                             </div>
                         </div>
                         <div className="mt-2">
-                            <div className="text-xl font-bold text-on-surface leading-none">Rs. 45,200</div>
-                            <div className="flex items-center gap-1 text-[10px] text-tertiary mt-1">
-                                <span className="material-symbols-outlined text-[12px]">trending_up</span>
-                                <span>+8.4% from last month</span>
+                            <div className="text-xl font-bold text-on-surface leading-none">Rs. 0</div>
+                            <div className="flex items-center gap-1 text-[10px] text-on-surface-variant mt-1">
+                                <span>No revenue recorded</span>
                             </div>
                         </div>
                     </div>
@@ -55,10 +54,9 @@ export default function AdminDashboardOverview() {
                             </div>
                         </div>
                         <div className="mt-2">
-                            <div className="text-xl font-bold text-on-surface leading-none">1,284</div>
-                            <div className="flex items-center gap-1 text-[10px] text-tertiary mt-1">
-                                <span className="material-symbols-outlined text-[12px]">trending_up</span>
-                                <span>+12.4% from last month</span>
+                            <div className="text-xl font-bold text-on-surface leading-none">0</div>
+                            <div className="flex items-center gap-1 text-[10px] text-on-surface-variant mt-1">
+                                <span>No student accounts</span>
                             </div>
                         </div>
                     </div>
@@ -75,14 +73,14 @@ export default function AdminDashboardOverview() {
                                     <span className="material-symbols-outlined text-on-surface-variant text-sm">verified</span>
                                     <span className="text-[11px] font-medium text-on-surface">Pending Certificates</span>
                                 </div>
-                                <span className="bg-error text-on-error text-[9px] px-1.5 py-0.5 rounded-full font-bold">12</span>
+                                <span className="bg-surface-variant text-on-surface-variant text-[9px] px-1.5 py-0.5 rounded-full font-bold">0</span>
                             </div>
                             <div className="flex justify-between items-center bg-surface-container-lowest px-2.5 py-1 rounded-lg border border-outline-variant/15 hover:border-outline-variant/30 transition-colors">
                                 <div className="flex items-center gap-1.5">
                                     <span className="material-symbols-outlined text-on-surface-variant text-sm">palette</span>
                                     <span className="text-[11px] font-medium text-on-surface">Gallery Approvals</span>
                                 </div>
-                                <span className="bg-secondary text-on-secondary text-[9px] px-1.5 py-0.5 rounded-full font-bold">8</span>
+                                <span className="bg-surface-variant text-on-surface-variant text-[9px] px-1.5 py-0.5 rounded-full font-bold">0</span>
                             </div>
                         </div>
                     </div>
@@ -95,7 +93,7 @@ export default function AdminDashboardOverview() {
                             </div>
                             <div>
                                 <p className="text-on-surface-variant text-[9px] uppercase tracking-wider">Trainers</p>
-                                <p className="text-sm font-bold text-on-surface leading-tight">24</p>
+                                <p className="text-sm font-bold text-on-surface leading-tight">0</p>
                             </div>
                         </div>
                         <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-2.5 px-3 shadow-sm flex items-center gap-2.5 hover:-translate-y-0.5 transition-transform duration-200">
@@ -104,7 +102,7 @@ export default function AdminDashboardOverview() {
                             </div>
                             <div>
                                 <p className="text-on-surface-variant text-[9px] uppercase tracking-wider">Courses</p>
-                                <p className="text-sm font-bold text-on-surface leading-tight">18</p>
+                                <p className="text-sm font-bold text-on-surface leading-tight">0</p>
                             </div>
                         </div>
                         <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-2.5 px-3 shadow-sm flex items-center gap-2.5 hover:-translate-y-0.5 transition-transform duration-200">
@@ -113,7 +111,7 @@ export default function AdminDashboardOverview() {
                             </div>
                             <div>
                                 <p className="text-on-surface-variant text-[9px] uppercase tracking-wider">Enrollments</p>
-                                <p className="text-sm font-bold text-on-surface leading-tight">3,420</p>
+                                <p className="text-sm font-bold text-on-surface leading-tight">0</p>
                             </div>
                         </div>
                         <div className="bg-surface-container-lowest rounded-xl p-2.5 px-3 shadow-sm flex items-center gap-1.5 justify-center hover:bg-surface-variant/30 cursor-pointer transition-all border border-dashed border-outline-variant/40">
@@ -141,7 +139,7 @@ export default function AdminDashboardOverview() {
                             </div>
                             <div className="w-full h-[70px] relative overflow-hidden rounded-bl-lg">
                                 <svg className="w-full h-full absolute bottom-0 left-0 stroke-primary fill-primary-container/20" preserveAspectRatio="none" viewBox="0 0 100 50">
-                                    <path d="M0,50 L0,30 Q20,38 40,25 T80,12 L100,8 L100,50 Z" strokeWidth="2" vectorEffect="non-scaling-stroke"></path>
+                                    <path d="M0,50 L100,50 Z" strokeWidth="2" vectorEffect="non-scaling-stroke"></path>
                                 </svg>
                             </div>
                             <div className="relative w-full flex justify-between text-on-surface-variant text-[10px] z-10 border-t border-outline-variant/30 pt-1.5">
@@ -153,47 +151,8 @@ export default function AdminDashboardOverview() {
                     {/* Course Sales Distribution */}
                     <div className="md:col-span-4 bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-4 shadow-sm flex flex-col h-[200px] mt-1 justify-between">
                         <h3 className="text-xs font-bold text-on-surface mb-2">Course Sales</h3>
-                        <div className="space-y-1.5 flex-grow flex flex-col justify-center">
-                            {/* Bar 1 */}
-                            <div className="space-y-0.5">
-                                <div className="flex justify-between text-[10px] text-on-surface-variant">
-                                    <span>Candle Making</span>
-                                    <span className="font-bold text-on-surface">80%</span>
-                                </div>
-                                <div className="w-full bg-surface-container-low h-1.5 rounded-full overflow-hidden">
-                                    <div className="bg-secondary-container h-full rounded-full" style={{ width: '80%' }}></div>
-                                </div>
-                            </div>
-                            {/* Bar 2 */}
-                            <div className="space-y-0.5">
-                                <div className="flex justify-between text-[10px] text-on-surface-variant">
-                                    <span>Lippan Art</span>
-                                    <span className="font-bold text-on-surface">65%</span>
-                                </div>
-                                <div className="w-full bg-surface-container-low h-1.5 rounded-full overflow-hidden">
-                                    <div className="bg-tertiary-container h-full rounded-full" style={{ width: '65%' }}></div>
-                                </div>
-                            </div>
-                            {/* Bar 3 */}
-                            <div className="space-y-0.5">
-                                <div className="flex justify-between text-[10px] text-on-surface-variant">
-                                    <span>Resin Art</span>
-                                    <span className="font-bold text-on-surface">95%</span>
-                                </div>
-                                <div className="w-full bg-surface-container-low h-1.5 rounded-full overflow-hidden">
-                                    <div className="bg-primary-container h-full rounded-full" style={{ width: '95%' }}></div>
-                                </div>
-                            </div>
-                            {/* Bar 4 */}
-                            <div className="space-y-0.5">
-                                <div className="flex justify-between text-[10px] text-on-surface-variant">
-                                    <span>Crochet</span>
-                                    <span className="font-bold text-on-surface">40%</span>
-                                </div>
-                                <div className="w-full bg-surface-container-low h-1.5 rounded-full overflow-hidden">
-                                    <div className="bg-surface-variant h-full rounded-full" style={{ width: '40%' }}></div>
-                                </div>
-                            </div>
+                        <div className="space-y-1.5 flex-grow flex flex-col justify-center text-center text-on-surface-variant text-[11px]">
+                            No sales records available
                         </div>
                     </div>
 

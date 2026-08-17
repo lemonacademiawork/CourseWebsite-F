@@ -1,7 +1,7 @@
 'use client';
 
 export default function StudentDashboardWelcome() {
-    const hasPurchasedCourse = true; // In production this checks active course enrollment status
+    const hasPurchasedCourse = false; // In production this checks active course enrollment status
     return (
         <main className="flex-1 w-full bg-surface min-h-screen pb-6">
             
@@ -40,44 +40,51 @@ export default function StudentDashboardWelcome() {
                                 <a className="text-xs text-primary hover:underline" href="#">View all</a>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {hasPurchasedCourse ? (
+                                    <>
+                                        <div className="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/30 shadow-sm flex flex-col h-full">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <span className="px-2 py-0.5 bg-tertiary-container/30 text-tertiary text-[10px] font-semibold rounded-full">Typography</span>
+                                                <button className="text-on-surface-variant hover:text-primary"><span className="material-symbols-outlined text-sm">more_vert</span></button>
+                                            </div>
+                                            <h4 className="text-xs font-bold leading-tight mb-1">Advanced Layouts &amp; Grid Systems</h4>
+                                            <p className="text-[11px] text-on-surface-variant mb-4 flex-grow">Mastering editorial design and structured asymmetry.</p>
+                                            <div className="mt-auto">
+                                                <div className="flex justify-between text-[10px] text-on-surface-variant mb-1">
+                                                    <span>Progress</span>
+                                                    <span>65%</span>
+                                                </div>
+                                                <div className="w-full bg-surface-variant h-1.5 rounded-full overflow-hidden">
+                                                    <div className="bg-primary h-full rounded-full" style={{width: '65%'}}></div>
+                                                </div>
+                                                <button className="mt-4 w-full bg-surface-container py-1.5 rounded-lg text-xs font-semibold text-on-surface hover:bg-surface-dim transition-colors">Continue Learning</button>
+                                            </div>
+                                        </div>
 
-                                <div className="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/30 shadow-sm flex flex-col h-full">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <span className="px-2 py-0.5 bg-tertiary-container/30 text-tertiary text-[10px] font-semibold rounded-full">Typography</span>
-                                        <button className="text-on-surface-variant hover:text-primary"><span className="material-symbols-outlined text-sm">more_vert</span></button>
-                                    </div>
-                                    <h4 className="text-xs font-bold leading-tight mb-1">Advanced Layouts &amp; Grid Systems</h4>
-                                    <p className="text-[11px] text-on-surface-variant mb-4 flex-grow">Mastering editorial design and structured asymmetry.</p>
-                                    <div className="mt-auto">
-                                        <div className="flex justify-between text-[10px] text-on-surface-variant mb-1">
-                                            <span>Progress</span>
-                                            <span>65%</span>
+                                        <div className="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/30 shadow-sm flex flex-col h-full">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <span className="px-2 py-0.5 bg-secondary-container/30 text-secondary text-[10px] font-semibold rounded-full">Illustration</span>
+                                                <button className="text-on-surface-variant hover:text-primary"><span className="material-symbols-outlined text-sm">more_vert</span></button>
+                                            </div>
+                                            <h4 className="text-xs font-bold leading-tight mb-1">Digital Painting Fundamentals</h4>
+                                            <p className="text-[11px] text-on-surface-variant mb-4 flex-grow">Brush mechanics and color theory for digital artists.</p>
+                                            <div className="mt-auto">
+                                                <div className="flex justify-between text-[10px] text-on-surface-variant mb-1">
+                                                    <span>Progress</span>
+                                                    <span>20%</span>
+                                                </div>
+                                                <div className="w-full bg-surface-variant h-1.5 rounded-full overflow-hidden">
+                                                    <div className="bg-primary h-full rounded-full" style={{width: '20%'}}></div>
+                                                </div>
+                                                <button className="mt-4 w-full bg-surface-container py-1.5 rounded-lg text-xs font-semibold text-on-surface hover:bg-surface-dim transition-colors">Continue Learning</button>
+                                            </div>
                                         </div>
-                                        <div className="w-full bg-surface-variant h-1.5 rounded-full overflow-hidden">
-                                            <div className="bg-primary h-full rounded-full" style={{width: '65%'}}></div>
-                                        </div>
-                                        <button className="mt-4 w-full bg-surface-container py-1.5 rounded-lg text-xs font-semibold text-on-surface hover:bg-surface-dim transition-colors">Continue Learning</button>
+                                    </>
+                                ) : (
+                                    <div className="col-span-2 py-8 text-center bg-surface-container-lowest rounded-xl border border-outline-variant/20 text-on-surface-variant text-xs">
+                                        No active courses. Explore courses to enroll.
                                     </div>
-                                </div>
-
-                                <div className="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/30 shadow-sm flex flex-col h-full">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <span className="px-2 py-0.5 bg-secondary-container/30 text-secondary text-[10px] font-semibold rounded-full">Illustration</span>
-                                        <button className="text-on-surface-variant hover:text-primary"><span className="material-symbols-outlined text-sm">more_vert</span></button>
-                                    </div>
-                                    <h4 className="text-xs font-bold leading-tight mb-1">Digital Painting Fundamentals</h4>
-                                    <p className="text-[11px] text-on-surface-variant mb-4 flex-grow">Brush mechanics and color theory for digital artists.</p>
-                                    <div className="mt-auto">
-                                        <div className="flex justify-between text-[10px] text-on-surface-variant mb-1">
-                                            <span>Progress</span>
-                                            <span>20%</span>
-                                        </div>
-                                        <div className="w-full bg-surface-variant h-1.5 rounded-full overflow-hidden">
-                                            <div className="bg-primary h-full rounded-full" style={{width: '20%'}}></div>
-                                        </div>
-                                        <button className="mt-4 w-full bg-surface-container py-1.5 rounded-lg text-xs font-semibold text-on-surface hover:bg-surface-dim transition-colors">Continue Learning</button>
-                                    </div>
-                                </div>
+                                )}
                             </div>
                         </section>
 

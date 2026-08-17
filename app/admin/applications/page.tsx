@@ -12,71 +12,7 @@ interface TrainerInfo {
     status: 'Active' | 'Pending Approval';
 }
 
-const TRAINER_DATA: TrainerInfo[] = [
-    {
-        id: 1,
-        name: "Aisha Iyer",
-        email: "aisha.iyer@lemon.edu",
-        avatarUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuAAJ5nZnQmJxKwzI6JqoBSDakgbfeQPFc19jKBR4sA0qrHkGPtfsLMqqw9cbq79SOf1bQnUrf4M21cdJ4kWVbg_jKzSF6XkRc5zFNS8lh4XwaB5xGB77Tz2-6C0eK2BEtnomrXImbjOJiD94BRnJx7MCrfZUvbtj46r3Rh01sKJOeEyxUj1YZnoTCtxXa-qtZCsLBrUP0hvMQ_D6vwQK7-zVd_7K9wpCMwMi2n3upqMqm3QWnEUlfhN",
-        course: "Lippan Art Fundamentals",
-        runningDates: "Mon, Wed, Fri (Oct 12 - Nov 05)",
-        status: "Active"
-    },
-    {
-        id: 2,
-        name: "David Ross",
-        email: "david.ross@lemon.edu",
-        avatarUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuCzjDz0N50q7CIwfgh2u1czsFkhGUNlN81-qxYYwdGJL2iVxuIJJ-wa_WTX5zgxkarkH3UZSpZNmz1qbwv4heT5P3yWD8uWWsYax2oIxfAvxI2dncn8vvjYKRmruXJ6SCFrlOe7ZDJyiFImMG7uP9HEecCf0KdBVl7E8g5UUZ0gpw_LTHMTMakJmzWAC_ITSjmu2Oupv9iXIEozaT_4iDh_T7ahmMRRSv3dzBsCYyOzAK0V552z1xAw",
-        course: "Modern Mosaic Techniques",
-        runningDates: "Tue, Thu (Nov 04 - Nov 28)",
-        status: "Active"
-    },
-    {
-        id: 3,
-        name: "Elena Cruz",
-        email: "elena.cruz@lemon.edu",
-        avatarUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuBkwk2QeW6jxNlLpAxkAwVXWjRVSBwYZlcKp62TojyEfZMz0t3GhRRTJU9FXh-RhPEW3rTDeU9bRG2EJgyPyyPpCULfsgj66xSmXCZMuh8zTCixg_mss6o5pQhrUr4dE0zczFk9k8-Qy1ovvOeAwSysUsMwP49KriAjBeu9qDYx7G-lQwRYJ7eeuhpTxbLSlIu7Gks6-4-pDhmXdqsIERnjLL912b9u55yMkt7pf24y2nXWP-keu_jx",
-        course: "Hand-poured Candle Craft",
-        runningDates: "Mon, Wed (Sep 22 - Oct 20)",
-        status: "Active"
-    },
-    {
-        id: 4,
-        name: "Sarah Jenkins",
-        email: "sarah.j@example.com",
-        initials: "SJ",
-        course: "Intro to Candle Making (Live)",
-        runningDates: "Today, 10:00 AM",
-        status: "Active"
-    },
-    {
-        id: 5,
-        name: "Priya Patel",
-        email: "priya.p@example.com",
-        initials: "PP",
-        course: "Mastering Lippan Art (Live)",
-        runningDates: "Today, 2:30 PM",
-        status: "Active"
-    },
-    {
-        id: 6,
-        name: "Marcus Chen",
-        email: "marcus.c.art@email.com",
-        avatarUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuBZmPDqbF00Fb5jmesjeN9872krcPLkXAwAHyuJSOcpmZ4vobw4-k-Y_Cq8dtkG4a0T4p11iO0DuNTBVsXWcjX2olBOHDfVz2g3meu78z0EQJBIRy9FQlcw89c-8Ciy2Hms3rNubI86zMvs08SoY3oOK5J6B8O_mRzyNvX57x0YRE4_t8eWQpYtlXXGmzGey2aJAMH5oSEiwkZLxekY1dAOzmK_WEgNcHqwL6uf_JZiPodln2oo6BjA",
-        course: "Clay Pottery Masterclass",
-        runningDates: "Awaiting Schedule",
-        status: "Pending Approval"
-    },
-    {
-        id: 7,
-        name: "Sarah Williams",
-        email: "sarah.w.design@email.com",
-        initials: "SW",
-        course: "Typography & Creative Layouts",
-        runningDates: "Awaiting Schedule",
-        status: "Pending Approval"
-    }
-];
+const TRAINER_DATA: TrainerInfo[] = [];
 
 export default function AdminTrainerManagementDashboard() {
     const [searchQuery, setSearchQuery] = useState('');

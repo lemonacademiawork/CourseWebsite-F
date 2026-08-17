@@ -1,47 +1,129 @@
-export default function AdminStudentManagement() {
-    return (
-        <main className="flex-1 w-full px-margin-mobile md:px-margin-desktop py-6 max-w-[1440px] mx-auto min-h-screen">
+'use client';
+import { useState } from 'react';
 
-            <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+interface StudentItem {
+    id: number;
+    name: string;
+    studentId: string;
+    email: string;
+    phone: string;
+    coursesCount: number;
+    joinDate: string;
+    status: 'Paid' | 'Pending';
+}
+
+export default function AdminStudentManagement() {
+    const [students, setStudents] = useState<StudentItem[]>([]);
+    const [isAdding, setIsAdding] = useState(false);
+
+    // Form states
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+    const [status, setStatus] = useState<'Paid' | 'Pending'>('Paid');
+
+    const handleAddStudent = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!name.trim()) return;
+
+        const newStudent: StudentItem = {
+            id: Date.now(),
+            name: name.trim(),
+            studentId: `#LA-${Math.floor(1000 + Math.random() * 9000)}`,
+            email: email.trim() || 'student@example.com',
+            phone: phone.trim() || 'N/A',
+            coursesCount: 0,
+            joinDate: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+            status
+        };
+
+        setStudents([...students, newStudent]);
+        setName('');
+        setEmail('');
+        setPhone('');
+        setIsAdding(false);
+    };
+
+    return (
+        <main className="flex-grow w-full px-margin-mobile md:px-margin-desktop py-6 max-w-[1440px] mx-auto min-h-screen text-xs">
+
+            <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
                 <div>
                     <h2 className="text-xl font-bold text-on-surface">Students</h2>
                     <p className="text-xs text-on-surface-variant mt-1">Manage student enrollments, progress, and account details.</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                    <button className="px-3 py-1.5 rounded-lg border border-outline text-on-surface font-semibold text-xs hover:bg-surface-variant transition-colors flex items-center gap-1.5">
-                        <span className="material-symbols-outlined text-[16px]">upload_file</span>
-                        Import Excel
-                    </button>
-                    <button className="px-3 py-1.5 rounded-lg border border-outline text-on-surface font-semibold text-xs hover:bg-surface-variant transition-colors flex items-center gap-1.5">
-                        <span className="material-symbols-outlined text-[16px]">download</span>
-                        Export Students
-                    </button>
-                    <button className="px-3 py-1.5 rounded-lg bg-primary text-on-primary font-semibold text-xs hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-sm">
+                    <button 
+                        onClick={() => setIsAdding(!isAdding)}
+                        className="px-3 py-1.5 rounded-lg bg-primary text-on-primary font-semibold text-xs hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-sm"
+                    >
                         <span className="material-symbols-outlined text-[16px]">add</span>
-                        Add Student
+                        {isAdding ? 'Cancel' : 'Add Student'}
                     </button>
                 </div>
             </header>
 
-            <section className="mb-4 flex flex-col lg:flex-row items-center justify-between gap-4 bg-surface-container-lowest p-3 rounded-lg shadow-sm border border-outline-variant/30">
-                <div className="w-full lg:w-80 relative">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-base">search</span>
-                    <input className="w-full pl-9 pr-4 py-1.5 bg-surface rounded-lg border-none focus:ring-2 focus:ring-primary-container text-xs placeholder:text-outline transition-shadow" placeholder="Search by name, email or phone..." type="text" />
+            {isAdding && (
+                <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 p-4 shadow-sm mb-6 max-w-xl">
+                    <h3 className="text-sm font-bold text-on-surface mb-3">Add New Student</h3>
+                    <form onSubmit={handleAddStudent} className="space-y-3">
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Full Name</label>
+                            <input 
+                                type="text" 
+                                className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2 focus:ring-1 focus:ring-primary focus:outline-none" 
+                                placeholder="e.g. Priya Sharma"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div>
+                                <label className="block font-semibold text-on-surface-variant mb-1">Email</label>
+                                <input 
+                                    type="email" 
+                                    className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2 focus:ring-1 focus:ring-primary focus:outline-none" 
+                                    placeholder="e.g. priya@example.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                />
+                            </div>
+                            <div>
+                                <label className="block font-semibold text-on-surface-variant mb-1">Phone Number</label>
+                                <input 
+                                    type="text" 
+                                    className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2 focus:ring-1 focus:ring-primary focus:outline-none" 
+                                    placeholder="e.g. +91 98765 43210"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Payment Status</label>
+                            <select 
+                                className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2 focus:ring-1 focus:ring-primary focus:outline-none"
+                                value={status}
+                                onChange={(e) => setStatus(e.target.value as any)}
+                            >
+                                <option value="Paid">Paid</option>
+                                <option value="Pending">Pending</option>
+                            </select>
+                        </div>
+                        <button 
+                            type="submit" 
+                            className="bg-primary text-on-primary font-semibold py-2 px-4 rounded-lg hover:opacity-90 transition-opacity"
+                        >
+                            Save Student
+                        </button>
+                    </form>
                 </div>
-                <div className="flex items-center gap-2 w-full lg:w-auto overflow-x-auto pb-2 lg:pb-0 hide-scrollbar">
-                    <button className="px-3 py-1.5 rounded-lg bg-surface-variant text-on-surface font-semibold text-xs whitespace-nowrap">All Students</button>
-                    <button className="px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface hover:text-on-surface font-semibold text-xs transition-colors whitespace-nowrap">Active</button>
-                    <button className="px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface hover:text-on-surface font-semibold text-xs transition-colors whitespace-nowrap">Pending Payment</button>
-                    <button className="px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface hover:text-on-surface font-semibold text-xs transition-colors whitespace-nowrap">Alumni</button>
-                    <button className="p-1.5 rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface transition-colors flex items-center justify-center">
-                        <span className="material-symbols-outlined text-[16px]">tune</span>
-                    </button>
-                </div>
-            </section>
+            )}
 
             <section className="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden">
                 <div className="w-full overflow-x-auto table-container">
-                    <table className="w-full text-left border-collapse min-w-[1000px]">
+                    <table className="w-full text-left border-collapse min-w-[800px]">
                         <thead>
                             <tr className="bg-surface-container-low border-b border-surface-variant text-on-surface-variant text-xs uppercase tracking-wider">
                                 <th className="py-3 px-4 font-semibold">Student</th>
@@ -49,115 +131,45 @@ export default function AdminStudentManagement() {
                                 <th className="py-3 px-4 font-semibold">Courses</th>
                                 <th className="py-3 px-4 font-semibold">Join Date</th>
                                 <th className="py-3 px-4 font-semibold">Status</th>
-                                <th className="py-3 px-4 font-semibold text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="text-xs text-on-surface divide-y divide-surface-variant">
-
-                            <tr className="hover:bg-primary-container/5 transition-colors group">
-                                <td className="py-3 px-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/50 shrink-0">
-                                            <img className="w-full h-full object-cover" data-alt="A professional headshot of a young female creative student in a brightly lit modern studio, smiling gently, dressed in a warm casual sweater. Soft, warm natural lighting emphasizing a premium, clean aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuByypWae98SyJzNyi_EdCB6yw5RRyBtWiPfVdT80QakSUhDw9qa7LNFlrJLoiTg7ADe9mLGAAzXvdrvbgMwTyveFYd_2mD2rawYYfLGVfsvtaYUSyxuzycLhgNgI35pGjxxhj7ZtDsCJjZj9X5by6dzZvSuRoltS33s82cxLz5bOadpGtOuE961KNyG2u30RaSHkE3-_er1tfkFXUuVlnxHrCzM9ZxpRrSK83zWmYL_Gv9FkcS_ARxa" />
-                                        </div>
+                            {students.map((student) => (
+                                <tr key={student.id} className="hover:bg-primary-container/5 transition-colors">
+                                    <td className="py-3 px-4">
                                         <div>
-                                            <p className="font-bold text-on-surface group-hover:text-primary transition-colors">Elena Rodriguez</p>
-                                            <p className="text-[10px] text-on-surface-variant">ID: #LA-8492</p>
+                                            <p className="font-bold text-on-surface">{student.name}</p>
+                                            <p className="text-[10px] text-on-surface-variant">ID: {student.studentId}</p>
                                         </div>
-                                    </div>
-                                </td>
-                                <td className="py-3 px-4">
-                                    <p className="text-on-surface">elena.r@example.com</p>
-                                    <p className="text-[10px] text-on-surface-variant">+1 (555) 293-1029</p>
-                                </td>
-                                <td className="py-3 px-4">
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="w-5 h-5 rounded-full bg-secondary-container/20 text-on-secondary-container flex items-center justify-center font-semibold text-[10px]">3</span>
-                                        <span className="text-on-surface-variant">Active</span>
-                                    </div>
-                                </td>
-                                <td className="py-3 px-4 text-on-surface-variant">Oct 12, 2023</td>
-                                <td className="py-3 px-4">
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant text-[10px] font-semibold">
-                                        <span className="w-1 h-1 rounded-full bg-tertiary"></span> Paid
-                                    </span>
-                                </td>
-                                <td className="py-3 px-4 text-right">
-                                    <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button className="p-1 text-on-surface-variant hover:text-primary hover:bg-primary-container/20 rounded-full transition-colors tooltip-trigger" title="View Details">
-                                            <span className="material-symbols-outlined text-[18px]">visibility</span>
-                                        </button>
-                                        <button className="p-1 text-on-surface-variant hover:text-secondary hover:bg-secondary-container/20 rounded-full transition-colors tooltip-trigger" title="Edit">
-                                            <span className="material-symbols-outlined text-[18px]">edit</span>
-                                        </button>
-                                        <button className="p-1 text-on-surface-variant hover:text-error hover:bg-error-container/20 rounded-full transition-colors tooltip-trigger" title="Disable">
-                                            <span className="material-symbols-outlined text-[18px]">block</span>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-
-                            <tr className="hover:bg-primary-container/5 transition-colors group">
-                                <td className="py-3 px-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/50 shrink-0 flex items-center justify-center bg-surface-variant text-on-surface-variant font-bold text-[11px]">
-                                            MJ
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-on-surface group-hover:text-primary transition-colors">Marcus Johnson</p>
-                                            <p className="text-[10px] text-on-surface-variant">ID: #LA-8493</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="py-3 px-4">
-                                    <p className="text-on-surface">marcus.j@example.com</p>
-                                    <p className="text-[10px] text-on-surface-variant">+44 7700 900077</p>
-                                </td>
-                                <td className="py-3 px-4">
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="w-5 h-5 rounded-full bg-secondary-container/20 text-on-secondary-container flex items-center justify-center font-semibold text-[10px]">1</span>
-                                        <span className="text-on-surface-variant">Active</span>
-                                    </div>
-                                </td>
-                                <td className="py-3 px-4 text-on-surface-variant">Nov 05, 2023</td>
-                                <td className="py-3 px-4">
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant text-[10px] font-semibold">
-                                        <span className="w-1 h-1 rounded-full bg-secondary"></span> Pending
-                                    </span>
-                                </td>
-                                <td className="py-3 px-4 text-right">
-                                    <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button className="p-1 text-on-surface-variant hover:text-primary hover:bg-primary-container/20 rounded-full transition-colors tooltip-trigger" title="View Details">
-                                            <span className="material-symbols-outlined text-[18px]">visibility</span>
-                                        </button>
-                                        <button className="p-1 text-on-surface-variant hover:text-secondary hover:bg-secondary-container/20 rounded-full transition-colors tooltip-trigger" title="Edit">
-                                            <span className="material-symbols-outlined text-[18px]">edit</span>
-                                        </button>
-                                        <button className="p-1 text-on-surface-variant hover:text-error hover:bg-error-container/20 rounded-full transition-colors tooltip-trigger" title="Disable">
-                                            <span className="material-symbols-outlined text-[18px]">block</span>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+                                    </td>
+                                    <td className="py-3 px-4">
+                                        <p className="text-on-surface">{student.email}</p>
+                                        <p className="text-[10px] text-on-surface-variant">{student.phone}</p>
+                                    </td>
+                                    <td className="py-3 px-4">
+                                        <span className="text-on-surface-variant">{student.coursesCount} Enrolled</span>
+                                    </td>
+                                    <td className="py-3 px-4 text-on-surface-variant">{student.joinDate}</td>
+                                    <td className="py-3 px-4">
+                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                                            student.status === 'Paid' 
+                                                ? 'bg-tertiary-fixed text-on-tertiary-fixed-variant' 
+                                                : 'bg-secondary-fixed text-on-secondary-fixed-variant'
+                                        }`}>
+                                            {student.status}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                            {students.length === 0 && (
+                                <tr>
+                                    <td colSpan={5} className="py-8 text-center text-on-surface-variant">
+                                        No student profiles available. Click "Add Student" to enroll one.
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
-                </div>
-
-                <div className="px-4 py-3 border-t border-outline-variant/30 flex items-center justify-between bg-surface-container-lowest">
-                    <p className="text-xs text-on-surface-variant">Showing 1 to 10 of 245 students</p>
-                    <div className="flex items-center gap-1.5">
-                        <button className="w-7 h-7 rounded-lg border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface hover:text-on-surface transition-colors disabled:opacity-50" disabled>
-                            <span className="material-symbols-outlined text-[16px]">chevron_left</span>
-                        </button>
-                        <button className="w-7 h-7 rounded-lg bg-primary-container text-on-primary-container font-semibold text-xs flex items-center justify-center">1</button>
-                        <button className="w-7 h-7 rounded-lg hover:bg-surface-variant text-on-surface-variant font-semibold text-xs flex items-center justify-center transition-colors">2</button>
-                        <button className="w-7 h-7 rounded-lg hover:bg-surface-variant text-on-surface-variant font-semibold text-xs flex items-center justify-center transition-colors">3</button>
-                        <span className="text-on-surface-variant px-0.5 text-xs">...</span>
-                        <button className="w-7 h-7 rounded-lg hover:bg-surface-variant text-on-surface-variant font-semibold text-xs flex items-center justify-center transition-colors">25</button>
-                        <button className="w-7 h-7 rounded-lg border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface hover:text-on-surface transition-colors">
-                            <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-                        </button>
-                    </div>
                 </div>
             </section>
         </main>
