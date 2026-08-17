@@ -1,7 +1,43 @@
 'use client';
 import Link from 'next/link';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
+    const router = useRouter();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+
+        try {
+            const res = await fetch('/api/v1/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            if (res.status === 200) {
+                // Redirect on successful login
+                router.push('/student/dashboard');
+            } else {
+                const data = await res.json().catch(() => ({}));
+                setError(data.message || 'Invalid email or password');
+            }
+        } catch (err) {
+            setError('Connection failed. Please check your internet connection and try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <main className="min-h-screen bg-[#FBF8F1] text-[#1C1A17] relative flex items-center justify-center py-12 px-4 overflow-hidden">
             <style dangerouslySetInnerHTML={{ __html: `
@@ -129,7 +165,13 @@ export default function LoginPage() {
                         <h2 className="playfair font-bold text-[27px] mt-2 mb-1">Welcome back</h2>
                         <p className="text-[13.5px] text-[#5B5650] mb-6">Log in to continue your creative journey.</p>
 
-                        <form onSubmit={(e) => e.preventDefault()} className="space-y-5">
+                        {error && (
+                            <div className="bg-red-50 border border-red-200 text-red-700 text-xs rounded p-2.5 mb-4">
+                                {error}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleLogin} className="space-y-5">
                             <div className="space-y-[6px]">
                                 <label className="block text-[11.5px] font-semibold tracking-[0.6px] uppercase text-[#5B5650]">
                                     Email address
@@ -138,6 +180,9 @@ export default function LoginPage() {
                                     type="email" 
                                     placeholder="you@example.com"
                                     className="w-full py-2 bg-transparent border-b-[1.5px] border-[#E7E1D3] font-body-md text-[15px] text-[#1C1A17] outline-none focus:border-[#8B6914] transition-all placeholder-[#C2BAA5]"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
                                 />
                             </div>
 
@@ -149,6 +194,9 @@ export default function LoginPage() {
                                     type="password" 
                                     placeholder="••••••••"
                                     className="w-full py-2 bg-transparent border-b-[1.5px] border-[#E7E1D3] font-body-md text-[15px] text-[#1C1A17] outline-none focus:border-[#8B6914] transition-all placeholder-[#C2BAA5]"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
                                 />
                             </div>
 
@@ -162,8 +210,12 @@ export default function LoginPage() {
                                 </Link>
                             </div>
 
-                            <button type="submit" className="w-full py-[14px] border-none rounded-[4px] bg-[#6E5410] text-white font-semibold text-[14.5px] tracking-[0.3px] cursor-pointer hover:bg-[#5c4610] active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                                Log In
+                            <button 
+                                type="submit" 
+                                disabled={loading}
+                                className="w-full py-[14px] border-none rounded-[4px] bg-[#6E5410] text-white font-semibold text-[14.5px] tracking-[0.3px] cursor-pointer hover:bg-[#5c4610] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                            >
+                                {loading ? 'Logging In...' : 'Log In'}
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
                             </button>
                         </form>
