@@ -1,6 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@400;600;700&display=swap');
 @import "tailwindcss";
 
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-surface);
+}
+
+
 @theme {
   --color-surface: #fbf9f5;
   --color-surface-dim: #dbdad6;

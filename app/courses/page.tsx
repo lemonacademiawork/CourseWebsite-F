@@ -95,8 +95,8 @@ export default function ExploreCoursesLemonAcademy() {
                                         <span className="font-body-md text-sm text-on-surface-variant mt-1">2.4k students</span>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-sm text-outline-variant line-through">$89</div>
-                                        <div className="font-headline-sm text-lg text-primary font-bold">$49</div>
+                                        <div className="text-sm text-outline-variant line-through">Rs. 89</div>
+                                        <div className="font-headline-sm text-lg text-primary font-bold">Rs. 49</div>
                                     </div>
                                 </div>
                             </div>
@@ -130,7 +130,7 @@ export default function ExploreCoursesLemonAcademy() {
                                         <span className="font-body-md text-sm text-on-surface-variant mt-1">1.1k students</span>
                                     </div>
                                     <div className="text-right">
-                                        <div className="font-headline-sm text-lg text-primary font-bold">$65</div>
+                                        <div className="font-headline-sm text-lg text-primary font-bold">Rs. 65</div>
                                     </div>
                                 </div>
                             </div>
@@ -164,8 +164,8 @@ export default function ExploreCoursesLemonAcademy() {
                                         <span className="font-body-md text-sm text-on-surface-variant mt-1">5.6k students</span>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-sm text-outline-variant line-through">$45</div>
-                                        <div className="font-headline-sm text-lg text-primary font-bold">$29</div>
+                                        <div className="text-sm text-outline-variant line-through">Rs. 45</div>
+                                        <div className="font-headline-sm text-lg text-primary font-bold">Rs. 29</div>
                                     </div>
                                 </div>
                             </div>

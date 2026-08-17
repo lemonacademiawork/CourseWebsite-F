@@ -25,7 +25,7 @@ export default function AdminDashboardUpdatedNavigation() {
 <div className="flex justify-between items-start">
 <div>
 <p className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Revenue</p>
-<h3 className="font-display-lg-mobile text-display-lg-mobile text-on-surface mt-2">$45,200</h3>
+<h3 className="font-display-lg-mobile text-display-lg-mobile text-on-surface mt-2">Rs. 45,200</h3>
 </div>
 <div className="p-3 bg-primary-container/20 rounded-xl text-primary-fixed-dim">
 <span className="material-symbols-outlined text-3xl" data-icon="payments">payments</span>

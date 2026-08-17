@@ -1,217 +1,299 @@
+'use client';
+import { useState } from 'react';
+
+interface CouponInfo {
+    id: number;
+    code: string;
+    discountValue: number;
+    discountType: 'Percentage' | 'Fixed Amount';
+    uses: number;
+    limit: number;
+    salesGenerated: number;
+    discountGiven: number;
+    status: 'Active' | 'Expired';
+    validUntil: string;
+}
+
+const INITIAL_COUPONS: CouponInfo[] = [
+    {
+        id: 1,
+        code: "INDEPENDENCE80",
+        discountValue: 80,
+        discountType: "Fixed Amount",
+        uses: 342,
+        limit: 1000,
+        salesGenerated: 45200,
+        discountGiven: 27360,
+        status: "Active",
+        validUntil: "2026-08-31"
+    },
+    {
+        id: 2,
+        code: "SUMMER20",
+        discountValue: 20,
+        discountType: "Percentage",
+        uses: 150,
+        limit: 200,
+        salesGenerated: 38500,
+        discountGiven: 7700,
+        status: "Active",
+        validUntil: "2026-08-31"
+    },
+    {
+        id: 3,
+        code: "NEWUSER500",
+        discountValue: 500,
+        discountType: "Fixed Amount",
+        uses: 500,
+        limit: 500,
+        salesGenerated: 250000,
+        discountGiven: 250000,
+        status: "Expired",
+        validUntil: "2026-07-01"
+    }
+];
+
 export default function AdminCouponManagementDashboard() {
+    const [coupons, setCoupons] = useState<CouponInfo[]>(INITIAL_COUPONS);
+    
+    // Form States
+    const [code, setCode] = useState('');
+    const [discountType, setDiscountType] = useState<'Percentage' | 'Fixed Amount'>('Percentage');
+    const [discountValue, setDiscountValue] = useState<number>(10);
+    const [limit, setLimit] = useState<number>(500);
+    const [validUntil, setValidUntil] = useState('2026-12-31');
+
+    const handleCreateCoupon = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!code.trim()) return;
+
+        const newCoupon: CouponInfo = {
+            id: Date.now(),
+            code: code.trim().toUpperCase(),
+            discountValue: Number(discountValue),
+            discountType,
+            uses: 0,
+            limit: Number(limit),
+            salesGenerated: 0,
+            discountGiven: 0,
+            status: 'Active',
+            validUntil
+        };
+
+        setCoupons([newCoupon, ...coupons]);
+        setCode('');
+        setDiscountValue(10);
+        setLimit(500);
+    };
+
+    const handleDelete = (id: number) => {
+        setCoupons(coupons.filter(c => c.id !== id));
+    };
+
+    // Derived Metrics
+    const totalCouponsCount = coupons.length;
+    const activeCouponsCount = coupons.filter(c => c.status === 'Active').length;
+    const totalDiscountGiven = coupons.reduce((sum, c) => sum + c.discountGiven, 0);
+
     return (
-        <main className="flex-1 ml-0 p-margin-mobile md:p-margin-desktop max-w-container-max mx-auto w-full">
+        <main className="flex-1 w-full px-margin-mobile md:px-margin-desktop py-6 max-w-[1440px] mx-auto min-h-screen">
+            
+            <header className="mb-6 border-b border-outline-variant/30 pb-4">
+                <h2 className="text-xl font-bold text-on-surface">Coupons &amp; Offers</h2>
+                <p className="text-xs text-on-surface-variant mt-1">Create new discount codes and track usage performance, sales, and total discount metrics.</p>
+            </header>
 
-<header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
-<div>
-<h2 className="font-headline-md text-headline-md text-on-surface mb-2">Coupons &amp; Offers</h2>
-<p className="font-body-md text-on-surface-variant">Manage discounts, promotional codes, and track offer performance.</p>
-</div>
-<button className="bg-primary text-on-primary-container font-label-md text-label-md px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-primary/90 transition-colors shadow-sm">
-<span className="material-symbols-outlined text-[20px]">add</span>
-                Create New Coupon
-            </button>
-</header>
+            {/* KPI Cards Section */}
+            <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                <div className="glass-card bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-4 flex flex-col justify-between shadow-sm">
+                    <div className="flex items-center justify-between text-on-surface-variant mb-1">
+                        <span className="font-semibold text-[10px] uppercase tracking-wider">Active Coupons</span>
+                        <span className="material-symbols-outlined text-tertiary text-base">check_circle</span>
+                    </div>
+                    <div className="mt-2">
+                        <p className="text-xl font-bold text-on-surface leading-none">{activeCouponsCount}</p>
+                        <p className="text-[10px] text-on-surface-variant mt-1">Live promotional offers</p>
+                    </div>
+                </div>
 
-<section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter mb-12">
+                <div className="glass-card bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-4 flex flex-col justify-between shadow-sm">
+                    <div className="flex items-center justify-between text-on-surface-variant mb-1">
+                        <span className="font-semibold text-[10px] uppercase tracking-wider">Total Coupons</span>
+                        <span className="material-symbols-outlined text-primary text-base">confirmation_number</span>
+                    </div>
+                    <div className="mt-2">
+                        <p className="text-xl font-bold text-on-surface leading-none">{totalCouponsCount}</p>
+                        <p className="text-[10px] text-on-surface-variant mt-1">Total campaign codes created</p>
+                    </div>
+                </div>
 
-<div className="glass-card rounded-xl p-6 relative overflow-hidden group">
-<div className="absolute -right-4 -top-4 w-24 h-24 bg-primary-container/20 rounded-full blur-2xl group-hover:bg-primary-container/40 transition-all duration-500"></div>
-<div className="flex items-center gap-3 mb-4 text-on-surface-variant">
-<span className="material-symbols-outlined text-tertiary">check_circle</span>
-<h3 className="font-label-md text-label-md text-sm">Active Coupons</h3>
-</div>
-<p className="font-headline-md text-headline-md text-on-surface">24</p>
-<div className="mt-2 flex items-center gap-1 text-sm text-tertiary font-medium">
-<span className="material-symbols-outlined text-[16px]">arrow_upward</span>
-<span>12% this month</span>
-</div>
-</div>
+                <div className="glass-card bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-4 flex flex-col justify-between shadow-sm">
+                    <div className="flex items-center justify-between text-on-surface-variant mb-1">
+                        <span className="font-semibold text-[10px] uppercase tracking-wider">Total Discount Given</span>
+                        <span className="material-symbols-outlined text-secondary text-base">payments</span>
+                    </div>
+                    <div className="mt-2">
+                        <p className="text-xl font-bold text-on-surface leading-none">Rs. {totalDiscountGiven.toLocaleString()}</p>
+                        <p className="text-[10px] text-on-surface-variant mt-1">Total savings passed to users</p>
+                    </div>
+                </div>
+            </section>
 
-<div className="glass-card rounded-xl p-6 relative overflow-hidden group">
-<div className="absolute -right-4 -top-4 w-24 h-24 bg-secondary-container/10 rounded-full blur-2xl group-hover:bg-secondary-container/30 transition-all duration-500"></div>
-<div className="flex items-center gap-3 mb-4 text-on-surface-variant">
-<span className="material-symbols-outlined text-secondary">currency_rupee</span>
-<h3 className="font-label-md text-label-md text-sm">Total Discount Given</h3>
-</div>
-<p className="font-headline-md text-headline-md text-on-surface">₹45,200</p>
-<div className="mt-2 flex items-center gap-1 text-sm text-on-surface-variant">
-<span>Across 1,200 transactions</span>
-</div>
-</div>
+            {/* Creation and List Columns */}
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+                
+                {/* Coupon Creation Form */}
+                <div className="xl:col-span-4">
+                    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 p-4 shadow-sm">
+                        <h3 className="text-sm font-bold text-on-surface mb-3 flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-base">add_box</span>
+                            Create New Coupon
+                        </h3>
+                        <form onSubmit={handleCreateCoupon} className="space-y-3 text-xs">
+                            <div>
+                                <label className="block font-semibold text-on-surface-variant mb-1">Coupon Code</label>
+                                <input 
+                                    type="text" 
+                                    className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2 focus:ring-1 focus:ring-primary focus:outline-none" 
+                                    placeholder="e.g. FESTIVE50" 
+                                    value={code}
+                                    onChange={(e) => setCode(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label className="block font-semibold text-on-surface-variant mb-1">Discount Type</label>
+                                    <select 
+                                        className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2 focus:ring-1 focus:ring-primary focus:outline-none"
+                                        value={discountType}
+                                        onChange={(e) => setDiscountType(e.target.value as any)}
+                                    >
+                                        <option value="Percentage">Percentage (%)</option>
+                                        <option value="Fixed Amount">Fixed (Rs.)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block font-semibold text-on-surface-variant mb-1">Value</label>
+                                    <input 
+                                        type="number" 
+                                        className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2 focus:ring-1 focus:ring-primary focus:outline-none" 
+                                        min={1}
+                                        value={discountValue}
+                                        onChange={(e) => setDiscountValue(Number(e.target.value))}
+                                        required
+                                    />
+                                </div>
+                            </div>
 
-<div className="glass-card rounded-xl p-6 relative overflow-hidden group">
-<div className="absolute -right-4 -top-4 w-24 h-24 bg-tertiary-container/20 rounded-full blur-2xl group-hover:bg-tertiary-container/40 transition-all duration-500"></div>
-<div className="flex items-center gap-3 mb-4 text-on-surface-variant">
-<span className="material-symbols-outlined text-tertiary">confirmation_number</span>
-<h3 className="font-label-md text-label-md text-sm">Total Coupon Uses</h3>
-</div>
-<p className="font-headline-md text-headline-md text-on-surface">3,492</p>
-<div className="mt-2 flex items-center gap-1 text-sm text-tertiary font-medium">
-<span className="material-symbols-outlined text-[16px]">arrow_upward</span>
-<span>+450 this week</span>
-</div>
-</div>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label className="block font-semibold text-on-surface-variant mb-1">Usage Limit</label>
+                                    <input 
+                                        type="number" 
+                                        className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2 focus:ring-1 focus:ring-primary focus:outline-none" 
+                                        min={1}
+                                        value={limit}
+                                        onChange={(e) => setLimit(Number(e.target.value))}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block font-semibold text-on-surface-variant mb-1">Expiry Date</label>
+                                    <input 
+                                        type="date" 
+                                        className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2 focus:ring-1 focus:ring-primary focus:outline-none" 
+                                        value={validUntil}
+                                        onChange={(e) => setValidUntil(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                            </div>
 
-<div className="glass-card rounded-xl p-6 relative overflow-hidden group">
-<div className="absolute -right-4 -top-4 w-24 h-24 bg-primary-container/20 rounded-full blur-2xl group-hover:bg-primary-container/40 transition-all duration-500"></div>
-<div className="flex items-center gap-3 mb-4 text-on-surface-variant">
-<span className="material-symbols-outlined text-primary">account_balance_wallet</span>
-<h3 className="font-label-md text-label-md text-sm">Revenue Generated</h3>
-</div>
-<p className="font-headline-md text-headline-md text-on-surface">₹2.4L</p>
-<div className="mt-2 flex items-center gap-1 text-sm text-tertiary font-medium">
-<span>Attributed to offers</span>
-</div>
-</div>
-</section>
+                            <button 
+                                type="submit" 
+                                className="w-full bg-primary text-on-primary font-semibold py-2 rounded-lg hover:opacity-90 transition-opacity shadow-sm flex items-center justify-center gap-1.5 mt-2"
+                            >
+                                <span className="material-symbols-outlined text-sm">add</span>
+                                Add Coupon Code
+                            </button>
+                        </form>
+                    </div>
+                </div>
 
-<section className="bg-surface-container-lowest rounded-xl organic-shadow overflow-hidden">
-<div className="p-6 border-b border-outline-variant/30 flex justify-between items-center bg-white">
-<h3 className="font-headline-sm text-headline-sm text-on-surface">Active Campaigns</h3>
-<div className="flex gap-2">
-<button className="p-2 text-on-surface-variant hover:bg-surface-variant rounded-md transition-colors">
-<span className="material-symbols-outlined">filter_list</span>
-</button>
-<button className="p-2 text-on-surface-variant hover:bg-surface-variant rounded-md transition-colors">
-<span className="material-symbols-outlined">more_vert</span>
-</button>
-</div>
-</div>
-<div className="overflow-x-auto">
-<table className="w-full text-left border-collapse">
-<thead>
-<tr className="border-b border-outline-variant/50 bg-surface-container/30">
-<th className="p-4 font-label-md text-label-md text-on-surface-variant">Code</th>
-<th className="p-4 font-label-md text-label-md text-on-surface-variant">Discount</th>
-<th className="p-4 font-label-md text-label-md text-on-surface-variant">Type</th>
-<th className="p-4 font-label-md text-label-md text-on-surface-variant">Applicability</th>
-<th className="p-4 font-label-md text-label-md text-on-surface-variant">Usage</th>
-<th className="p-4 font-label-md text-label-md text-on-surface-variant">Valid Until</th>
-<th className="p-4 font-label-md text-label-md text-on-surface-variant">Status</th>
-<th className="p-4 font-label-md text-label-md text-on-surface-variant text-right">Actions</th>
-</tr>
-</thead>
-<tbody className="font-body-md text-sm text-on-surface bg-white">
+                {/* Coupon Performance Table */}
+                <div className="xl:col-span-8">
+                    <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm overflow-hidden flex flex-col">
+                        <div className="p-4 border-b border-outline-variant/20 bg-surface-container/30">
+                            <h3 className="text-xs font-bold text-on-surface">Coupon Usage & Performance</h3>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse min-w-[600px]">
+                                <thead>
+                                    <tr className="border-b border-outline-variant/30 bg-background/50 text-on-surface-variant text-xs uppercase tracking-wider">
+                                        <th className="py-3 px-4 font-semibold">Code</th>
+                                        <th className="py-3 px-4 font-semibold">Discount</th>
+                                        <th className="py-3 px-4 font-semibold text-right">Uses</th>
+                                        <th className="py-3 px-4 font-semibold text-right">Sales Generated</th>
+                                        <th className="py-3 px-4 font-semibold text-right">Savings Given</th>
+                                        <th className="py-3 px-4 font-semibold text-center">Status</th>
+                                        <th className="py-3 px-4 font-semibold text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-outline-variant/20 text-xs text-on-surface">
+                                    {coupons.map((coupon) => (
+                                        <tr key={coupon.id} className="hover:bg-surface-container-low transition-colors duration-150 group">
+                                            <td className="py-3 px-4 font-bold text-primary">{coupon.code}</td>
+                                            <td className="py-3 px-4">
+                                                {coupon.discountType === 'Percentage' ? `${coupon.discountValue}%` : `Rs. ${coupon.discountValue}`} OFF
+                                            </td>
+                                            <td className="py-3 px-4 text-right font-medium">
+                                                {coupon.uses} / {coupon.limit}
+                                            </td>
+                                            <td className="py-3 px-4 text-right font-semibold text-on-surface">
+                                                Rs. {coupon.salesGenerated.toLocaleString()}
+                                            </td>
+                                            <td className="py-3 px-4 text-right text-on-surface-variant">
+                                                Rs. {coupon.discountGiven.toLocaleString()}
+                                            </td>
+                                            <td className="py-3 px-4 text-center">
+                                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                                                    coupon.status === 'Active' 
+                                                        ? 'bg-tertiary-fixed text-on-tertiary-fixed-variant' 
+                                                        : 'bg-outline-variant/30 text-on-surface-variant'
+                                                }`}>
+                                                    <span className={`w-1 h-1 rounded-full ${
+                                                        coupon.status === 'Active' ? 'bg-tertiary' : 'bg-outline'
+                                                    }`}></span>
+                                                    {coupon.status}
+                                                </span>
+                                            </td>
+                                            <td className="py-3 px-4 text-right">
+                                                <button 
+                                                    onClick={() => handleDelete(coupon.id)}
+                                                    className="p-1 text-on-surface-variant hover:text-error hover:bg-error-container/20 rounded-lg transition-all"
+                                                    title="Delete Coupon"
+                                                >
+                                                    <span className="material-symbols-outlined text-[16px]">delete</span>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {coupons.length === 0 && (
+                                        <tr>
+                                            <td colSpan={7} className="py-8 text-center text-on-surface-variant text-xs">
+                                                No coupon codes available. Create one to get started!
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
 
-<tr className="border-b border-outline-variant/20 hover:bg-primary-container/5 transition-colors group">
-<td className="p-4 font-semibold text-primary">INDEPENDENCE80</td>
-<td className="p-4">₹80 OFF</td>
-<td className="p-4">Fixed Amount</td>
-<td className="p-4">All Courses</td>
-<td className="p-4">
-<div className="flex items-center gap-2">
-<span>342 / ��</span>
-<div className="w-16 h-1.5 bg-surface-variant rounded-full overflow-hidden">
-<div className="h-full bg-primary w-1/3"></div>
-</div>
-</div>
-</td>
-<td className="p-4 text-on-surface-variant">Aug 16, 2024</td>
-<td className="p-4">
-<span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-tertiary-container text-on-tertiary-container inline-flex items-center gap-1">
-<span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
-                                    Active
-                                </span>
-</td>
-<td className="p-4 text-right">
-<div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-<button className="p-1.5 text-on-surface-variant hover:text-primary transition-colors tooltip-trigger" title="Edit">
-<span className="material-symbols-outlined text-[18px]">edit</span>
-</button>
-<button className="p-1.5 text-on-surface-variant hover:text-secondary transition-colors" title="View Analytics">
-<span className="material-symbols-outlined text-[18px]">bar_chart</span>
-</button>
-<button className="p-1.5 text-on-surface-variant hover:text-outline transition-colors" title="Pause">
-<span className="material-symbols-outlined text-[18px]">pause</span>
-</button>
-<button className="p-1.5 text-on-surface-variant hover:text-error transition-colors" title="Delete">
-<span className="material-symbols-outlined text-[18px]">delete</span>
-</button>
-</div>
-</td>
-</tr>
-
-<tr className="border-b border-outline-variant/20 hover:bg-primary-container/5 transition-colors group">
-<td className="p-4 font-semibold text-primary">SUMMER20</td>
-<td className="p-4">20% OFF</td>
-<td className="p-4">Percentage</td>
-<td className="p-4">Design Courses</td>
-<td className="p-4">
-<div className="flex items-center gap-2">
-<span>150 / 200</span>
-<div className="w-16 h-1.5 bg-surface-variant rounded-full overflow-hidden">
-<div className="h-full bg-secondary w-3/4"></div>
-</div>
-</div>
-</td>
-<td className="p-4 text-on-surface-variant">Aug 31, 2024</td>
-<td className="p-4">
-<span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-tertiary-container text-on-tertiary-container inline-flex items-center gap-1">
-<span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
-                                    Active
-                                </span>
-</td>
-<td className="p-4 text-right">
-<div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-<button className="p-1.5 text-on-surface-variant hover:text-primary transition-colors tooltip-trigger" title="Edit">
-<span className="material-symbols-outlined text-[18px]">edit</span>
-</button>
-<button className="p-1.5 text-on-surface-variant hover:text-secondary transition-colors" title="View Analytics">
-<span className="material-symbols-outlined text-[18px]">bar_chart</span>
-</button>
-<button className="p-1.5 text-on-surface-variant hover:text-outline transition-colors" title="Pause">
-<span className="material-symbols-outlined text-[18px]">pause</span>
-</button>
-<button className="p-1.5 text-on-surface-variant hover:text-error transition-colors" title="Delete">
-<span className="material-symbols-outlined text-[18px]">delete</span>
-</button>
-</div>
-</td>
-</tr>
-
-<tr className="border-b border-outline-variant/20 hover:bg-primary-container/5 transition-colors group">
-<td className="p-4 font-semibold text-on-surface-variant">NEWUSER500</td>
-<td className="p-4 text-on-surface-variant">₹500 OFF</td>
-<td className="p-4 text-on-surface-variant">Fixed Amount</td>
-<td className="p-4 text-on-surface-variant">First Purchase</td>
-<td className="p-4 text-on-surface-variant">
-<div className="flex items-center gap-2">
-<span>500 / 500</span>
-<div className="w-16 h-1.5 bg-surface-variant rounded-full overflow-hidden">
-<div className="h-full bg-outline w-full"></div>
-</div>
-</div>
-</td>
-<td className="p-4 text-on-surface-variant">Jul 01, 2024</td>
-<td className="p-4">
-<span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-variant text-on-surface-variant inline-flex items-center gap-1">
-<span className="w-1.5 h-1.5 rounded-full bg-outline"></span>
-                                    Expired
-                                </span>
-</td>
-<td className="p-4 text-right">
-<div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-<button className="p-1.5 text-on-surface-variant hover:text-secondary transition-colors" title="View Analytics">
-<span className="material-symbols-outlined text-[18px]">bar_chart</span>
-</button>
-<button className="p-1.5 text-on-surface-variant hover:text-error transition-colors" title="Delete">
-<span className="material-symbols-outlined text-[18px]">delete</span>
-</button>
-</div>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div className="p-4 border-t border-outline-variant/30 flex justify-between items-center text-sm text-on-surface-variant bg-surface-container/20">
-<span>Showing 1 to 3 of 24 entries</span>
-<div className="flex gap-2">
-<button className="px-3 py-1 rounded border border-outline-variant hover:bg-surface-variant transition-colors disabled:opacity-50" disabled>Previous</button>
-<button className="px-3 py-1 rounded border border-outline-variant hover:bg-surface-variant transition-colors">Next</button>
-</div>
-</div>
-</section>
-</main>
+            </div>
+        </main>
     );
 }

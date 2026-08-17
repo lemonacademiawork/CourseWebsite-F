@@ -34,17 +34,7 @@ export default function CommunityGallery() {
 <h3 className="font-headline-sm text-headline-sm text-on-primary mb-1">Cozy Corner</h3>
 <p className="text-surface-variant text-sm">By Emma Lin • Intro to Blender</p>
 </div>
-</div>
-
-<div className="gallery-item group relative rounded-xl overflow-hidden bg-surface-container-lowest shadow-sm col-span-1 md:col-span-3 row-span-1 flex items-center justify-center bg-surface-container-high border border-outline-variant/30 border-dashed">
-<div className="text-center p-8">
-<span className="material-symbols-outlined text-4xl text-outline mb-2">add_photo_alternate</span>
-<h3 className="font-headline-sm text-headline-sm text-on-surface mb-2">Your Artwork Here</h3>
-<p className="text-on-surface-variant text-body-md mb-4">Join the showcase and inspire others.</p>
-<button className="text-primary font-label-md text-label-md hover:underline">Upload Now</button>
-</div>
-</div>
-</div>
+</div></div>
 </main>
     );
 }

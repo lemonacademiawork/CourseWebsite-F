@@ -64,7 +64,7 @@ export default function TheArtofLippanCourseDetails() {
 <div className="w-full lg:w-80 lg:shrink-0 relative">
 <div className="sticky top-24 bg-surface-container-lowest rounded-xl p-6 organic-shadow border border-surface-container-high space-y-6">
 <div className="text-center pb-4 border-b border-surface-container-high">
-<div className="font-display-lg-mobile text-display-lg-mobile">$149</div>
+<div className="font-display-lg-mobile text-display-lg-mobile">Rs. 149</div>
 <div className="text-on-surface-variant text-sm mt-1">Full Lifetime Access</div>
 </div>
 <button className="w-full bg-primary text-on-primary-fixed font-label-md text-label-md py-4 rounded-full hover:bg-primary-fixed transition-colors duration-200 organic-lift shadow-sm">

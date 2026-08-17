@@ -1,153 +1,165 @@
-export default function AdminCreativeContentManagement() {
+'use client';
+import { useState, useRef } from 'react';
+
+interface CarouselSlide {
+    id: number;
+    title: string;
+    imageUrl: string;
+    description: string;
+}
+
+const DEFAULT_SLIDES: CarouselSlide[] = [
+    {
+        id: 1,
+        title: "Lippan Art Masterclass",
+        imageUrl: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=1200&h=400",
+        description: "Explore mirror & clay magic."
+    },
+    {
+        id: 2,
+        title: "Modern Mosaic Techniques",
+        imageUrl: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&q=80&w=1200&h=400",
+        description: "Assemble colorful ceramic designs."
+    },
+    {
+        id: 3,
+        title: "Hand-poured Soy Candle",
+        imageUrl: "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=1200&h=400",
+        description: "Craft organic botanical aromas."
+    },
+    {
+        id: 4,
+        title: "Pottery & Wheel Basics",
+        imageUrl: "https://images.unsplash.com/photo-1565192647048-f997ded87958?auto=format&fit=crop&q=80&w=1200&h=400",
+        description: "Master the terracotta wheel."
+    },
+    {
+        id: 5,
+        title: "Creative Crochet Crafts",
+        imageUrl: "https://images.unsplash.com/photo-1584992772048-2ec37ab286b8?auto=format&fit=crop&q=80&w=1200&h=400",
+        description: "Weave beautiful winter designs."
+    }
+];
+
+export default function AdminCarouselManagement() {
+    const [slides, setSlides] = useState<(CarouselSlide | null)[]>([
+        ...DEFAULT_SLIDES,
+        null // 6th slot empty by default
+    ]);
+    const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleUploadClick = (index: number) => {
+        setSelectedSlot(index);
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file && selectedSlot !== null) {
+            const newUrl = URL.createObjectURL(file);
+            const updatedSlides = [...slides];
+            updatedSlides[selectedSlot] = {
+                id: selectedSlot + 1,
+                title: file.name.replace(/\.[^/.]+$/, ""), // file name without extension
+                imageUrl: newUrl,
+                description: "Custom slide upload."
+            };
+            setSlides(updatedSlides);
+            setSelectedSlot(null);
+        }
+    };
+
+    const handleDeleteSlide = (index: number) => {
+        const updatedSlides = [...slides];
+        updatedSlides[index] = null;
+        setSlides(updatedSlides);
+    };
+
     return (
-        <main className="flex-1 ml-0 p-margin-mobile md:p-margin-desktop min-h-screen">
+        <main className="flex-1 w-full px-margin-mobile md:px-margin-desktop py-6 max-w-[1440px] mx-auto min-h-screen">
+            {/* Hidden File Input */}
+            <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+                accept="image/*" 
+                className="hidden" 
+            />
 
-<header className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-<div>
-<h1 className="font-headline-md text-headline-md text-on-surface mb-2">Creatives &amp; Marketing</h1>
-<p className="font-body-lg text-body-lg text-on-surface-variant">Manage banners, campaigns, and announcements.</p>
-</div>
-<button className="bg-primary text-on-primary font-label-md text-label-md py-3 px-6 rounded-full hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-organic flex items-center gap-2 w-fit">
-<span className="material-symbols-outlined icon-fill">upload</span>
-                Upload Creative
-            </button>
-</header>
+            <header className="mb-6 border-b border-outline-variant/30 pb-4">
+                <h1 className="text-xl font-bold text-on-surface">Homepage Carousel Banners</h1>
+                <p className="text-xs text-on-surface-variant mt-1">
+                    Manage the promotional carousel slides shown on the Student Homepage. Keep exactly 5-6 banners for optimal scrolling.
+                </p>
+            </header>
 
-<section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-<div className="bg-surface-container-lowest p-6 rounded-xl shadow-organic border border-outline-variant/20 hover-lift flex flex-col justify-between">
-<div className="flex items-center justify-between mb-4">
-<h3 className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Active Campaigns</h3>
-<span className="material-symbols-outlined text-tertiary">celebration</span>
-</div>
-<div className="flex items-end gap-3">
-<span className="font-headline-md text-headline-md text-on-surface">12</span>
-<span className="font-body-md text-body-md text-tertiary bg-tertiary-container/30 px-2 py-1 rounded-md mb-1">+2 this week</span>
-</div>
-</div>
-<div className="bg-surface-container-lowest p-6 rounded-xl shadow-organic border border-outline-variant/20 hover-lift flex flex-col justify-between relative overflow-hidden">
-<div className="absolute -right-4 -top-4 w-24 h-24 bg-primary-container/20 rounded-full blur-2xl"></div>
-<div className="flex items-center justify-between mb-4 relative z-10">
-<h3 className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Live Banners</h3>
-<span className="material-symbols-outlined text-primary">web_asset</span>
-</div>
-<div className="flex items-end gap-3 relative z-10">
-<span className="font-headline-md text-headline-md text-on-surface">45</span>
-<span className="font-body-md text-body-md text-primary bg-primary-container/30 px-2 py-1 rounded-md mb-1">Optimal</span>
-</div>
-</div>
-<div className="bg-surface-container-lowest p-6 rounded-xl shadow-organic border border-outline-variant/20 hover-lift flex flex-col justify-between">
-<div className="flex items-center justify-between mb-4">
-<h3 className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Scheduled</h3>
-<span className="material-symbols-outlined text-secondary">schedule</span>
-</div>
-<div className="flex items-end gap-3">
-<span className="font-headline-md text-headline-md text-on-surface">8</span>
-<span className="font-body-md text-body-md text-secondary bg-secondary-container/30 px-2 py-1 rounded-md mb-1">Upcoming</span>
-</div>
-</div>
-</section>
+            <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {slides.map((slide, index) => (
+                    <div 
+                        key={index} 
+                        className={`bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border border-outline-variant/30 flex flex-col h-64 relative transition-all ${
+                            !slide ? 'border-dashed bg-surface-container-low/20' : ''
+                        }`}
+                    >
+                        {/* Slide Slot Badge */}
+                        <div className="absolute top-2 left-2 z-10">
+                            <span className="bg-surface-container-lowest/90 backdrop-blur-sm text-on-surface-variant font-semibold text-[10px] px-2 py-0.5 rounded border border-outline-variant/30 shadow-sm">
+                                SLIDE {index + 1}
+                            </span>
+                        </div>
 
-<section className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8 border-b border-outline-variant/30 pb-4">
-
-<div className="flex overflow-x-auto w-full lg:w-auto gap-8 pb-2 hide-scrollbar">
-<button className="font-label-md text-label-md text-primary border-b-2 border-primary pb-2 whitespace-nowrap">All Creatives</button>
-<button className="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors pb-2 whitespace-nowrap">Homepage Banners</button>
-<button className="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors pb-2 whitespace-nowrap">Festival Campaigns</button>
-<button className="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors pb-2 whitespace-nowrap">Announcements</button>
-</div>
-
-<div className="flex w-full lg:w-auto gap-4">
-<div className="relative flex-1 lg:w-64">
-<span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
-<input className="w-full bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 font-body-md text-body-md text-on-surface focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-all shadow-sm" placeholder="Search creatives..." type="text" />
-</div>
-<button className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-container-low text-on-surface-variant hover:bg-surface-variant transition-colors shadow-sm border border-outline-variant/20">
-<span className="material-symbols-outlined">filter_list</span>
-</button>
-</div>
-</section>
-
-<section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter">
-
-<article className="bg-surface-container-lowest rounded-xl overflow-hidden shadow-organic border border-outline-variant/20 hover-lift group flex flex-col h-full">
-<div className="relative h-48 w-full bg-surface-container-high overflow-hidden">
-<div className="bg-cover bg-center w-full h-full group-hover:scale-105 transition-transform duration-500" data-alt="A vibrant, high-quality digital illustration for a modern EdTech festival campaign. The scene features abstract, glowing geometric shapes and celebratory spark-like elements against a soft, creamy background. The style is modern craft studio minimalism with subtle off-white and warm orange (citrus) accents. The lighting is bright and optimistic, suitable for a light-mode UI." style={{backgroundImage: `url(https://lh3.googleusercontent.com/aida-public/AB6AXuBsmY25vHyk8ZVg3m1jZL1-fOQ88Ye5hso7RflU0zXGPDnY1iZGyo64wRXrlBqTEoFJPKJlVxz9Ivl-O-JJqBXY3mJMWS_poOUNXZ1Z-re-fvDEcJH9krZjV_rXfX7DzYvwL2BsJmziS9VJd4ZlemXwcqDTiXYv-B6QFjpdY0PRhmECzBQV4TqrL1RRPRc4EYIVv9HxMtkJZxVP9xOgzcExuYAPuTlRY59elNjOTVORvRHEY_r5DozQ)`}}></div>
-<div className="absolute top-3 left-3 flex gap-2">
-<span className="bg-surface-container-lowest/90 backdrop-blur-sm text-primary font-label-md text-[12px] px-2 py-1 rounded border border-primary/20 flex items-center gap-1 shadow-sm">
-<span className="material-symbols-outlined text-[14px]">circle</span> Live
-                        </span>
-</div>
-<button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm flex items-center justify-center text-on-surface hover:text-primary shadow-sm border border-outline-variant/30 opacity-0 group-hover:opacity-100 transition-opacity">
-<span className="material-symbols-outlined text-[18px]">more_vert</span>
-</button>
-</div>
-<div className="p-5 flex-1 flex flex-col">
-<div className="flex justify-between items-start mb-2">
-<div>
-<span className="text-tertiary font-label-md text-[12px] tracking-wider uppercase mb-1 block">Homepage Hero</span>
-<h4 className="font-headline-sm text-headline-sm text-on-surface line-clamp-1">Diwali 2026 Masterclass</h4>
-</div>
-</div>
-<div className="mt-auto pt-4 flex items-center justify-between text-on-surface-variant font-body-md text-[14px] border-t border-outline-variant/20">
-<span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">calendar_today</span> Oct 15 - Nov 5</span>
-<span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">devices</span> D/M</span>
-</div>
-</div>
-</article>
-
-<article className="bg-surface-container-lowest rounded-xl overflow-hidden shadow-organic border border-outline-variant/20 hover-lift group flex flex-col h-full">
-<div className="relative h-48 w-full bg-surface-container-high overflow-hidden">
-<div className="bg-cover bg-center w-full h-full group-hover:scale-105 transition-transform duration-500" data-alt="A serene, minimalist digital banner design featuring a clean typography layout for an announcement. The background is a soft, warm off-white, with elegant terracotta and charcoal abstract brushstrokes framing the edges. The aesthetic is premium editorial, tactile modernism, lit softly to evoke a calm, inspiring light-mode environment." style={{backgroundImage: `url(https://lh3.googleusercontent.com/aida-public/AB6AXuCmh-MTtUE7GJjR3Sid2X5AvCcg-rYsuh9dxEn8w-x89d2ZP9tAHVgChhhoeTIxLXf2b2bozb_VPofGRyMl29lWysIGdJNhCNHfrmT01NILTDWhnuCNH8tMcgn56oQLIfuTxrjZJ4C3NXT5TyYMwx84PAeESW6W1GXRtcO88NyEJqrsFiWvUYeb4xmykP73N5J4XMLgGRPpLUdEAgVrl93rHRZfoEnorNWp8l9Exgiv6zpX3rTtVgif)`}}></div>
-<div className="absolute top-3 left-3 flex gap-2">
-<span className="bg-secondary-container/90 backdrop-blur-sm text-on-secondary-container font-label-md text-[12px] px-2 py-1 rounded border border-secondary/20 flex items-center gap-1 shadow-sm">
-<span className="material-symbols-outlined text-[14px]">schedule</span> Scheduled
-                        </span>
-</div>
-<button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm flex items-center justify-center text-on-surface hover:text-primary shadow-sm border border-outline-variant/30 opacity-0 group-hover:opacity-100 transition-opacity">
-<span className="material-symbols-outlined text-[18px]">more_vert</span>
-</button>
-</div>
-<div className="p-5 flex-1 flex flex-col">
-<div className="flex justify-between items-start mb-2">
-<div>
-<span className="text-tertiary font-label-md text-[12px] tracking-wider uppercase mb-1 block">Announcement</span>
-<h4 className="font-headline-sm text-headline-sm text-on-surface line-clamp-1">New UI/UX Curriculum Launch</h4>
-</div>
-</div>
-<div className="mt-auto pt-4 flex items-center justify-between text-on-surface-variant font-body-md text-[14px] border-t border-outline-variant/20">
-<span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">calendar_today</span> Starts Nov 10</span>
-<span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">devices</span> Desktop Only</span>
-</div>
-</div>
-</article>
-
-<article className="bg-surface-container-lowest rounded-xl overflow-hidden shadow-organic border border-outline-variant/20 hover-lift group flex flex-col h-full">
-<div className="relative h-48 w-full bg-surface-container-high overflow-hidden">
-<div className="bg-cover bg-center w-full h-full group-hover:scale-105 transition-transform duration-500 grayscale opacity-80" data-alt="A dynamic digital course banner displaying abstract representations of UI design elements, like wireframes and color swatches, floating in a clean, off-white space. Accents of warm lemon-yellow and sage green provide a modern, tactile studio feel. The lighting is bright and diffuse, creating a premium light-mode visual." style={{backgroundImage: `url(https://lh3.googleusercontent.com/aida-public/AB6AXuB2IVucgsJnZCdusxSPvTVXLPU3Q3iwyEJX_bFlqEuoNLMWhzOYhg-lTsCIEM5kaX2SwL2_FfqdtNhbNYNfFhlCiZ40EM2nYwDV9_UqyvATGkFRf8cRZDkGc4IxrY0pwNsr6hhz_PX-ynWteyc5WstDqmR1VNml6evnfrzXGHmfmzJfHAtOWNVOBGugN2zaJImB8WTGnPvlOVQ2WdzTNls2w4n0nm-7feVDGFGm9JIafjm5BtyzpdFs)`}}></div>
-<div className="absolute inset-0 bg-surface/10"></div>
-<div className="absolute top-3 left-3 flex gap-2">
-<span className="bg-surface-variant/90 backdrop-blur-sm text-on-surface-variant font-label-md text-[12px] px-2 py-1 rounded border border-outline-variant/30 flex items-center gap-1 shadow-sm">
-<span className="material-symbols-outlined text-[14px]">inventory_2</span> Archived
-                        </span>
-</div>
-<button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm flex items-center justify-center text-on-surface hover:text-primary shadow-sm border border-outline-variant/30 opacity-0 group-hover:opacity-100 transition-opacity">
-<span className="material-symbols-outlined text-[18px]">more_vert</span>
-</button>
-</div>
-<div className="p-5 flex-1 flex flex-col opacity-75">
-<div className="flex justify-between items-start mb-2">
-<div>
-<span className="text-tertiary font-label-md text-[12px] tracking-wider uppercase mb-1 block">Promo Banner</span>
-<h4 className="font-headline-sm text-headline-sm text-on-surface line-clamp-1">Summer Creative Workshop</h4>
-</div>
-</div>
-<div className="mt-auto pt-4 flex items-center justify-between text-on-surface-variant font-body-md text-[14px] border-t border-outline-variant/20">
-<span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">calendar_today</span> Jun 1 - Jun 30</span>
-<span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">devices</span> Mobile Only</span>
-</div>
-</div>
-</article>
-</section>
-</main>
+                        {slide ? (
+                            <>
+                                <div className="relative h-40 w-full bg-surface-container-high overflow-hidden shrink-0">
+                                    <img 
+                                        alt={slide.title} 
+                                        className="w-full h-full object-cover" 
+                                        src={slide.imageUrl} 
+                                    />
+                                    <div className="absolute inset-0 bg-black/10 hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 hover:opacity-100 duration-200">
+                                        <button 
+                                            onClick={() => handleUploadClick(index)}
+                                            className="bg-white/95 text-xs text-on-surface font-semibold py-1.5 px-3 rounded-lg flex items-center gap-1 shadow-md hover:bg-white"
+                                        >
+                                            <span className="material-symbols-outlined text-sm">edit</span>
+                                            Replace Image
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="p-3 flex-1 flex flex-col justify-between">
+                                    <div>
+                                        <h4 className="text-xs font-bold text-on-surface line-clamp-1">{slide.title}</h4>
+                                        <p className="text-[10px] text-on-surface-variant mt-0.5 line-clamp-2">{slide.description}</p>
+                                    </div>
+                                    <div className="flex justify-end gap-2 border-t border-outline-variant/20 pt-2 mt-auto">
+                                        <button 
+                                            onClick={() => handleUploadClick(index)}
+                                            className="p-1 text-on-surface-variant hover:text-primary hover:bg-primary-container/20 rounded-lg transition-all"
+                                            title="Change Image"
+                                        >
+                                            <span className="material-symbols-outlined text-[16px]">edit</span>
+                                        </button>
+                                        <button 
+                                            onClick={() => handleDeleteSlide(index)}
+                                            className="p-1 text-on-surface-variant hover:text-error hover:bg-error-container/20 rounded-lg transition-all"
+                                            title="Remove slide"
+                                        >
+                                            <span className="material-symbols-outlined text-[16px]">delete</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="flex-grow flex flex-col items-center justify-center p-6 text-center cursor-pointer" onClick={() => handleUploadClick(index)}>
+                                <span className="material-symbols-outlined text-on-surface-variant text-2xl mb-2">add_photo_alternate</span>
+                                <span className="text-xs font-semibold text-on-surface">Slot Empty</span>
+                                <span className="text-[10px] text-on-surface-variant mt-1">Click here to upload slide {index + 1}</span>
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </section>
+        </main>
     );
 }

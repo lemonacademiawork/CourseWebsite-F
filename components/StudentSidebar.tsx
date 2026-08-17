@@ -29,7 +29,7 @@ export default function StudentSidebar() {
                     </Link>
                 </li>
                 <li>
-                    <Link className={getLinkClass('/courses')} href="/courses">
+                    <Link className={getLinkClass('/student/courses')} href="/student/courses">
                         <span className="material-symbols-outlined" data-icon="school">school</span>
                         My Courses
                     </Link>

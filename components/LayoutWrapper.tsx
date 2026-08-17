@@ -25,7 +25,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
             {isTrainer && <TrainerSidebar />}
 
             {/* Adjust margin for sidebars */}
-            <div className={(isAdmin || isStudent || isTrainer) ? "md:ml-64" : "flex flex-col min-h-screen"}>
+            <div className={(isAdmin || isStudent || isTrainer) ? "md:ml-60" : "flex flex-col min-h-screen"}>
                 <div className="flex-grow">
                     {children}
                 </div>
