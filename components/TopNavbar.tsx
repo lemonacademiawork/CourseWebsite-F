@@ -53,21 +53,12 @@ export default function TopNavbar() {
         window.dispatchEvent(new Event('auth_state_changed'));
     };
 
-    const isHome = pathname === '/';
-
     const getLinkClass = (href: string) => {
         const isActive = pathname === href;
-        if (isHome) {
-            if (isActive) {
-                return "text-white border-b-2 border-white pb-1 font-semibold drop-shadow-md";
-            }
-            return "text-white/80 hover:text-white transition-colors duration-200 drop-shadow-md";
-        } else {
-            if (isActive) {
-                return "text-primary border-b-2 border-primary pb-1 font-semibold";
-            }
-            return "text-on-surface-variant hover:text-primary transition-colors duration-200";
+        if (isActive) {
+            return "text-primary border-b-2 border-primary pb-1 font-semibold";
         }
+        return "text-on-surface-variant hover:text-primary transition-colors duration-200";
     };
 
     const getMobileLinkClass = (href: string) => {
@@ -79,16 +70,10 @@ export default function TopNavbar() {
     };
 
     return (
-        <nav className={`left-0 right-0 z-50 transition-all duration-300 ${
-            isHome 
-                ? "absolute top-0 bg-transparent" 
-                : "bg-surface shadow-sm top-0 sticky"
-        }`}>
+        <nav className="bg-surface shadow-sm top-0 sticky left-0 right-0 z-50">
             <div className="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto text-xs">
                 {/* Logo */}
-                <Link href="/" className={`font-display-lg text-lg md:text-xl font-bold transition-colors ${
-                    isHome ? "text-white drop-shadow-md" : "text-primary"
-                }`}>
+                <Link href="/" className="font-display-lg text-lg md:text-xl font-bold text-primary">
                     Lemon Academy
                 </Link>
                 
@@ -115,41 +100,31 @@ export default function TopNavbar() {
                     {isLoggedIn ? (
                         <div className="flex items-center gap-3">
                             {userRole === 'admin' && (
-                                <Link href="/admin/dashboard" className={`font-semibold hover:underline ${isHome ? 'text-white' : 'text-primary'}`}>
+                                <Link href="/admin/dashboard" className="font-semibold hover:underline text-primary">
                                     Admin Panel
                                 </Link>
                             )}
                             {userRole === 'trainer' && (
-                                <Link href="/trainer/dashboard" className={`font-semibold hover:underline ${isHome ? 'text-white' : 'text-primary'}`}>
+                                <Link href="/trainer/dashboard" className="font-semibold hover:underline text-primary">
                                     Trainer Dashboard
                                 </Link>
                             )}
-                            <Link href="/profile" className={`font-medium ${isHome ? 'text-white/90 hover:text-white' : 'text-on-surface hover:text-primary'}`}>
+                            <Link href="/profile" className="font-medium text-on-surface hover:text-primary">
                                 Profile
                             </Link>
                             <button 
                                 onClick={handleLogout}
-                                className={`px-4 py-2 rounded-lg font-semibold transition-all ${
-                                    isHome 
-                                        ? "bg-white/10 hover:bg-white/20 text-white border border-white/20" 
-                                        : "bg-surface-variant text-on-surface-variant hover:bg-surface-dim"
-                                }`}
+                                className="bg-surface-variant text-on-surface-variant hover:bg-surface-dim px-4 py-2 rounded-lg font-semibold transition-all"
                             >
                                 Logout
                             </button>
                         </div>
                     ) : (
                         <>
-                            <Link href="/login" className={`font-semibold px-3 py-2 transition-opacity ${
-                                isHome ? "text-white hover:opacity-90" : "text-primary hover:opacity-90"
-                            }`}>
+                            <Link href="/login" className="font-semibold px-3 py-2 transition-opacity text-primary hover:opacity-90">
                                 Login
                             </Link>
-                            <Link href="/signup" className={`font-semibold px-4 py-2.5 rounded-lg transition-opacity ${
-                                isHome 
-                                    ? "bg-white text-primary hover:bg-white/90 shadow-md" 
-                                    : "bg-primary text-on-primary hover:opacity-90"
-                            }`}>
+                            <Link href="/signup" className="font-semibold px-4 py-2.5 rounded-lg transition-opacity bg-primary text-on-primary hover:opacity-90">
                                 Sign Up
                             </Link>
                         </>
@@ -159,7 +134,7 @@ export default function TopNavbar() {
                 {/* Mobile Hamburger toggle */}
                 <button 
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    className={`md:hidden p-1 rounded-lg ${isHome ? 'text-white' : 'text-on-surface'}`}
+                    className="md:hidden p-1 rounded-lg text-on-surface"
                 >
                     <span className="material-symbols-outlined text-xl">
                         {mobileMenuOpen ? 'close' : 'menu'}

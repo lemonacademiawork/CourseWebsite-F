@@ -80,9 +80,7 @@ export default function LemonAcademyHome() {
     return (
         <main className="bg-surface min-h-screen overflow-x-hidden w-full relative">
             {/* Centered Inset Hero Stage */}
-            <section className="relative w-full pt-[96px] pb-6 flex justify-center bg-[#FBF8F1]">
-                {/* Subtle top gradient overlay for text readability over busy images */}
-                <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-black/10 via-black/3 to-transparent pointer-events-none z-20" />
+            <section className="relative w-full pt-8 pb-6 flex justify-center bg-[#FBF8F1]">
 
                 <div className="w-[90%] max-w-[1420px] h-[300px] sm:h-[380px] lg:h-[480px] rounded-2xl overflow-hidden relative shadow-sm border border-outline-variant/10 bg-surface-container z-10">
                     {slides.map((url, idx) => (
