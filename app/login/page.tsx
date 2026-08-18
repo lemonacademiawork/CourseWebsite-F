@@ -25,25 +25,72 @@ export default function LoginPage() {
             });
 
             if (res.status === 200) {
-                // Redirect on successful login
-                router.push('/student/dashboard');
+                const data = await res.json().catch(() => ({}));
+                const role = data.role || (email.includes('admin') ? 'admin' : email.includes('trainer') ? 'trainer' : 'student');
+                
+                localStorage.setItem('is_logged_in', 'true');
+                localStorage.setItem('user_role', role);
+                localStorage.setItem('user_email', email);
+                localStorage.setItem('user_name', data.name || 'User');
+                if (data.token) {
+                    localStorage.setItem('auth_token', data.token);
+                }
+                
+                // Dispatch event to update navbar
+                window.dispatchEvent(new Event('auth_state_changed'));
+
+                // Role-based routing
+                if (role === 'admin') {
+                    router.push('/admin/dashboard');
+                } else if (role === 'trainer') {
+                    router.push('/trainer/dashboard');
+                } else {
+                    router.push('/');
+                }
             } else {
                 const data = await res.json().catch(() => ({}));
                 setError(data.message || 'Invalid email or password');
             }
         } catch (err) {
             console.warn('Backend connection failed or blocked by CORS. Checking local storage mock...');
+            
+            let role = 'student';
+            let name = 'User';
+            
+            if (email.includes('admin')) {
+                role = 'admin';
+                name = 'Admin User';
+            } else if (email.includes('trainer')) {
+                role = 'trainer';
+                name = 'Trainer User';
+            }
+
             const storedUserStr = localStorage.getItem('mock_user');
             if (storedUserStr) {
                 const storedUser = JSON.parse(storedUserStr);
                 if (storedUser.email === email && storedUser.password === password) {
-                    router.push('/student/dashboard');
-                    return;
+                    role = storedUser.role || role;
+                    name = storedUser.name || name;
                 }
             }
+
             // Fallback: allow sign-in with any credentials if backend is down/blocked
             if (email && password) {
-                router.push('/student/dashboard');
+                localStorage.setItem('is_logged_in', 'true');
+                localStorage.setItem('user_role', role);
+                localStorage.setItem('user_email', email);
+                localStorage.setItem('user_name', name);
+                
+                // Dispatch event to update navbar
+                window.dispatchEvent(new Event('auth_state_changed'));
+
+                if (role === 'admin') {
+                    router.push('/admin/dashboard');
+                } else if (role === 'trainer') {
+                    router.push('/trainer/dashboard');
+                } else {
+                    router.push('/');
+                }
             } else {
                 setError('Invalid email or password');
             }

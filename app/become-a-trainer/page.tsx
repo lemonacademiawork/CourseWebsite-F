@@ -1,278 +1,470 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function BecomeaTrainerPage() {
-    const [submitted, setSubmitted] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
+interface TrainerApplication {
+    id: string;
+    name: string;
+    age: string;
+    gender: string;
+    email: string;
+    phone: string;
+    city: string;
+    state: string;
+    profilePhoto: string;
+    category: string;
+    experienceYears: string;
+    profession: string;
+    teachingExperience: string;
+    previousWorkshops: string;
+    studentsTaught: string;
+    expertiseAreas: string;
+    whatTheyCanTeach: string;
+    whyTrainer: string;
+    portfolioPhotos: string[];
+    instagram: string;
+    youtube: string;
+    facebook: string;
+    website: string;
+    education: string;
+    certifications: string;
+    awards: string;
+    languages: string;
+    teachingLanguage: string;
+    availability: string;
+    classFormat: string;
+    status: 'Submitted' | 'Under Review' | 'Approved' | 'Rejected' | 'Changes Requested';
+    adminFeedback?: string;
+}
 
-    // Form fields
+export default function BecomeTrainerApplicationPage() {
+    const router = useRouter();
+    const [existingApp, setExistingApp] = useState<TrainerApplication | null>(null);
+
+    // Personal Info
     const [name, setName] = useState('');
+    const [age, setAge] = useState('');
+    const [gender, setGender] = useState('Female');
     const [email, setEmail] = useState('');
-    const [course, setCourse] = useState('');
-    const [runningDates, setRunningDates] = useState('');
-    const [experience, setExperience] = useState('');
-    const [portfolioUrl, setPortfolioUrl] = useState('');
+    const [phone, setPhone] = useState('');
+    const [city, setCity] = useState('');
+    const [state, setState] = useState('');
+    const [profilePhoto, setProfilePhoto] = useState('');
 
-    const scrollToForm = () => {
-        const formElement = document.getElementById('application-form');
-        if (formElement) {
-            formElement.scrollIntoView({ behavior: 'smooth' });
+    // Professional Info
+    const [category, setCategory] = useState('');
+    const [experienceYears, setExperienceYears] = useState('');
+    const [profession, setProfession] = useState('');
+    const [teachingExperience, setTeachingExperience] = useState('');
+    const [previousWorkshops, setPreviousWorkshops] = useState('');
+    const [studentsTaught, setStudentsTaught] = useState('');
+
+    // Creative Expertise
+    const [expertiseAreas, setExpertiseAreas] = useState('');
+    const [whatTheyCanTeach, setWhatTheyCanTeach] = useState('');
+    const [whyTrainer, setWhyTrainer] = useState('');
+
+    // Portfolio
+    const [portfolioPhotos, setPortfolioPhotos] = useState<string[]>([]);
+
+    // Social Links
+    const [instagram, setInstagram] = useState('');
+    const [youtube, setYoutube] = useState('');
+    const [facebook, setFacebook] = useState('');
+    const [website, setWebsite] = useState('');
+
+    // Additional Info
+    const [education, setEducation] = useState('');
+    const [certifications, setCertifications] = useState('');
+    const [awards, setAwards] = useState('');
+    const [languages, setLanguages] = useState('');
+    const [teachingLanguage, setTeachingLanguage] = useState('');
+    const [availability, setAvailability] = useState('');
+    const [classFormat, setClassFormat] = useState('Online Live');
+
+    const [loading, setLoading] = useState(false);
+
+    // Load auth and existing application
+    useEffect(() => {
+        const loggedIn = localStorage.getItem('is_logged_in') === 'true';
+        if (!loggedIn) {
+            router.push('/login');
+            return;
+        }
+
+        const userEmail = localStorage.getItem('user_email') || '';
+        setEmail(userEmail);
+        setName(localStorage.getItem('user_name') || '');
+
+        const apps = JSON.parse(localStorage.getItem('trainer_applications') || '[]');
+        const userApp = apps.find((app: TrainerApplication) => app.email === userEmail);
+        if (userApp) {
+            setExistingApp(userApp);
+            // Populate fields if editing is requested
+            if (userApp.status === 'Changes Requested') {
+                setAge(userApp.age || '');
+                setGender(userApp.gender || 'Female');
+                setPhone(userApp.phone || '');
+                setCity(userApp.city || '');
+                setState(userApp.state || '');
+                setProfilePhoto(userApp.profilePhoto || '');
+                setCategory(userApp.category || '');
+                setExperienceYears(userApp.experienceYears || '');
+                setProfession(userApp.profession || '');
+                setTeachingExperience(userApp.teachingExperience || '');
+                setPreviousWorkshops(userApp.previousWorkshops || '');
+                setStudentsTaught(userApp.studentsTaught || '');
+                setExpertiseAreas(userApp.expertiseAreas || '');
+                setWhatTheyCanTeach(userApp.whatTheyCanTeach || '');
+                setWhyTrainer(userApp.whyTrainer || '');
+                setPortfolioPhotos(userApp.portfolioPhotos || []);
+                setInstagram(userApp.instagram || '');
+                setYoutube(userApp.youtube || '');
+                setFacebook(userApp.facebook || '');
+                setWebsite(userApp.website || '');
+                setEducation(userApp.education || '');
+                setCertifications(userApp.certifications || '');
+                setAwards(userApp.awards || '');
+                setLanguages(userApp.languages || '');
+                setTeachingLanguage(userApp.teachingLanguage || '');
+                setAvailability(userApp.availability || '');
+                setClassFormat(userApp.classFormat || 'Online Live');
+            }
+        }
+    }, []);
+
+    const handleProfilePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => setProfilePhoto(reader.result as string);
+            reader.readAsDataURL(file);
         }
     };
 
-    const handleApply = async (e: React.FormEvent) => {
+    const handlePortfolioAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (files) {
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setPortfolioPhotos(prev => [...prev, reader.result as string].slice(0, 3));
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    };
+
+    const removePortfolioImage = (idx: number) => {
+        setPortfolioPhotos(prev => prev.filter((_, i) => i !== idx));
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        setError('');
 
-        const applicationData = {
+        const newApp: TrainerApplication = {
+            id: existingApp?.id || Date.now().toString(),
             name,
+            age,
+            gender,
             email,
-            course,
-            runningDates: runningDates || 'Awaiting Schedule',
-            experience,
-            portfolioUrl,
-            status: 'Pending Approval'
+            phone,
+            city,
+            state,
+            profilePhoto,
+            category,
+            experienceYears,
+            profession,
+            teachingExperience,
+            previousWorkshops,
+            studentsTaught,
+            expertiseAreas,
+            whatTheyCanTeach,
+            whyTrainer,
+            portfolioPhotos,
+            instagram,
+            youtube,
+            facebook,
+            website,
+            education,
+            certifications,
+            awards,
+            languages,
+            teachingLanguage,
+            availability,
+            classFormat,
+            status: 'Submitted'
         };
 
         try {
-            // Attempt to send to backend API
-            const res = await fetch('https://lemonwebsite-backend.onrender.com/api/v1/trainers/apply', {
+            // Send to Render backend if deployed
+            await fetch('https://lemonwebsite-backend.onrender.com/api/v1/trainers/apply', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(applicationData),
-            });
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newApp)
+            }).catch(() => {});
 
-            if (res.ok) {
-                setSubmitted(true);
+            // Update localStorage db
+            const apps = JSON.parse(localStorage.getItem('trainer_applications') || '[]');
+            const idx = apps.findIndex((a: TrainerApplication) => a.email === email);
+            if (idx !== -1) {
+                apps[idx] = newApp;
             } else {
-                const data = await res.json().catch(() => ({}));
-                setError(data.message || 'Failed to submit application. Please try again.');
+                apps.push(newApp);
             }
+            localStorage.setItem('trainer_applications', JSON.stringify(apps));
+            setExistingApp(newApp);
+            
+            // If approved user gets role update
+            window.dispatchEvent(new Event('trainer_applications_updated'));
         } catch (err) {
-            console.warn('Backend connection failed or blocked by CORS. Saving locally as mock...');
-            
-            // Mock Fallback: Save application in localStorage so it can show up or be verified
-            const existingApps = JSON.parse(localStorage.getItem('mock_applications') || '[]');
-            existingApps.push({
-                id: Date.now(),
-                ...applicationData
-            });
-            localStorage.setItem('mock_applications', JSON.stringify(existingApps));
-            
-            setSubmitted(true);
+            console.error(err);
         } finally {
             setLoading(false);
         }
     };
 
+    if (existingApp && existingApp.status !== 'Changes Requested') {
+        return (
+            <main className="min-h-screen bg-[#FBF8F1] py-16 px-margin-mobile md:px-margin-desktop max-w-xl mx-auto text-xs text-center flex flex-col items-center justify-center">
+                <div className="w-16 h-16 bg-surface-container flex items-center justify-center rounded-full text-primary mb-6">
+                    <span className="material-symbols-outlined text-3xl">
+                        {existingApp.status === 'Approved' ? 'task_alt' : existingApp.status === 'Rejected' ? 'cancel' : 'hourglass_empty'}
+                    </span>
+                </div>
+                <h1 className="playfair text-2xl font-bold text-on-surface mb-2">
+                    Application {existingApp.status}
+                </h1>
+                <p className="text-on-surface-variant max-w-md mb-8 leading-relaxed">
+                    {existingApp.status === 'Submitted' && "Your application has been received and is in queue. Our review team will verify your portfolio shortly."}
+                    {existingApp.status === 'Under Review' && "Our curriculum team is currently reviewing your expertise areas, teaching formats, and creative works."}
+                    {existingApp.status === 'Approved' && "Congratulations! Your trainer application has been approved. You now have full access to create courses and manage live classes."}
+                    {existingApp.status === 'Rejected' && "Unfortunately, your application does not match our current curriculum needs. We appreciate your interest."}
+                </p>
+
+                {existingApp.status === 'Approved' && (
+                    <button 
+                        onClick={() => {
+                            localStorage.setItem('user_role', 'trainer');
+                            window.dispatchEvent(new Event('auth_state_changed'));
+                            router.push('/trainer/dashboard');
+                        }}
+                        className="bg-primary text-on-primary font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity shadow-sm"
+                    >
+                        Go to Trainer Dashboard
+                    </button>
+                )}
+            </main>
+        );
+    }
+
     return (
-        <main className="flex-grow min-h-screen text-xs bg-[#FBF8F1]">
-            {/* Hero Section */}
-            <section className="relative pt-20 pb-24 px-margin-mobile md:px-margin-desktop overflow-hidden">
-                <div className="absolute inset-0 pointer-events-none opacity-20" style={{ backgroundImage: "radial-gradient(circle at 100% 0%, #ffe17a 0%, transparent 40%), radial-gradient(circle at 0% 100%, #fe9d7a 0%, transparent 40%)" }}></div>
+        <main className="min-h-screen bg-[#FBF8F1] py-12 px-margin-mobile md:px-margin-desktop text-xs max-w-[800px] mx-auto w-full">
+            <header className="mb-8 text-center">
+                <h1 className="playfair text-3xl font-bold text-primary mb-2">Become a Trainer</h1>
+                <p className="text-on-surface-variant">Join Lemon Academy to instruct, inspire, and grow your creative business.</p>
+            </header>
+
+            {existingApp?.status === 'Changes Requested' && (
+                <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-4 mb-8">
+                    <h3 className="font-bold text-sm mb-1">Changes Requested by Admin:</h3>
+                    <p className="italic">"{existingApp.adminFeedback || 'Please update your portfolio details.'}"</p>
+                </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="bg-surface-container-lowest border border-outline-variant/35 rounded-2xl p-6 md:p-10 shadow-sm space-y-8">
                 
-                <div className="max-w-container-max mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
-                    <div className="space-y-6">
-                        <span className="inline-block px-3 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-semibold tracking-wider uppercase text-[10px]">
-                            Join Our Community
-                        </span>
-                        <h1 className="playfair text-4xl md:text-5xl lg:text-6xl font-bold text-on-surface leading-tight">
-                            Turn Your Creativity <br className="hidden lg:block" />Into Teaching
-                        </h1>
-                        <p className="text-sm text-on-surface-variant max-w-lg leading-relaxed">
-                            Share your unique craft, mentor aspiring artists, and build a rewarding career from anywhere. Lemon Academy provides the premium platform—you bring the passion.
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                            <button 
-                                onClick={scrollToForm}
-                                className="bg-primary text-on-primary px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-sm"
-                            >
-                                Start Application
-                                <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                            </button>
-                            <button 
-                                onClick={() => {
-                                    document.getElementById('why-teach')?.scrollIntoView({ behavior: 'smooth' });
-                                }}
-                                className="px-6 py-3 rounded-lg font-semibold border border-outline text-on-surface hover:bg-surface-variant/20 transition-all"
-                            >
-                                Learn More
-                            </button>
-                        </div>
-                    </div>
-                    <div className="relative h-[320px] md:h-[400px] w-full rounded-2xl overflow-hidden shadow-md">
-                        <img 
-                            className="w-full h-full object-cover" 
-                            alt="Artisan workspace"
-                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5LmlZ0t1hDNKF5z6VzHOUUkes637bm8NdHeJKS4I-yRIiq_mrjFreIludcM9voNh2ix4MUs9o4IOLywNRVKXnZDfOoFqKZD9OiYBYgNDHJFYKpPYs7CbzJIa6IJlp1ET1MrjKXV11HfKMTNlVwj9Z3A_jTNbe9P6mQF3eWCN_w3ehhZwIdBrnyLnmbMAV_-YQHlfmJ6eTvj4zDZg2fgPR_G51icBt25fOtnzASCHkzQfXAgnHmRUd" 
-                        />
-                    </div>
-                </div>
-            </section>
-
-            {/* Why Teach Section */}
-            <section id="why-teach" className="py-16 px-margin-mobile md:px-margin-desktop bg-surface-container-lowest border-t border-b border-outline-variant/30">
-                <div className="max-w-container-max mx-auto">
-                    <div className="text-center mb-12 space-y-2">
-                        <h2 className="playfair text-2xl font-bold text-on-surface">Why Teach with Us?</h2>
-                        <p className="text-xs text-on-surface-variant max-w-2xl mx-auto">
-                            We provide the tools, audience, and support so you can focus on what you do best: inspiring the next generation of creators.
-                        </p>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="bg-surface-container-low rounded-xl p-6 border border-outline-variant/20 flex flex-col items-start">
-                            <div className="w-10 h-10 rounded-full bg-tertiary-container/30 flex items-center justify-center mb-4 text-tertiary">
-                                <span className="material-symbols-outlined text-base">psychology</span>
-                            </div>
-                            <h3 className="text-xs font-bold text-on-surface mb-2">Develop Teaching Skills</h3>
-                            <p className="text-on-surface-variant leading-relaxed">
-                                Access our exclusive trainer resources, workshops, and peer feedback to refine your instructional techniques and curriculum design.
-                            </p>
-                        </div>
-                        <div className="bg-surface-container-low rounded-xl p-6 border border-outline-variant/20 flex flex-col items-start">
-                            <div className="w-10 h-10 rounded-full bg-secondary-container/30 flex items-center justify-center mb-4 text-secondary">
-                                <span className="material-symbols-outlined text-base">groups</span>
-                            </div>
-                            <h3 className="text-xs font-bold text-on-surface mb-2">Reach Global Learners</h3>
-                            <p className="text-on-surface-variant leading-relaxed">
-                                Connect with a passionate community of students worldwide. Your expertise deserves a broader audience than just your local studio.
-                            </p>
-                        </div>
-                        <div className="bg-surface-container-low rounded-xl p-6 border border-outline-variant/20 flex flex-col items-start">
-                            <div className="w-10 h-10 rounded-full bg-primary-container/30 flex items-center justify-center mb-4 text-primary">
-                                <span className="material-symbols-outlined text-base">storefront</span>
-                            </div>
-                            <h3 className="text-xs font-bold text-on-surface mb-2">Build Your Profile</h3>
-                            <p className="text-on-surface-variant leading-relaxed">
-                                Establish yourself as an authority in your craft. Earn reviews, showcase student work, and build a portfolio that attracts new opportunities.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Application Form Section */}
-            <section id="application-form" className="py-20 px-margin-mobile md:px-margin-desktop">
-                <div className="max-w-[600px] mx-auto bg-surface-container-lowest rounded-2xl p-6 md:p-10 border border-outline-variant/40 shadow-sm">
-                    {submitted ? (
-                        <div className="text-center py-8 space-y-4">
-                            <div className="w-12 h-12 bg-primary/20 text-primary rounded-full flex items-center justify-center mx-auto">
-                                <span className="material-symbols-outlined text-2xl">check_circle</span>
-                            </div>
-                            <h2 className="playfair text-xl font-bold text-on-surface">Application Submitted!</h2>
-                            <p className="text-xs text-on-surface-variant max-w-sm mx-auto leading-relaxed">
-                                Thank you for applying to become a trainer at Lemon Academy. Our curriculum team will review your details and portfolio, and get back to you within 3-5 business days.
-                            </p>
-                            <button 
-                                onClick={() => setSubmitted(false)}
-                                className="mt-4 bg-primary text-on-primary px-5 py-2.5 rounded-lg font-semibold hover:opacity-90 transition-opacity"
-                            >
-                                Apply for another course
-                            </button>
-                        </div>
-                    ) : (
+                {/* 1. Personal Information */}
+                <div>
+                    <h3 className="text-sm font-bold text-primary border-b border-outline-variant/30 pb-2 mb-4">1. Personal Information</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <div className="mb-6">
-                                <h2 className="playfair text-xl font-bold text-on-surface mb-1">Trainer Application Form</h2>
-                                <p className="text-xs text-on-surface-variant">Fill in the form below to apply as an instructor.</p>
-                            </div>
-
-                            {error && (
-                                <div className="bg-red-50 border border-red-200 text-red-700 text-xs rounded p-2.5 mb-4">
-                                    {error}
-                                </div>
-                            )}
-
-                            <form onSubmit={handleApply} className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="block font-semibold text-on-surface-variant mb-1">Full Name</label>
-                                        <input 
-                                            type="text" 
-                                            className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:ring-1 focus:ring-primary focus:outline-none" 
-                                            placeholder="e.g. Priya Sharma"
-                                            value={name}
-                                            onChange={(e) => setName(e.target.value)}
-                                            required
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block font-semibold text-on-surface-variant mb-1">Email Address</label>
-                                        <input 
-                                            type="email" 
-                                            className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:ring-1 focus:ring-primary focus:outline-none" 
-                                            placeholder="e.g. priya@example.com"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="block font-semibold text-on-surface-variant mb-1">Course/Craft Subject</label>
-                                        <input 
-                                            type="text" 
-                                            className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:ring-1 focus:ring-primary focus:outline-none" 
-                                            placeholder="e.g. Lippan Art Fundamentals"
-                                            value={course}
-                                            onChange={(e) => setCourse(e.target.value)}
-                                            required
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block font-semibold text-on-surface-variant mb-1">Proposed Class Dates/Times</label>
-                                        <input 
-                                            type="text" 
-                                            className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:ring-1 focus:ring-primary focus:outline-none" 
-                                            placeholder="e.g. Mon, Wed, Fri (2:30 PM)"
-                                            value={runningDates}
-                                            onChange={(e) => setRunningDates(e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="block font-semibold text-on-surface-variant mb-1">Years of Creative Experience</label>
-                                        <input 
-                                            type="text" 
-                                            className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:ring-1 focus:ring-primary focus:outline-none" 
-                                            placeholder="e.g. 5 years"
-                                            value={experience}
-                                            onChange={(e) => setExperience(e.target.value)}
-                                            required
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block font-semibold text-on-surface-variant mb-1">Portfolio Link / Website</label>
-                                        <input 
-                                            type="url" 
-                                            className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:ring-1 focus:ring-primary focus:outline-none" 
-                                            placeholder="e.g. https://myportfolio.com"
-                                            value={portfolioUrl}
-                                            onChange={(e) => setPortfolioUrl(e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-
-                                <button 
-                                    type="submit" 
-                                    disabled={loading}
-                                    className="w-full py-3 bg-primary text-on-primary font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5 shadow-sm mt-2 disabled:opacity-50"
-                                >
-                                    {loading ? 'Submitting...' : 'Submit Application'}
-                                </button>
-                            </form>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Full Name</label>
+                            <input type="text" className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-primary" value={name} onChange={e => setName(e.target.value)} required />
                         </div>
-                    )}
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Email Address</label>
+                            <input type="email" className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 opacity-60" value={email} readOnly />
+                        </div>
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Age</label>
+                            <input type="number" className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-primary" value={age} onChange={e => setAge(e.target.value)} required />
+                        </div>
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Gender</label>
+                            <select className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none" value={gender} onChange={e => setGender(e.target.value)}>
+                                <option>Female</option>
+                                <option>Male</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Phone Number</label>
+                            <input type="text" className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none focus:ring-1 focus:ring-primary" value={phone} onChange={e => setPhone(e.target.value)} required />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div>
+                                <label className="block font-semibold text-on-surface-variant mb-1">City</label>
+                                <input type="text" className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none" value={city} onChange={e => setCity(e.target.value)} required />
+                            </div>
+                            <div>
+                                <label className="block font-semibold text-on-surface-variant mb-1">State</label>
+                                <input type="text" className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none" value={state} onChange={e => setState(e.target.value)} required />
+                            </div>
+                        </div>
+                        <div className="md:col-span-2">
+                            <label className="block font-semibold text-on-surface-variant mb-1">Profile Photo</label>
+                            <div className="flex items-center gap-4">
+                                {profilePhoto && <img src={profilePhoto} className="w-12 h-12 rounded-full object-cover border" alt="Profile Preview" />}
+                                <input type="file" accept="image/*" onChange={handleProfilePhotoChange} className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2 focus:outline-none" />
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </section>
+
+                {/* 2. Professional Information */}
+                <div>
+                    <h3 className="text-sm font-bold text-primary border-b border-outline-variant/30 pb-2 mb-4">2. Professional Information</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Trainer Category (Craft type)</label>
+                            <input type="text" className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none" placeholder="e.g. Lippan Art / Pottery" value={category} onChange={e => setCategory(e.target.value)} required />
+                        </div>
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Years of Creative Experience</label>
+                            <input type="text" className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none" placeholder="e.g. 5 years" value={experienceYears} onChange={e => setExperienceYears(e.target.value)} required />
+                        </div>
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Current Profession</label>
+                            <input type="text" className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none" placeholder="e.g. Studio Artist" value={profession} onChange={e => setProfession(e.target.value)} required />
+                        </div>
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Teaching Experience (Years/Brief)</label>
+                            <input type="text" className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none" placeholder="e.g. 2 years at community center" value={teachingExperience} onChange={e => setTeachingExperience(e.target.value)} required />
+                        </div>
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Previous Workshops Conducted</label>
+                            <input type="text" className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none" placeholder="e.g. 4 weekend camps" value={previousWorkshops} onChange={e => setPreviousWorkshops(e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Number of Students Taught</label>
+                            <input type="number" className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none" placeholder="e.g. 150" value={studentsTaught} onChange={e => setStudentsTaught(e.target.value)} />
+                        </div>
+                    </div>
+                </div>
+
+                {/* 3. Creative Expertise */}
+                <div>
+                    <h3 className="text-sm font-bold text-primary border-b border-outline-variant/30 pb-2 mb-4">3. Creative Expertise</h3>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Specific Areas of Expertise</label>
+                            <textarea className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none" rows={2} placeholder="Explain details of your technique" value={expertiseAreas} onChange={e => setExpertiseAreas(e.target.value)} required />
+                        </div>
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">What workshops/courses do you propose to teach?</label>
+                            <textarea className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none" rows={2} placeholder="Outline class curriculum ideas" value={whatTheyCanTeach} onChange={e => setWhatTheyCanTeach(e.target.value)} required />
+                        </div>
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Why do you want to become a trainer at Lemon Academy?</label>
+                            <textarea className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none" rows={2} placeholder="Your motivation" value={whyTrainer} onChange={e => setWhyTrainer(e.target.value)} required />
+                        </div>
+                    </div>
+                </div>
+
+                {/* 4. Portfolio Upload */}
+                <div>
+                    <h3 className="text-sm font-bold text-primary border-b border-outline-variant/30 pb-2 mb-4">4. Portfolio (Upload 2-3 Creative Work Photos)</h3>
+                    <div className="space-y-4">
+                        <label className="cursor-pointer block border border-dashed border-outline-variant/60 rounded-xl p-6 text-center hover:bg-surface-container-low transition-colors">
+                            <span className="material-symbols-outlined text-primary text-xl block mb-2">upload_file</span>
+                            <span className="font-semibold text-on-surface">Click to Upload Artwork Images</span>
+                            <input type="file" multiple accept="image/*" className="sr-only" onChange={handlePortfolioAdd} />
+                        </label>
+                        <div className="grid grid-cols-3 gap-3">
+                            {portfolioPhotos.map((photo, idx) => (
+                                <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border">
+                                    <img src={photo} className="w-full h-full object-cover" alt="Portfolio Artwork" />
+                                    <button 
+                                        type="button" 
+                                        onClick={() => removePortfolioImage(idx)}
+                                        className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1"
+                                    >
+                                        <span className="material-symbols-outlined text-xs">delete</span>
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* 5. Social Links */}
+                <div>
+                    <h3 className="text-sm font-bold text-primary border-b border-outline-variant/30 pb-2 mb-4">5. Social Links (Optional)</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Instagram Profile Link</label>
+                            <input type="url" className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none" placeholder="https://instagram.com/profile" value={instagram} onChange={e => setInstagram(e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">YouTube Channel Link</label>
+                            <input type="url" className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none" placeholder="https://youtube.com/channel" value={youtube} onChange={e => setYoutube(e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Facebook Page Link</label>
+                            <input type="url" className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none" placeholder="https://facebook.com/page" value={facebook} onChange={e => setFacebook(e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Website / Portfolio Link</label>
+                            <input type="url" className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none" placeholder="https://mywebsite.com" value={website} onChange={e => setWebsite(e.target.value)} />
+                        </div>
+                    </div>
+                </div>
+
+                {/* 6. Additional Information */}
+                <div>
+                    <h3 className="text-sm font-bold text-primary border-b border-outline-variant/30 pb-2 mb-4">6. Additional Information</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Highest Education Level</label>
+                            <input type="text" className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none" placeholder="e.g. Master of Fine Arts" value={education} onChange={e => setEducation(e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Certifications / Awards</label>
+                            <input type="text" className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none" placeholder="e.g. Kutch Craft Guild Certificate" value={awards} onChange={e => setAwards(e.target.value)} />
+                        </div>
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Languages Spoken</label>
+                            <input type="text" className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none" placeholder="e.g. English, Hindi, Gujarati" value={languages} onChange={e => setLanguages(e.target.value)} required />
+                        </div>
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Preferred Teaching Language</label>
+                            <input type="text" className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none" placeholder="e.g. English" value={teachingLanguage} onChange={e => setTeachingLanguage(e.target.value)} required />
+                        </div>
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Availability (Hours/Week)</label>
+                            <input type="text" className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none" placeholder="e.g. 10 hours on weekends" value={availability} onChange={e => setAvailability(e.target.value)} required />
+                        </div>
+                        <div>
+                            <label className="block font-semibold text-on-surface-variant mb-1">Preferred Class Format</label>
+                            <select className="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:outline-none" value={classFormat} onChange={e => setClassFormat(e.target.value)}>
+                                <option>Online Live</option>
+                                <option>Pre-recorded Video</option>
+                                <option>Hybrid Model</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <button 
+                    type="submit" 
+                    disabled={loading}
+                    className="w-full py-4 bg-primary text-on-primary font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5 shadow-sm text-xs disabled:opacity-50"
+                >
+                    {loading ? 'Submitting Application...' : 'Submit Application'}
+                </button>
+            </form>
         </main>
     );
 }

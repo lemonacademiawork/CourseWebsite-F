@@ -30,93 +30,104 @@ const HERO_SLIDES = [
 ];
 
 export default function LemonAcademyHome() {
+    const [slides, setSlides] = useState<string[]>([]);
     const [currentSlide, setCurrentSlide] = useState(0);
 
+    const loadCarousel = () => {
+        const stored = localStorage.getItem('homepage_carousel');
+        if (stored) {
+            const list = JSON.parse(stored);
+            const activeList = list.filter((item: any) => item.active).map((item: any) => item.url);
+            if (activeList.length > 0) {
+                setSlides(activeList);
+                return;
+            }
+        }
+        // Fallback default slides
+        setSlides([
+            "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=1600&h=600",
+            "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&q=80&w=1600&h=600",
+            "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=1600&h=600"
+        ]);
+    };
+
     useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
-        }, 5000);
-        return () => clearInterval(timer);
+        loadCarousel();
+
+        // Listen for carousel changes in admin panel
+        window.addEventListener('carousel_updated', loadCarousel);
+        return () => window.removeEventListener('carousel_updated', loadCarousel);
     }, []);
 
+    useEffect(() => {
+        if (slides.length <= 1) return;
+        const timer = setInterval(() => {
+            setCurrentSlide((prev) => (prev + 1) % slides.length);
+        }, 5000);
+        return () => clearInterval(timer);
+    }, [slides]);
+
     const nextSlide = () => {
-        setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+        if (slides.length <= 1) return;
+        setCurrentSlide((prev) => (prev + 1) % slides.length);
     };
 
     const prevSlide = () => {
-        setCurrentSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
+        if (slides.length <= 1) return;
+        setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
     };
 
     return (
         <main className="bg-surface min-h-screen">
             {/* Full-width Hero Carousel */}
-            <section className="relative w-full h-[70vh] md:h-[80vh] overflow-hidden border-b border-outline-variant/20">
-                {HERO_SLIDES.map((slide, idx) => (
+            <section className="relative w-full h-[55vh] md:h-[65vh] overflow-hidden border-b border-outline-variant/20">
+                {slides.map((url, idx) => (
                     <div 
                         key={idx} 
                         className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
                             idx === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
                         }`}
                     >
-                        {/* Dark gradient overlay for typography readability */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent z-10" />
                         <img 
-                            alt={slide.title} 
+                            alt={`Slide ${idx + 1}`} 
                             className="w-full h-full object-cover" 
-                            src={slide.imageUrl} 
+                            src={url} 
                         />
-                        
-                        {/* Slide Content */}
-                        <div className="absolute inset-0 z-20 flex items-center px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
-                            <div className="max-w-xl text-white space-y-4 md:space-y-6">
-                                <span className="bg-primary/20 backdrop-blur-sm border border-primary/30 text-primary-light text-[10px] md:text-xs font-bold uppercase tracking-widest py-1 px-3 rounded-full inline-block">
-                                    {slide.tagline}
-                                </span>
-                                <h1 className="text-3xl md:text-5xl font-extrabold leading-tight text-white drop-shadow-sm">
-                                    {slide.title}
-                                </h1>
-                                <p className="text-xs md:text-sm text-white/80 leading-relaxed drop-shadow-sm max-w-lg">
-                                    {slide.description}
-                                </p>
-                                <div className="flex flex-wrap gap-3 pt-2">
-                                    <Link href="/courses" className="bg-primary text-on-primary font-semibold text-xs py-3 px-6 rounded-lg hover:opacity-95 transition-opacity shadow-md">
-                                        Explore Courses
-                                    </Link>
-                                    <Link href="/gallery" className="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-xs py-3 px-6 rounded-lg transition-colors">
-                                        View Gallery
-                                    </Link>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 ))}
 
                 {/* Arrow Controls */}
-                <button 
-                    onClick={prevSlide}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/30 hover:bg-black/50 text-white flex items-center justify-center z-30 transition-colors"
-                >
-                    <span className="material-symbols-outlined text-base">chevron_left</span>
-                </button>
-                <button 
-                    onClick={nextSlide}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/30 hover:bg-black/50 text-white flex items-center justify-center z-30 transition-colors"
-                >
-                    <span className="material-symbols-outlined text-base">chevron_right</span>
-                </button>
+                {slides.length > 1 && (
+                    <>
+                        <button 
+                            onClick={prevSlide}
+                            className="absolute left-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/30 hover:bg-black/50 text-white flex items-center justify-center z-30 transition-colors"
+                        >
+                            <span className="material-symbols-outlined text-base">chevron_left</span>
+                        </button>
+                        <button 
+                            onClick={nextSlide}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/30 hover:bg-black/50 text-white flex items-center justify-center z-30 transition-colors"
+                        >
+                            <span className="material-symbols-outlined text-base">chevron_right</span>
+                        </button>
+                    </>
+                )}
 
                 {/* Indicator Dots */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-30">
-                    {HERO_SLIDES.map((_, idx) => (
-                        <button 
-                            key={idx} 
-                            onClick={() => setCurrentSlide(idx)}
-                            className={`w-2 h-2 rounded-full transition-all ${
-                                idx === currentSlide ? 'bg-white w-4' : 'bg-white/40'
-                            }`}
-                        />
-                    ))}
-                </div>
+                {slides.length > 1 && (
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-30">
+                        {slides.map((_, idx) => (
+                            <button 
+                                key={idx} 
+                                onClick={() => setCurrentSlide(idx)}
+                                className={`w-2 h-2 rounded-full transition-all ${
+                                    idx === currentSlide ? 'bg-white w-4' : 'bg-white/40'
+                                }`}
+                            />
+                        ))}
+                    </div>
+                )}
             </section>
 
             {/* Master a Craft Section */}

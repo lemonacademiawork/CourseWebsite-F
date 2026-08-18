@@ -75,7 +75,9 @@ export default function ExploreCoursesLemonAcademy() {
                                 </div>
                             </div>
                             <div className="p-6 flex flex-col flex-grow">
-                                <h3 className="font-headline-sm text-headline-sm text-on-surface mb-2 leading-tight group-hover:text-primary transition-colors">Mastering Traditional Lippan Art</h3>
+                                <h3 className="font-headline-sm text-headline-sm text-on-surface mb-2 leading-tight group-hover:text-primary transition-colors">
+                                    <Link href="/courses/lippan-art">Mastering Traditional Lippan Art</Link>
+                                </h3>
                                 <p className="font-body-md text-body-md text-on-surface-variant mb-4 flex-grow line-clamp-2">Learn the ancient techniques of mud and mirror work to create stunning contemporary wall decors.</p>
                                 <div className="flex items-center gap-2 mb-4">
                                     <div className="w-6 h-6 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container text-xs font-bold">AS</div>
