@@ -1,35 +1,98 @@
 "use client";
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import TopNavbar from './TopNavbar';
 import AdminSidebar from './AdminSidebar';
-import StudentSidebar from './StudentSidebar';
 import TrainerSidebar from './TrainerSidebar';
 import Footer from './Footer';
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
     const pathname = usePathname() || '';
+    const router = useRouter();
 
-    const isAdmin = pathname.startsWith('/admin');
-    const isStudent = pathname.startsWith('/student');
-    const isTrainer = pathname.startsWith('/trainer');
+    const [authLoading, setAuthLoading] = useState(true);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userRole, setUserRole] = useState('');
+
+    const verifyAccess = () => {
+        const loggedIn = localStorage.getItem('is_logged_in') === 'true';
+        const role = localStorage.getItem('user_role') || '';
+        
+        setIsLoggedIn(loggedIn);
+        setUserRole(role);
+
+        const isAdminRoute = pathname.startsWith('/admin');
+        const isTrainerRoute = pathname.startsWith('/trainer');
+        
+        const isStudentRoute = pathname.startsWith('/my-courses') || 
+                               pathname === '/refer-and-earn' || 
+                               pathname === '/become-a-trainer' || 
+                               pathname === '/profile';
+
+        if (isAdminRoute && role !== 'admin') {
+            if (!loggedIn) {
+                router.push(`/login?returnUrl=${pathname}`);
+            } else {
+                router.push('/403');
+            }
+            return;
+        }
+
+        if (isTrainerRoute && role !== 'trainer') {
+            if (!loggedIn) {
+                router.push(`/login?returnUrl=${pathname}`);
+            } else {
+                router.push('/403');
+            }
+            return;
+        }
+
+        if (isStudentRoute && !loggedIn) {
+            router.push(`/login?returnUrl=${pathname}`);
+            return;
+        }
+
+        setAuthLoading(false);
+    };
+
+    useEffect(() => {
+        verifyAccess();
+        
+        // Setup listener for auth state updates
+        window.addEventListener('auth_state_changed', verifyAccess);
+        return () => window.removeEventListener('auth_state_changed', verifyAccess);
+    }, [pathname]);
+
+    const isAdmin = pathname.startsWith('/admin') && userRole === 'admin';
+    const isTrainer = pathname.startsWith('/trainer') && userRole === 'trainer';
     const isAuthPage = pathname === '/login' || pathname === '/signup';
+
+    if (authLoading && (pathname.startsWith('/admin') || pathname.startsWith('/trainer') || pathname.startsWith('/my-courses') || pathname === '/refer-and-earn' || pathname === '/become-a-trainer' || pathname === '/profile')) {
+        return (
+            <div className="min-h-screen bg-[#FBF8F1] flex items-center justify-center text-xs text-on-surface-variant">
+                <div className="flex flex-col items-center gap-2">
+                    <span className="material-symbols-outlined animate-spin text-xl text-primary">autorenew</span>
+                    <span>Loading workspace...</span>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <>
-            {/* TopNavbar only shows on public routes, except auth pages */}
-            {!isAdmin && !isStudent && !isTrainer && !isAuthPage && <TopNavbar />}
+            {/* TopNavbar only shows on public/student routes, except auth pages */}
+            {!isAdmin && !isTrainer && !isAuthPage && <TopNavbar />}
             
-            {/* Sidebars only show on specific domains */}
+            {/* Sidebars only show on specific roles and paths */}
             {isAdmin && <AdminSidebar />}
-            {isStudent && <StudentSidebar />}
             {isTrainer && <TrainerSidebar />}
 
             {/* Adjust margin for sidebars */}
-            <div className={(isAdmin || isStudent || isTrainer) ? "md:ml-60" : "flex flex-col min-h-screen"}>
+            <div className={(isAdmin || isTrainer) ? "md:ml-60" : "flex flex-col min-h-screen"}>
                 <div className="flex-grow">
                     {children}
                 </div>
-                {!isAdmin && !isStudent && !isTrainer && !isAuthPage && <Footer />}
+                {!isAdmin && !isTrainer && !isAuthPage && <Footer />}
             </div>
         </>
     );

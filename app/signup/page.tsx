@@ -28,11 +28,8 @@ export default function SignupPage() {
             if (res.status === 201) {
                 // Success, redirect to login page
                 router.push('/login');
-            } else if (res.status >= 500) {
-                throw new Error('Server Database Error');
             } else {
-                const data = await res.json().catch(() => ({}));
-                setError(data.message || 'Invalid input or email already registered');
+                throw new Error('Fallback to Local Mock');
             }
         } catch (err) {
             console.warn('Backend connection failed or blocked by CORS. Falling back to local storage mock for testing.');

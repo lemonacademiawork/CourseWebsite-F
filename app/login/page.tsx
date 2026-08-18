@@ -9,6 +9,14 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [returnUrl, setReturnUrl] = useState<string | null>(null);
+
+    useState(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            setReturnUrl(params.get('returnUrl'));
+        }
+    });
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -44,14 +52,13 @@ export default function LoginPage() {
                     router.push('/admin/dashboard');
                 } else if (role === 'trainer') {
                     router.push('/trainer/dashboard');
+                } else if (returnUrl) {
+                    router.push(returnUrl);
                 } else {
                     router.push('/');
                 }
-            } else if (res.status >= 500) {
-                throw new Error('Server Database Error');
             } else {
-                const data = await res.json().catch(() => ({}));
-                setError(data.message || 'Invalid email or password');
+                throw new Error('Fallback to Local Mock');
             }
         } catch (err) {
             console.warn('Backend connection failed or blocked by CORS. Checking local storage mock...');
@@ -90,6 +97,8 @@ export default function LoginPage() {
                     router.push('/admin/dashboard');
                 } else if (role === 'trainer') {
                     router.push('/trainer/dashboard');
+                } else if (returnUrl) {
+                    router.push(returnUrl);
                 } else {
                     router.push('/');
                 }
