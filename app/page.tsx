@@ -78,9 +78,9 @@ export default function LemonAcademyHome() {
     };
 
     return (
-        <main className="bg-surface min-h-screen">
+        <main className="bg-surface min-h-screen overflow-x-hidden w-full relative">
             {/* Full-width Hero Carousel */}
-            <section className="relative w-full h-[55vh] md:h-[65vh] overflow-hidden border-b border-outline-variant/20">
+            <section className="relative w-screen max-w-none h-screen overflow-hidden border-b border-outline-variant/20">
                 {slides.map((url, idx) => (
                     <div 
                         key={idx} 

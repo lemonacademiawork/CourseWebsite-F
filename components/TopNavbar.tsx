@@ -9,6 +9,7 @@ export default function TopNavbar() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userRole, setUserRole] = useState('student');
     const [hasCourses, setHasCourses] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const loadAuthState = () => {
         const loggedIn = localStorage.getItem('is_logged_in') === 'true';
@@ -16,7 +17,6 @@ export default function TopNavbar() {
         if (loggedIn) {
             setUserRole(localStorage.getItem('user_role') || 'student');
             
-            // Check purchased courses for Refer & Earn eligibility
             const purchased = localStorage.getItem('purchased_courses');
             if (purchased) {
                 try {
@@ -33,8 +33,6 @@ export default function TopNavbar() {
 
     useEffect(() => {
         loadAuthState();
-        
-        // Listen for custom login/purchase events to update navbar state
         window.addEventListener('auth_state_changed', loadAuthState);
         window.addEventListener('courses_updated', loadAuthState);
         return () => {
@@ -50,32 +48,57 @@ export default function TopNavbar() {
         localStorage.removeItem('user_name');
         localStorage.removeItem('auth_token');
         setIsLoggedIn(false);
+        setMobileMenuOpen(false);
         router.push('/');
         window.dispatchEvent(new Event('auth_state_changed'));
     };
 
+    const isHome = pathname === '/';
+
     const getLinkClass = (href: string) => {
         const isActive = pathname === href;
-        if (isActive) {
-            return "text-primary border-b-2 border-primary pb-1 font-semibold";
+        if (isHome) {
+            if (isActive) {
+                return "text-white border-b-2 border-white pb-1 font-semibold drop-shadow-md";
+            }
+            return "text-white/80 hover:text-white transition-colors duration-200 drop-shadow-md";
+        } else {
+            if (isActive) {
+                return "text-primary border-b-2 border-primary pb-1 font-semibold";
+            }
+            return "text-on-surface-variant hover:text-primary transition-colors duration-200";
         }
-        return "text-on-surface-variant hover:text-primary transition-colors duration-200";
+    };
+
+    const getMobileLinkClass = (href: string) => {
+        const isActive = pathname === href;
+        if (isActive) {
+            return "text-primary font-bold block py-2 border-l-4 border-primary pl-3 bg-surface-container-low";
+        }
+        return "text-on-surface-variant hover:text-primary block py-2 pl-3 transition-colors";
     };
 
     return (
-        <nav className="bg-surface shadow-sm top-0 sticky z-50">
+        <nav className={`left-0 right-0 z-50 transition-all duration-300 ${
+            isHome 
+                ? "absolute top-0 bg-transparent" 
+                : "bg-surface shadow-sm top-0 sticky"
+        }`}>
             <div className="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto text-xs">
-                <Link href="/" className="font-display-lg text-lg md:text-xl text-primary font-bold">
+                {/* Logo */}
+                <Link href="/" className={`font-display-lg text-lg md:text-xl font-bold transition-colors ${
+                    isHome ? "text-white drop-shadow-md" : "text-primary"
+                }`}>
                     Lemon Academy
                 </Link>
                 
+                {/* Desktop Menu */}
                 <ul className="hidden md:flex gap-6 items-center font-medium">
                     <li><Link className={getLinkClass('/')} href="/">Home</Link></li>
                     <li><Link className={getLinkClass('/courses')} href="/courses">Courses</Link></li>
                     <li><Link className={getLinkClass('/blogs')} href="/blogs">Blogs</Link></li>
                     <li><Link className={getLinkClass('/gallery')} href="/gallery">Gallery</Link></li>
                     
-                    {/* Student logged in additional routes */}
                     {isLoggedIn && userRole === 'student' && (
                         <>
                             <li><Link className={getLinkClass('/my-courses')} href="/my-courses">My Courses</Link></li>
@@ -87,41 +110,119 @@ export default function TopNavbar() {
                     )}
                 </ul>
 
-                <div className="flex items-center gap-3">
+                {/* Right side login/logout controls */}
+                <div className="hidden md:flex items-center gap-3">
                     {isLoggedIn ? (
                         <div className="flex items-center gap-3">
                             {userRole === 'admin' && (
-                                <Link href="/admin/dashboard" className="text-primary font-semibold hover:underline">
+                                <Link href="/admin/dashboard" className={`font-semibold hover:underline ${isHome ? 'text-white' : 'text-primary'}`}>
                                     Admin Panel
                                 </Link>
                             )}
                             {userRole === 'trainer' && (
-                                <Link href="/trainer/dashboard" className="text-primary font-semibold hover:underline">
+                                <Link href="/trainer/dashboard" className={`font-semibold hover:underline ${isHome ? 'text-white' : 'text-primary'}`}>
                                     Trainer Dashboard
                                 </Link>
                             )}
-                            <Link href="/profile" className="text-on-surface hover:text-primary font-medium">
+                            <Link href="/profile" className={`font-medium ${isHome ? 'text-white/90 hover:text-white' : 'text-on-surface hover:text-primary'}`}>
                                 Profile
                             </Link>
                             <button 
                                 onClick={handleLogout}
-                                className="bg-surface-variant text-on-surface-variant px-4 py-2 rounded-lg hover:bg-surface-dim transition-colors font-semibold"
+                                className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                                    isHome 
+                                        ? "bg-white/10 hover:bg-white/20 text-white border border-white/20" 
+                                        : "bg-surface-variant text-on-surface-variant hover:bg-surface-dim"
+                                }`}
                             >
                                 Logout
                             </button>
                         </div>
                     ) : (
                         <>
-                            <Link href="/login" className="text-primary font-semibold px-3 py-2 hover:opacity-90 transition-opacity">
+                            <Link href="/login" className={`font-semibold px-3 py-2 transition-opacity ${
+                                isHome ? "text-white hover:opacity-90" : "text-primary hover:opacity-90"
+                            }`}>
                                 Login
                             </Link>
-                            <Link href="/signup" className="bg-primary text-on-primary font-semibold px-4 py-2.5 rounded-lg hover:opacity-90 transition-opacity">
+                            <Link href="/signup" className={`font-semibold px-4 py-2.5 rounded-lg transition-opacity ${
+                                isHome 
+                                    ? "bg-white text-primary hover:bg-white/90 shadow-md" 
+                                    : "bg-primary text-on-primary hover:opacity-90"
+                            }`}>
                                 Sign Up
                             </Link>
                         </>
                     )}
                 </div>
+
+                {/* Mobile Hamburger toggle */}
+                <button 
+                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    className={`md:hidden p-1 rounded-lg ${isHome ? 'text-white' : 'text-on-surface'}`}
+                >
+                    <span className="material-symbols-outlined text-xl">
+                        {mobileMenuOpen ? 'close' : 'menu'}
+                    </span>
+                </button>
             </div>
+
+            {/* Mobile Drawer Overlay */}
+            {mobileMenuOpen && (
+                <div className="md:hidden absolute top-full left-0 right-0 bg-[#FBF8F1] border-b border-outline-variant/30 shadow-lg py-4 px-margin-mobile flex flex-col gap-4 text-xs z-50">
+                    <ul className="flex flex-col gap-2 font-medium">
+                        <li><Link onClick={() => setMobileMenuOpen(false)} className={getMobileLinkClass('/')} href="/">Home</Link></li>
+                        <li><Link onClick={() => setMobileMenuOpen(false)} className={getMobileLinkClass('/courses')} href="/courses">Courses</Link></li>
+                        <li><Link onClick={() => setMobileMenuOpen(false)} className={getMobileLinkClass('/blogs')} href="/blogs">Blogs</Link></li>
+                        <li><Link onClick={() => setMobileMenuOpen(false)} className={getMobileLinkClass('/gallery')} href="/gallery">Gallery</Link></li>
+                        
+                        {isLoggedIn && userRole === 'student' && (
+                            <>
+                                <li><Link onClick={() => setMobileMenuOpen(false)} className={getMobileLinkClass('/my-courses')} href="/my-courses">My Courses</Link></li>
+                                {hasCourses && (
+                                    <li><Link onClick={() => setMobileMenuOpen(false)} className={getMobileLinkClass('/refer-and-earn')} href="/refer-and-earn">Refer & Earn</Link></li>
+                                )}
+                                <li><Link onClick={() => setMobileMenuOpen(false)} className={getMobileLinkClass('/become-a-trainer')} href="/become-a-trainer">Become a Trainer</Link></li>
+                            </>
+                        )}
+                    </ul>
+
+                    <div className="flex flex-col gap-2 pt-3 border-t border-outline-variant/20">
+                        {isLoggedIn ? (
+                            <>
+                                {userRole === 'admin' && (
+                                    <Link onClick={() => setMobileMenuOpen(false)} href="/admin/dashboard" className="text-primary font-bold py-2 pl-3">
+                                        Admin Panel
+                                    </Link>
+                                )}
+                                {userRole === 'trainer' && (
+                                    <Link onClick={() => setMobileMenuOpen(false)} href="/trainer/dashboard" className="text-primary font-bold py-2 pl-3">
+                                        Trainer Dashboard
+                                    </Link>
+                                )}
+                                <Link onClick={() => setMobileMenuOpen(false)} href="/profile" className="text-on-surface font-semibold py-2 pl-3">
+                                    Profile
+                                </Link>
+                                <button 
+                                    onClick={handleLogout}
+                                    className="w-full bg-surface-variant text-on-surface-variant py-2.5 rounded-lg font-semibold text-center mt-1"
+                                >
+                                    Logout
+                                </button>
+                            </>
+                        ) : (
+                            <div className="flex gap-2">
+                                <Link onClick={() => setMobileMenuOpen(false)} href="/login" className="flex-1 text-center border border-outline text-on-surface py-2 rounded-lg font-semibold">
+                                    Login
+                                </Link>
+                                <Link onClick={() => setMobileMenuOpen(false)} href="/signup" className="flex-1 text-center bg-primary text-on-primary py-2 rounded-lg font-semibold">
+                                    Sign Up
+                                </Link>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </nav>
     );
 }
