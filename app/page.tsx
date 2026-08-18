@@ -79,59 +79,64 @@ export default function LemonAcademyHome() {
 
     return (
         <main className="bg-surface min-h-screen overflow-x-hidden w-full relative">
-            {/* Full-width Hero Carousel */}
-            <section className="relative w-screen max-w-none h-screen overflow-hidden border-b border-outline-variant/20">
-                {slides.map((url, idx) => (
-                    <div 
-                        key={idx} 
-                        className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                            idx === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
-                        }`}
-                    >
-                        <img 
-                            alt={`Slide ${idx + 1}`} 
-                            className="w-full h-full object-cover" 
-                            src={url} 
-                        />
-                    </div>
-                ))}
+            {/* Centered Inset Hero Stage */}
+            <section className="relative w-full pt-[96px] pb-6 flex justify-center bg-[#FBF8F1]">
+                {/* Subtle top gradient overlay for text readability over busy images */}
+                <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-black/10 via-black/3 to-transparent pointer-events-none z-20" />
 
-                {/* Arrow Controls */}
-                {slides.length > 1 && (
-                    <>
-                        <button 
-                            onClick={prevSlide}
-                            className="absolute left-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/30 hover:bg-black/50 text-white flex items-center justify-center z-30 transition-colors"
+                <div className="w-[90%] max-w-[1420px] h-[300px] sm:h-[380px] lg:h-[480px] rounded-2xl overflow-hidden relative shadow-sm border border-outline-variant/10 bg-surface-container z-10">
+                    {slides.map((url, idx) => (
+                        <div 
+                            key={idx} 
+                            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                                idx === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                            }`}
                         >
-                            <span className="material-symbols-outlined text-base">chevron_left</span>
-                        </button>
-                        <button 
-                            onClick={nextSlide}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/30 hover:bg-black/50 text-white flex items-center justify-center z-30 transition-colors"
-                        >
-                            <span className="material-symbols-outlined text-base">chevron_right</span>
-                        </button>
-                    </>
-                )}
-
-                {/* Indicator Dots */}
-                {slides.length > 1 && (
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-30">
-                        {slides.map((_, idx) => (
-                            <button 
-                                key={idx} 
-                                onClick={() => setCurrentSlide(idx)}
-                                className={`w-2 h-2 rounded-full transition-all ${
-                                    idx === currentSlide ? 'bg-white w-4' : 'bg-white/40'
-                                }`}
+                            <img 
+                                alt={`Slide ${idx + 1}`} 
+                                className="w-full h-full object-cover" 
+                                src={url} 
                             />
-                        ))}
-                    </div>
-                )}
+                        </div>
+                    ))}
+
+                    {/* Arrow Controls */}
+                    {slides.length > 1 && (
+                        <>
+                            <button 
+                                onClick={prevSlide}
+                                className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/15 hover:bg-black/35 text-white flex items-center justify-center z-30 transition-colors"
+                            >
+                                <span className="material-symbols-outlined text-sm">chevron_left</span>
+                            </button>
+                            <button 
+                                onClick={nextSlide}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/15 hover:bg-black/35 text-white flex items-center justify-center z-30 transition-colors"
+                            >
+                                <span className="material-symbols-outlined text-sm">chevron_right</span>
+                            </button>
+                        </>
+                    )}
+
+                    {/* Indicator Dots */}
+                    {slides.length > 1 && (
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-30">
+                            {slides.map((_, idx) => (
+                                <button 
+                                    key={idx} 
+                                    onClick={() => setCurrentSlide(idx)}
+                                    className={`w-1.5 h-1.5 rounded-full transition-all ${
+                                        idx === currentSlide ? 'bg-white scale-110' : 'bg-white/40 hover:bg-white/70'
+                                    }`}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
             </section>
 
             {/* Master a Craft Section */}
-            <section className="py-12 bg-surface-container-low px-margin-mobile md:px-margin-desktop">
+            <section className="pt-10 pb-12 bg-surface-container-low px-margin-mobile md:px-margin-desktop">
                 <div className="max-w-container-max mx-auto">
                     <h2 className="text-lg font-bold text-on-surface mb-8 text-center uppercase tracking-wider">Master a Craft</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
