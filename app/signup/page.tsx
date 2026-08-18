@@ -28,6 +28,8 @@ export default function SignupPage() {
             if (res.status === 201) {
                 // Success, redirect to login page
                 router.push('/login');
+            } else if (res.status >= 500) {
+                throw new Error('Server Database Error');
             } else {
                 const data = await res.json().catch(() => ({}));
                 setError(data.message || 'Invalid input or email already registered');

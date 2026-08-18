@@ -47,6 +47,8 @@ export default function LoginPage() {
                 } else {
                     router.push('/');
                 }
+            } else if (res.status >= 500) {
+                throw new Error('Server Database Error');
             } else {
                 const data = await res.json().catch(() => ({}));
                 setError(data.message || 'Invalid email or password');

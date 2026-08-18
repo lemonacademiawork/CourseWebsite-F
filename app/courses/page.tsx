@@ -1,3 +1,6 @@
+'use client';
+import Link from 'next/link';
+
 export default function ExploreCoursesLemonAcademy() {
     return (
         <main className="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-12">
