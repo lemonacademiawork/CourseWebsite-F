@@ -90,6 +90,24 @@ export default function LemonAcademyHome() {
                                 idx === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
                             }`}
                         >
+                            {/* Soft dark gradient on the left side of slide to support white text readability */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/35 to-transparent z-10" />
+
+                            {/* Dynamic Text Content Overlay */}
+                            <div className="absolute inset-y-0 left-0 z-20 flex items-center px-8 sm:px-12 md:px-16 w-full sm:w-2/3 md:w-1/2">
+                                <div className="text-white space-y-2 md:space-y-3">
+                                    <span className="bg-primary-container/20 backdrop-blur-sm border border-white/10 text-primary-fixed-dim text-[9px] md:text-[10px] font-bold uppercase tracking-widest py-1 px-3 rounded-full inline-block">
+                                        {HERO_SLIDES[idx % HERO_SLIDES.length].tagline}
+                                    </span>
+                                    <h1 className="text-xl md:text-3xl font-extrabold leading-tight text-white drop-shadow-sm playfair">
+                                        {HERO_SLIDES[idx % HERO_SLIDES.length].title}
+                                    </h1>
+                                    <p className="text-[10px] md:text-xs text-white/80 leading-relaxed drop-shadow-sm max-w-sm">
+                                        {HERO_SLIDES[idx % HERO_SLIDES.length].description}
+                                    </p>
+                                </div>
+                            </div>
+
                             <img 
                                 alt={`Slide ${idx + 1}`} 
                                 className="w-full h-full object-cover" 
