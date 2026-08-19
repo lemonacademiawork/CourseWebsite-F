@@ -46,12 +46,7 @@ export default function AdminSidebar() {
                         Creative Content
                     </Link>
                 </li>
-                <li>
-                    <Link className={getLinkClass('/admin/carousel')} href="/admin/carousel">
-                        <span className="material-symbols-outlined !text-[18px]" data-icon="image">image</span>
-                        Homepage Carousel
-                    </Link>
-                </li>
+
                 <li>
                     <Link className={getLinkClass('/admin/applications')} href="/admin/applications">
                         <span className="material-symbols-outlined !text-[18px]" data-icon="assignment_ind">assignment_ind</span>
