@@ -86,17 +86,28 @@ const ALL_POSTS: BlogPost[] = [
 const CATEGORIES = ["All Stories", "Crafting Tips", "Materials Guide", "Artisan Spotlight", "Community"];
 
 export default function BlogsPage() {
+    const [posts, setPosts] = useState<BlogPost[]>(ALL_POSTS);
     const [selectedCategory, setSelectedCategory] = useState("All Stories");
     const [searchQuery, setSearchQuery] = useState("");
 
-    const filteredPosts = ALL_POSTS.filter(post => {
+    useState(() => {
+        if (typeof window !== 'undefined') {
+            const customBlogs = localStorage.getItem('custom_blogs');
+            if (customBlogs) {
+                const parsed = JSON.parse(customBlogs);
+                setPosts([...parsed, ...ALL_POSTS]);
+            }
+        }
+    });
+
+    const filteredPosts = posts.filter(post => {
         const matchesCategory = selectedCategory === "All Stories" || post.category === selectedCategory;
         const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             post.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesCategory && matchesSearch;
     });
 
-    const featuredPost = ALL_POSTS[0];
+    const featuredPost = posts[0] || ALL_POSTS[0];
 
     return (
         <main className="min-h-screen bg-background text-on-background pt-8 pb-16 md:pt-12 md:pb-24">

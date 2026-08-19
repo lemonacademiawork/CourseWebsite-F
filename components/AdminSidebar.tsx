@@ -64,6 +64,12 @@ export default function AdminSidebar() {
                         Coupons
                     </Link>
                 </li>
+                <li>
+                    <Link className={getLinkClass('/admin/blogs')} href="/admin/blogs">
+                        <span className="material-symbols-outlined !text-[18px]" data-icon="edit_note">edit_note</span>
+                        Blog Management
+                    </Link>
+                </li>
             </ul>
             <div className="mt-auto px-2.5">
                 <Link href="/login" className="w-full block text-center bg-surface-container-highest text-on-surface font-semibold text-[13px] py-2 rounded-md hover:bg-surface-variant transition-colors shadow-sm">
