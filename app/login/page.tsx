@@ -31,28 +31,7 @@ export default function LoginPage() {
     };
 
     const handleGoogleLogin = () => {
-        setLoading(true);
-        setTimeout(() => {
-            const role = 'student';
-            localStorage.setItem('is_logged_in', 'true');
-            localStorage.setItem('user_role', role);
-            localStorage.setItem('user_email', 'google.user@gmail.com');
-            localStorage.setItem('user_name', 'Google Scholar');
-            
-            setCookie('is_logged_in', 'true');
-            setCookie('user_role', role);
-            setCookie('user_email', 'google.user@gmail.com');
-            setCookie('user_name', 'Google Scholar');
-            
-            window.dispatchEvent(new Event('auth_state_changed'));
-            setLoading(false);
-            
-            if (returnUrl) {
-                router.push(returnUrl);
-            } else {
-                router.push('/');
-            }
-        }, 800);
+        window.location.href = 'https://lemonwebsite-backend.onrender.com/api/v1/auth/google';
     };
 
     const handleLogin = async (e: React.FormEvent) => {

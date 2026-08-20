@@ -6,8 +6,32 @@ export default function TrainerWorkspaceProfilePage() {
     const [email, setEmail] = useState('');
 
     useEffect(() => {
-        setName(localStorage.getItem('user_name') || 'Trainer');
-        setEmail(localStorage.getItem('user_email') || 'trainer@lemon.edu');
+        const token = localStorage.getItem('auth_token') || '';
+        if (token) {
+            fetch('https://lemonwebsite-backend.onrender.com/api/v1/users/me', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                const profile = data.data || data;
+                if (profile.name || profile.email) {
+                    setName(profile.name || 'Trainer');
+                    setEmail(profile.email || '');
+                } else {
+                    setName(localStorage.getItem('user_name') || 'Trainer');
+                    setEmail(localStorage.getItem('user_email') || 'trainer@lemon.edu');
+                }
+            })
+            .catch(() => {
+                setName(localStorage.getItem('user_name') || 'Trainer');
+                setEmail(localStorage.getItem('user_email') || 'trainer@lemon.edu');
+            });
+        } else {
+            setName(localStorage.getItem('user_name') || 'Trainer');
+            setEmail(localStorage.getItem('user_email') || 'trainer@lemon.edu');
+        }
     }, []);
 
     return (

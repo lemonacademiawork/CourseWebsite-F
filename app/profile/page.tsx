@@ -17,9 +17,37 @@ export default function StudentUserProfilePage() {
             return;
         }
 
-        setName(localStorage.getItem('user_name') || 'User');
-        setEmail(localStorage.getItem('user_email') || '');
-        setRole(localStorage.getItem('user_role') || 'student');
+        const token = localStorage.getItem('auth_token') || '';
+        if (token) {
+            fetch('https://lemonwebsite-backend.onrender.com/api/v1/users/me', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                // Adjust if backend returns { success: true, data: { name, email, role } }
+                const profile = data.data || data;
+                if (profile.name || profile.email) {
+                    setName(profile.name || 'User');
+                    setEmail(profile.email || '');
+                    setRole(profile.role || 'student');
+                } else {
+                    setName(localStorage.getItem('user_name') || 'User');
+                    setEmail(localStorage.getItem('user_email') || '');
+                    setRole(localStorage.getItem('user_role') || 'student');
+                }
+            })
+            .catch(() => {
+                setName(localStorage.getItem('user_name') || 'User');
+                setEmail(localStorage.getItem('user_email') || '');
+                setRole(localStorage.getItem('user_role') || 'student');
+            });
+        } else {
+            setName(localStorage.getItem('user_name') || 'User');
+            setEmail(localStorage.getItem('user_email') || '');
+            setRole(localStorage.getItem('user_role') || 'student');
+        }
 
         const purchased = localStorage.getItem('purchased_courses');
         if (purchased) {
