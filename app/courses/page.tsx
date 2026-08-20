@@ -6,38 +6,7 @@ export default function ExploreCoursesLemonAcademy() {
     const [courses, setCourses] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const defaultMockCourses = [
-        {
-            id: 'lippan-art',
-            title: "",
-            category: "",
-            instructor: "",
-            description: "",
-            imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuAaoX0RGxpW-j4nvC1oT1ER7ghQq3LTyffaeKwMP7NUMAKKHqHQmjktmUbyLPagZx6VG0o3H4U157TFiWJGVWKEFwAc3hVXQzqSdHoFy7hC98aHC2EyKFdILSTsnS-EXmaDGklBokg2X7ZOMMcfjaSFDKUhNg6zQecW1g1g1W-aIDWhErsUjb9KT097mpys8RjeuJAbVJ2rMZ7tS10zRVyyf0czkAW4IWUW6sgkOQOPwRiE2EbJHQdA",
-            price: 0,
-            studentsCount: 0
-        },
-        {
-            id: 'mosaic-art',
-            title: "",
-            category: "",
-            instructor: "",
-            description: "",
-            imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuBNXqJr6RFpTJEjfBZWKnHdps3MQaN46CXv1Rat2GjC5wtUb9rF_qabpyosxixn_AapiaQCcB63D4-KUTw0diMpSadXamyTCjgPp5e4uK0PIf0J0dI2jaHKQx82ov3rYrOrts82WbkDDITFg8EoX5uj7HBBOSqzJQNfIG7xXxauFv3Xo4GgPDPtxfty2V9i6cwpNhMaobFX8eWZEHZtoh3Sc0aR_XyL6SbzhmKiTK_haC16AKpbTyDS",
-            price: 0,
-            studentsCount: 0
-        },
-        {
-            id: 'crochet',
-            title: "",
-            category: "",
-            instructor: "",
-            description: "",
-            imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuCarGQ1a20lOrYSxj_diFDlrx2teCRF0nc06aZuLUtzrjHtCM90tNxtMRvLG0nAJQeFRvurw4GyjS2TWcAdx59bz_OlVC11u5g3bF7eDFNpeBB58oaTnQzIo62DZL2p7HHxJcB2A8NIZb9Qh6hsVRZJ8WYBWclS9KvWFFjqZFk69Ne1rlQcQAKH9cnePrAXtPFxL-9yJ-uO8mcK6WI8rL82yuAVL47VthVsZdU68ebTuA-5QDxZpuRp",
-            price: 0,
-            studentsCount: 0
-        }
-    ];
+    const defaultMockCourses: any[] = [];
 
     useEffect(() => {
         const fetchCourses = async () => {
