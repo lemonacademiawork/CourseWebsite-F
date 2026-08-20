@@ -14,12 +14,31 @@ interface CourseDetail {
     imageUrl: string;
 }
 
+import { CourseSession, getSessionStatus, initializeMockSessions } from '../../../components/sessionUtils';
+
 export default function CourseLearningPortal({ params }: { params: Promise<{ courseId: string }> }) {
     const resolvedParams = use(params);
     const courseId = resolvedParams.courseId;
     const router = useRouter();
     const [course, setCourse] = useState<CourseDetail | null>(null);
     const [activeTab, setActiveTab] = useState<'lessons' | 'zoom' | 'resources' | 'certificate'>('lessons');
+    const [sessions, setSessions] = useState<CourseSession[]>([]);
+
+    useEffect(() => {
+        const allSessions = initializeMockSessions();
+        const courseSess = allSessions[courseId] || [];
+        setSessions(courseSess);
+    }, [courseId]);
+
+    // Handle session updates from admin live changes
+    useEffect(() => {
+        const handleSessionRefetch = () => {
+            const allSessions = JSON.parse(localStorage.getItem('course_sessions') || '{}');
+            setSessions(allSessions[courseId] || []);
+        };
+        window.addEventListener('session_database_updated', handleSessionRefetch);
+        return () => window.removeEventListener('session_database_updated', handleSessionRefetch);
+    }, [courseId]);
 
     // Modules & Lessons Mock Data
     const modules = [
@@ -214,22 +233,122 @@ export default function CourseLearningPortal({ params }: { params: Promise<{ cou
                         )}
 
                         {activeTab === 'zoom' && (
-                            <div className="space-y-4 py-4 text-center max-w-sm mx-auto">
-                                <div className="w-12 h-12 bg-secondary/15 text-secondary rounded-full flex items-center justify-center mx-auto">
-                                    <span className="material-symbols-outlined text-xl">video_camera_front</span>
+                            <div className="space-y-6 py-4">
+                                <div className="border-b border-outline-variant/20 pb-3">
+                                    <h3 className="font-bold text-on-surface text-sm">Course Sessions & Live Classes</h3>
+                                    <p className="text-[11px] text-on-surface-variant mt-0.5">Interact in real-time, ask questions, or watch recorded classes after completion.</p>
                                 </div>
-                                <h3 className="font-bold text-on-surface text-sm">Join the Live Q&A Session</h3>
-                                <p className="text-on-surface-variant leading-relaxed">
-                                    Interact with {course.instructor} in real-time, get feedback on your ongoing patterns, and resolve your creative blockages.
-                                </p>
-                                <a 
-                                    href="https://zoom.us" 
-                                    target="_blank" 
-                                    rel="noreferrer"
-                                    className="inline-block bg-primary text-on-primary font-semibold px-6 py-2.5 rounded-lg hover:opacity-90 transition-opacity"
-                                >
-                                    Launch Zoom Class
-                                </a>
+                                
+                                {sessions.length === 0 ? (
+                                    <div className="text-center py-8 text-on-surface-variant bg-surface-container-low rounded-xl border border-outline-variant/20">
+                                        No live sessions have been configured for this course yet.
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {sessions.map((sess) => {
+                                            const status = getSessionStatus(sess);
+                                            
+                                            return (
+                                                <div key={sess.id} className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between h-full relative overflow-hidden group">
+                                                    <div>
+                                                        <div className="flex justify-between items-start mb-2">
+                                                            <span className="text-[10px] font-bold text-primary uppercase tracking-wider bg-primary/10 px-2 py-0.5 rounded">
+                                                                Live Class
+                                                            </span>
+                                                            {status === 'LIVE' && (
+                                                                <span className="flex items-center gap-1 bg-red-50 text-red-600 px-2 py-0.5 rounded text-[9px] font-bold uppercase animate-pulse border border-red-200">
+                                                                    <span className="w-1.5 h-1.5 rounded-full bg-red-600"></span>
+                                                                    LIVE NOW
+                                                                </span>
+                                                            )}
+                                                            {status === 'UPCOMING' && (
+                                                                <span className="bg-surface-container text-on-surface-variant px-2 py-0.5 rounded text-[9px] font-bold uppercase border border-outline-variant/20">
+                                                                    Upcoming
+                                                                </span>
+                                                            )}
+                                                            {status === 'COMPLETED' && (
+                                                                <span className="bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded text-[9px] font-bold uppercase border border-outline-variant/20">
+                                                                    Completed
+                                                                </span>
+                                                            )}
+                                                            {status === 'RECORDING_AVAILABLE' && (
+                                                                <span className="bg-green-50 text-green-700 px-2 py-0.5 rounded text-[9px] font-bold uppercase border border-green-200">
+                                                                    Recording Available
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <h4 className="font-bold text-on-surface text-xs leading-snug group-hover:text-primary transition-colors">{sess.title}</h4>
+                                                        <p className="text-[11px] text-on-surface-variant mt-1 line-clamp-2">{sess.description}</p>
+                                                        
+                                                        <div className="mt-4 space-y-1.5 text-[10px] text-on-surface-variant border-t border-outline-variant/20 pt-3">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <span className="material-symbols-outlined text-[14px]">calendar_today</span>
+                                                                <span>{sess.sessionDate}</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-1.5">
+                                                                <span className="material-symbols-outlined text-[14px]">schedule</span>
+                                                                <span>{sess.startTime} – {sess.endTime}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="mt-4 pt-3 border-t border-outline-variant/20">
+                                                        {status === 'LIVE' && sess.zoomLink && (
+                                                            <a 
+                                                                href={sess.zoomLink}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="w-full text-center bg-red-600 text-white font-bold py-2 rounded-lg text-xs hover:bg-red-700 transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                                                            >
+                                                                <span className="material-symbols-outlined text-[16px] animate-pulse">videocam</span>
+                                                                Join Live Class
+                                                            </a>
+                                                        )}
+                                                        {status === 'UPCOMING' && (
+                                                            <button 
+                                                                disabled
+                                                                className="w-full text-center bg-surface-variant/40 text-on-surface-variant/60 font-semibold py-2 rounded-lg text-xs cursor-not-allowed flex items-center justify-center gap-1"
+                                                            >
+                                                                <span className="material-symbols-outlined text-[14px]">schedule</span>
+                                                                Upcoming — Starts at {sess.startTime}
+                                                            </button>
+                                                        )}
+                                                        {(status === 'COMPLETED' || status === 'RECORDING_AVAILABLE') && (
+                                                            sess.recordingLink ? (
+                                                                <a 
+                                                                    href={sess.recordingLink}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="w-full text-center bg-primary text-on-primary font-bold py-2 rounded-lg text-xs hover:opacity-95 transition-opacity flex items-center justify-center gap-1.5 shadow-sm"
+                                                                >
+                                                                    <span className="material-symbols-outlined text-[16px]">play_circle</span>
+                                                                    Watch Recording
+                                                                </a>
+                                                            ) : (
+                                                                <button 
+                                                                    disabled
+                                                                    className="w-full text-center bg-surface-variant/40 text-on-surface-variant/60 font-semibold py-2 rounded-lg text-xs cursor-not-allowed flex items-center justify-center gap-1"
+                                                                >
+                                                                    <span className="material-symbols-outlined text-[14px]">info</span>
+                                                                    Recording Coming Soon
+                                                                </button>
+                                                            )
+                                                        )}
+                                                        {!sess.zoomLink && status !== 'COMPLETED' && status !== 'RECORDING_AVAILABLE' && (
+                                                            <button 
+                                                                disabled
+                                                                className="w-full text-center bg-surface-variant/40 text-on-surface-variant/60 font-semibold py-2 rounded-lg text-xs cursor-not-allowed flex items-center justify-center gap-1"
+                                                            >
+                                                                <span className="material-symbols-outlined text-[14px]">link_off</span>
+                                                                No Class Link Assigned
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
                         )}
 
