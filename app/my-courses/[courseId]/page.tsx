@@ -29,7 +29,7 @@ export default function CourseLearningPortal({ params }: { params: Promise<{ cou
     useEffect(() => {
         if (activeTab === 'resources') {
             setResourcesLoading(true);
-            fetch(`https://lemonwebsite-backend.onrender.com/api/v1/courses/${courseId}/resources`)
+            fetch(`/api/v1/courses/${courseId}/resources`)
                 .then(res => res.json())
                 .then(data => {
                     if (Array.isArray(data)) {

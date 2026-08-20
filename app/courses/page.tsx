@@ -11,7 +11,7 @@ export default function ExploreCoursesLemonAcademy() {
     useEffect(() => {
         const fetchCourses = async () => {
             try {
-                const res = await fetch('https://lemonwebsite-backend.onrender.com/api/v1/courses');
+                const res = await fetch('/api/v1/courses');
                 if (res.ok) {
                     const data = await res.json();
                     if (Array.isArray(data) && data.length > 0) {

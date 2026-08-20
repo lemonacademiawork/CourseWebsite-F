@@ -30,7 +30,7 @@ export default function TrainerResourcesPage() {
         setLoading(true);
         setError('');
         try {
-            const res = await fetch('https://lemonwebsite-backend.onrender.com/api/v1/courses/lippan-art/resources');
+            const res = await fetch('/api/v1/courses/lippan-art/resources');
             if (res.ok) {
                 const data = await res.json();
                 if (Array.isArray(data)) {
@@ -79,7 +79,7 @@ export default function TrainerResourcesPage() {
         const token = localStorage.getItem('auth_token') || '';
 
         try {
-            const res = await fetch('https://lemonwebsite-backend.onrender.com/api/v1/courses/lippan-art/resources', {
+            const res = await fetch('/api/v1/courses/lippan-art/resources', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -125,7 +125,7 @@ export default function TrainerResourcesPage() {
     const handleDelete = async (resourceId: string) => {
         const token = localStorage.getItem('auth_token') || '';
         try {
-            const res = await fetch(`https://lemonwebsite-backend.onrender.com/api/v1/courses/lippan-art/resources/${resourceId}`, {
+            const res = await fetch(`/api/v1/courses/lippan-art/resources/${resourceId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`

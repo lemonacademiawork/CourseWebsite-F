@@ -29,7 +29,7 @@ export default function SignupPage() {
         }
 
         try {
-            const res = await fetch('https://lemonwebsite-backend.onrender.com/api/v1/auth/register', {
+            const res = await fetch('/api/v1/auth/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

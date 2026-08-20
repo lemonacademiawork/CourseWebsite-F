@@ -38,7 +38,7 @@ export default function BecomeaTrainerPage() {
 
         try {
             // Attempt to send to backend API
-            const res = await fetch('https://lemonwebsite-backend.onrender.com/api/v1/trainers/apply', {
+            const res = await fetch('/api/v1/trainers/apply', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

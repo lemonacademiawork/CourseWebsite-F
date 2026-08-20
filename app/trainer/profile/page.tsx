@@ -8,7 +8,7 @@ export default function TrainerWorkspaceProfilePage() {
     useEffect(() => {
         const token = localStorage.getItem('auth_token') || '';
         if (token) {
-            fetch('https://lemonwebsite-backend.onrender.com/api/v1/users/me', {
+            fetch('/api/v1/users/me', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

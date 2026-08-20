@@ -199,7 +199,7 @@ export default function BecomeTrainerApplicationPage() {
 
         try {
             // Send to Render backend if deployed
-            await fetch('https://lemonwebsite-backend.onrender.com/api/v1/trainers/apply', {
+            await fetch('/api/v1/trainers/apply', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newApp)
