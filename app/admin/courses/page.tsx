@@ -38,16 +38,17 @@ export default function AdminCourseManagement() {
         try {
             const res = await fetch('/api/v1/courses');
             if (res.ok) {
-                const data = await res.json();
-                if (Array.isArray(data)) {
-                    const mapped = data.map((c: any) => ({
+                const json = await res.json();
+                const courseList = json.data || json;
+                if (Array.isArray(courseList)) {
+                    const mapped = courseList.map((c: any) => ({
                         id: c.id || c._id,
                         title: c.title || c.name || 'Untitled Course',
-                        category: c.category || 'General Craft',
-                        trainer: c.trainer || c.instructor || 'Guest Instructor',
-                        price: c.price || 0,
+                        category: c.category?.name || c.category || 'General Craft',
+                        trainer: c.trainer?.name || c.trainer || 'Guest Instructor',
+                        price: c.discountedPrice || c.price || 0,
                         studentsCount: c.studentsCount || c.enrolledStudents || 0,
-                        status: c.status || 'Published',
+                        status: c.isPublished ? 'Published' : 'Draft',
                         createdDate: c.createdDate || 'Aug 20, 2026'
                     }));
                     setCourses(mapped);
