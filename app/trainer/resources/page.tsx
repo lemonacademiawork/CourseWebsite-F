@@ -24,22 +24,7 @@ export default function TrainerResourcesPage() {
     const [submitLoading, setSubmitLoading] = useState(false);
     const [formError, setFormError] = useState('');
 
-    const defaultMockResources: ResourceItem[] = [
-        {
-            id: 'res-default-1',
-            title: "Substrates Grid Layout Templates",
-            url: "https://example.com/templates.pdf",
-            type: "PDF",
-            size: "12.4 MB"
-        },
-        {
-            id: 'res-default-2',
-            title: "Material Kit Sourcing List",
-            url: "https://example.com/sourcing.xlsx",
-            type: "Excel",
-            size: "2.1 MB"
-        }
-    ];
+    const defaultMockResources: ResourceItem[] = [];
 
     const fetchResources = async () => {
         setLoading(true);

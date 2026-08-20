@@ -47,10 +47,7 @@ export default function CourseLearningPortal({ params }: { params: Promise<{ cou
                     setResourcesLoading(false);
                 })
                 .catch(() => {
-                    setCourseResources([
-                        { id: '1', title: "Substrates Grid Layout Templates", url: "#", type: "PDF", size: "12.4 MB" },
-                        { id: '2', title: "Material Kit Sourcing List", url: "#", type: "Excel", size: "2.1 MB" }
-                    ]);
+                    setCourseResources([]);
                     setResourcesLoading(false);
                 });
         }

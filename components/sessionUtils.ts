@@ -80,58 +80,7 @@ export function initializeMockSessions(): Record<string, CourseSession[]> {
     };
 
     const mockSessions: Record<string, CourseSession[]> = {
-        "lippan-art": [
-            {
-                id: "sess-1",
-                title: "Session 01 — Introduction & Sourcing Materials",
-                description: "Meet your instructor, go over mirrors, mud-clay substrates, and preparation steps.",
-                sessionDate: formatDate(d1),
-                startTime: "11:00 AM",
-                endTime: "01:00 PM",
-                zoomLink: "https://zoom.us/j/111111",
-                recordingLink: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-            },
-            {
-                id: "sess-2",
-                title: "Session 02 — Preparing Mud Clay Blend",
-                description: "Getting the consistency right. Shaping border guidelines and applying threads.",
-                sessionDate: formatDate(d2),
-                startTime: "11:00 AM",
-                endTime: "01:00 PM",
-                zoomLink: "https://zoom.us/j/222222",
-                recordingLink: ""
-            },
-            {
-                id: "sess-3",
-                title: "Session 03 — Resin Coasters & Mud Mirror Border",
-                description: "Positioning mirrors symmetrically and starting layout alignments.",
-                sessionDate: formatDate(d3),
-                startTime: formatTime(liveStartHour),
-                endTime: formatTime(liveEndHour),
-                zoomLink: "https://zoom.us/j/333333",
-                recordingLink: ""
-            },
-            {
-                id: "sess-4",
-                title: "Session 04 — Advanced Motifs & Border Borders",
-                description: "Finalizing outer details. Preparation for varnishing and mirror protection.",
-                sessionDate: formatDate(d4),
-                startTime: "11:00 AM",
-                endTime: "01:00 PM",
-                zoomLink: "https://zoom.us/j/444444",
-                recordingLink: ""
-            },
-            {
-                id: "sess-5",
-                title: "Session 05 — Graduating and Gallery Showcase",
-                description: "Sharing creations, constructive peer reviews, and certificate instructions.",
-                sessionDate: formatDate(d5),
-                startTime: "11:00 AM",
-                endTime: "01:00 PM",
-                zoomLink: "",
-                recordingLink: ""
-            }
-        ]
+        "lippan-art": []
     };
 
     localStorage.setItem('course_sessions', JSON.stringify(mockSessions));

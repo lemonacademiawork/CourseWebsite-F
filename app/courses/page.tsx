@@ -9,33 +9,33 @@ export default function ExploreCoursesLemonAcademy() {
     const defaultMockCourses = [
         {
             id: 'lippan-art',
-            title: "Mastering Traditional Lippan Art",
-            category: "Lippan Art",
-            instructor: "Aisha Sharma",
-            description: "Learn the ancient techniques of mud and mirror work to create stunning contemporary wall decors.",
+            title: "",
+            category: "",
+            instructor: "",
+            description: "",
             imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuAaoX0RGxpW-j4nvC1oT1ER7ghQq3LTyffaeKwMP7NUMAKKHqHQmjktmUbyLPagZx6VG0o3H4U157TFiWJGVWKEFwAc3hVXQzqSdHoFy7hC98aHC2EyKFdILSTsnS-EXmaDGklBokg2X7ZOMMcfjaSFDKUhNg6zQecW1g1g1W-aIDWhErsUjb9KT097mpys8RjeuJAbVJ2rMZ7tS10zRVyyf0czkAW4IWUW6sgkOQOPwRiE2EbJHQdA",
-            price: 49,
-            studentsCount: 120
+            price: 0,
+            studentsCount: 0
         },
         {
             id: 'mosaic-art',
-            title: "Contemporary Glass Mosaics",
-            category: "Mosaic Art",
-            instructor: "Marcus King",
-            description: "Design and assemble vibrant glass mosaics for modern home interiors and functional art pieces.",
+            title: "",
+            category: "",
+            instructor: "",
+            description: "",
             imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuBNXqJr6RFpTJEjfBZWKnHdps3MQaN46CXv1Rat2GjC5wtUb9rF_qabpyosxixn_AapiaQCcB63D4-KUTw0diMpSadXamyTCjgPp5e4uK0PIf0J0dI2jaHKQx82ov3rYrOrts82WbkDDITFg8EoX5uj7HBBOSqzJQNfIG7xXxauFv3Xo4GgPDPtxfty2V9i6cwpNhMaobFX8eWZEHZtoh3Sc0aR_XyL6SbzhmKiTK_haC16AKpbTyDS",
-            price: 65,
-            studentsCount: 84
+            price: 0,
+            studentsCount: 0
         },
         {
             id: 'crochet',
-            title: "Advanced Amigurumi Techniques",
-            category: "Crochet",
-            instructor: "Emma Lin",
-            description: "Elevate your crochet skills by learning complex shapes and invisible finishing techniques for plush toys.",
+            title: "",
+            category: "",
+            instructor: "",
+            description: "",
             imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuCarGQ1a20lOrYSxj_diFDlrx2teCRF0nc06aZuLUtzrjHtCM90tNxtMRvLG0nAJQeFRvurw4GyjS2TWcAdx59bz_OlVC11u5g3bF7eDFNpeBB58oaTnQzIo62DZL2p7HHxJcB2A8NIZb9Qh6hsVRZJ8WYBWclS9KvWFFjqZFk69Ne1rlQcQAKH9cnePrAXtPFxL-9yJ-uO8mcK6WI8rL82yuAVL47VthVsZdU68ebTuA-5QDxZpuRp",
-            price: 29,
-            studentsCount: 312
+            price: 0,
+            studentsCount: 0
         }
     ];
 
