@@ -48,7 +48,7 @@ export default function AdminCourseManagement() {
                         trainer: c.trainer?.name || c.trainer || 'Guest Instructor',
                         price: c.discountedPrice || c.price || 0,
                         studentsCount: c.studentsCount || c.enrolledStudents || 0,
-                        status: c.isPublished ? 'Published' : 'Draft',
+                        status: (c.isPublished ? 'Published' : 'Draft') as 'Published' | 'Draft',
                         createdDate: c.createdDate || 'Aug 20, 2026'
                     }));
                     setCourses(mapped);
