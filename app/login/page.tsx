@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
@@ -9,19 +9,37 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [info, setInfo] = useState('');
     const [returnUrl, setReturnUrl] = useState<string | null>(null);
 
-    useState(() => {
+    useEffect(() => {
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
             setReturnUrl(params.get('returnUrl'));
+            const reg = params.get('registered');
+            if (reg === 'true') {
+                setInfo('Account created successfully! Please log in.');
+            } else if (reg === 'mock') {
+                setInfo('Account created (Local Mock)! Please log in.');
+            }
         }
-    });
+    }, []);
+
+    const setCookie = (name: string, value: string, days = 7) => {
+        const expires = new Date(Date.now() + days * 864e5).toUTCString();
+        document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+    };
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError('');
+
+        if (!email.trim() || !password.trim()) {
+            setError('Please fill in all fields');
+            setLoading(false);
+            return;
+        }
 
         try {
             const res = await fetch('https://lemonwebsite-backend.onrender.com/api/v1/auth/login', {
@@ -40,14 +58,19 @@ export default function LoginPage() {
                 localStorage.setItem('user_role', role);
                 localStorage.setItem('user_email', email);
                 localStorage.setItem('user_name', data.name || 'User');
+                
+                setCookie('is_logged_in', 'true');
+                setCookie('user_role', role);
+                setCookie('user_email', email);
+                setCookie('user_name', data.name || 'User');
+
                 if (data.token) {
                     localStorage.setItem('auth_token', data.token);
+                    setCookie('auth_token', data.token);
                 }
                 
-                // Dispatch event to update navbar
                 window.dispatchEvent(new Event('auth_state_changed'));
 
-                // Role-based routing
                 if (role === 'admin') {
                     router.push('/admin/dashboard');
                 } else if (role === 'trainer') {
@@ -58,13 +81,15 @@ export default function LoginPage() {
                     router.push('/');
                 }
             } else {
-                throw new Error('Fallback to Local Mock');
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.message || 'Invalid credentials');
             }
-        } catch (err) {
+        } catch (err: any) {
             console.warn('Backend connection failed or blocked by CORS. Checking local storage mock...');
             
             let role = 'student';
             let name = 'User';
+            let mockMatch = false;
             
             if (email.includes('admin')) {
                 role = 'admin';
@@ -76,21 +101,39 @@ export default function LoginPage() {
 
             const storedUserStr = localStorage.getItem('mock_user');
             if (storedUserStr) {
-                const storedUser = JSON.parse(storedUserStr);
-                if (storedUser.email === email && storedUser.password === password) {
-                    role = storedUser.role || role;
-                    name = storedUser.name || name;
+                try {
+                    const storedUser = JSON.parse(storedUserStr);
+                    if (storedUser.email === email) {
+                        if (storedUser.password === password) {
+                            role = storedUser.role || role;
+                            name = storedUser.name || name;
+                            mockMatch = true;
+                        } else {
+                            setError('Incorrect password for this mock user');
+                            setLoading(false);
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error parsing mock_user', e);
                 }
+            } else {
+                // If there's no mock user and it's a general test login, treat as match
+                mockMatch = true;
             }
 
-            // Fallback: allow sign-in with any credentials if backend is down/blocked
-            if (email && password) {
+            // Fallback: allow sign-in with default mock credentials if backend is down/blocked
+            if (mockMatch || (!storedUserStr && email && password)) {
                 localStorage.setItem('is_logged_in', 'true');
                 localStorage.setItem('user_role', role);
                 localStorage.setItem('user_email', email);
                 localStorage.setItem('user_name', name);
+
+                setCookie('is_logged_in', 'true');
+                setCookie('user_role', role);
+                setCookie('user_email', email);
+                setCookie('user_name', name);
                 
-                // Dispatch event to update navbar
                 window.dispatchEvent(new Event('auth_state_changed'));
 
                 if (role === 'admin') {
@@ -240,6 +283,12 @@ export default function LoginPage() {
                         {error && (
                             <div className="bg-red-50 border border-red-200 text-red-700 text-xs rounded p-2.5 mb-4">
                                 {error}
+                            </div>
+                        )}
+
+                        {info && (
+                            <div className="bg-green-50 border border-green-200 text-green-700 text-xs rounded p-2.5 mb-4">
+                                {info}
                             </div>
                         )}
 

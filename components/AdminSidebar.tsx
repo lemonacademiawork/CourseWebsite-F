@@ -67,9 +67,28 @@ export default function AdminSidebar() {
                 </li>
             </ul>
             <div className="mt-auto px-2.5">
-                <Link href="/login" className="w-full block text-center bg-surface-container-highest text-on-surface font-semibold text-[13px] py-2 rounded-md hover:bg-surface-variant transition-colors shadow-sm">
+                <button 
+                    onClick={() => {
+                        const deleteCookie = (name: string) => {
+                            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+                        };
+                        localStorage.removeItem('is_logged_in');
+                        localStorage.removeItem('user_role');
+                        localStorage.removeItem('user_email');
+                        localStorage.removeItem('user_name');
+                        localStorage.removeItem('auth_token');
+                        deleteCookie('is_logged_in');
+                        deleteCookie('user_role');
+                        deleteCookie('user_email');
+                        deleteCookie('user_name');
+                        deleteCookie('auth_token');
+                        window.dispatchEvent(new Event('auth_state_changed'));
+                        window.location.href = '/login';
+                    }}
+                    className="w-full block text-center bg-surface-container-highest text-on-surface font-semibold text-[13px] py-2 rounded-md hover:bg-surface-variant transition-colors shadow-sm"
+                >
                     Logout
-                </Link>
+                </button>
                 <div className="flex items-center gap-2.5 mt-4 pt-3 border-t border-outline-variant/30">
                     <img alt="Admin Profile" className="w-8 h-8 rounded-full object-cover border border-outline-variant/50" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBdMARZrb2FmGq85EbzdDLymFBx4CM6RPUJwMlbg7mZhjYEKggA51VEqhuBNLrTHvSlY5FiVk0fPuv9Linj2Wz37KT-EfMi6zfaBVU1flN4P7ZT-CqUgYE9LaglXkYI-HlpS363LihzWoisz9CPSk9wutzq2UrCWhUoSrNb7nrJjkRXPeGfJQgtksg_e-U8tVE7t2LxAKrWVFOb5jDH_nG0qZcvvSnyWFz3xD3CW9hEBu6dyRxvoVkT"/>
                     <div className="flex flex-col">

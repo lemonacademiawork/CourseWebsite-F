@@ -42,11 +42,19 @@ export default function TopNavbar() {
     }, []);
 
     const handleLogout = () => {
+        const deleteCookie = (name: string) => {
+            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+        };
         localStorage.removeItem('is_logged_in');
         localStorage.removeItem('user_role');
         localStorage.removeItem('user_email');
         localStorage.removeItem('user_name');
         localStorage.removeItem('auth_token');
+        deleteCookie('is_logged_in');
+        deleteCookie('user_role');
+        deleteCookie('user_email');
+        deleteCookie('user_name');
+        deleteCookie('auth_token');
         setIsLoggedIn(false);
         setMobileMenuOpen(false);
         router.push('/');

@@ -8,18 +8,18 @@ export default function TrainerSidebar() {
     const getLinkClass = (href: string) => {
         const isActive = pathname === href;
         if (isActive) {
-            return "flex items-center gap-3 text-on-primary-fixed-variant font-bold border-l-4 border-primary-fixed bg-primary-container/20 p-3 rounded-r-lg font-label-md text-label-md hover:bg-surface-variant/50 transition-all scale-[0.98] duration-150";
+            return "flex items-center gap-2.5 text-on-primary-fixed-variant font-semibold border-l-4 border-primary-fixed bg-primary-container/20 py-2 px-3 rounded-r-md text-[13px] hover:bg-surface-variant/50 transition-all duration-150";
         }
-        return "flex items-center gap-3 text-on-surface-variant p-3 rounded-r-lg font-label-md text-label-md hover:bg-surface-variant/50 transition-all";
+        return "flex items-center gap-2.5 text-on-surface-variant py-2 px-3 rounded-r-md text-[13px] hover:bg-surface-variant/50 transition-all";
     };
 
     return (
-        <nav className="bg-surface-container-low dark:bg-surface-container-lowest h-screen w-64 fixed left-0 top-0 hidden md:flex flex-col py-8 px-4 gap-2 z-40 flat no shadows border-r border-outline-variant/20">
-            <div className="mb-8 px-3">
-                <Link href="/" className="text-primary block whitespace-nowrap font-bold hover:opacity-85 transition-opacity" style={{ fontFamily: "'Inter', sans-serif", fontSize: "14px", letterSpacing: "0.15em", textTransform: "uppercase" }}>
+        <nav className="bg-surface-container-low dark:bg-surface-container-lowest h-screen w-60 fixed left-0 top-0 hidden md:flex flex-col py-6 px-3 gap-1.5 z-40 flat no shadows border-r border-outline-variant/20">
+            <div className="mb-6 px-2.5">
+                <Link href="/" className="text-primary block whitespace-nowrap font-bold hover:opacity-85 transition-opacity" style={{ fontFamily: "'Inter', sans-serif", fontSize: "13px", letterSpacing: "0.15em", textTransform: "uppercase" }}>
                     Lemon Academy
                 </Link>
-                <p className="text-[10px] text-on-surface-variant mt-0.5 tracking-wider uppercase" style={{ fontFamily: "'Inter', sans-serif" }}>Trainer Portal</p>
+                <p className="text-[9px] text-on-surface-variant mt-0.5 tracking-wider uppercase" style={{ fontFamily: "'Inter', sans-serif" }}>Trainer Portal</p>
             </div>
             <ul className="flex flex-col gap-1 flex-grow">
                 <li>
@@ -71,14 +71,22 @@ export default function TrainerSidebar() {
                     </Link>
                 </li>
             </ul>
-            <div className="mt-auto px-3">
+            <div className="mt-auto px-2.5">
                 <button 
                     onClick={() => {
+                        const deleteCookie = (name: string) => {
+                            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+                        };
                         localStorage.removeItem('is_logged_in');
                         localStorage.removeItem('user_role');
                         localStorage.removeItem('user_email');
                         localStorage.removeItem('user_name');
                         localStorage.removeItem('auth_token');
+                        deleteCookie('is_logged_in');
+                        deleteCookie('user_role');
+                        deleteCookie('user_email');
+                        deleteCookie('user_name');
+                        deleteCookie('auth_token');
                         window.dispatchEvent(new Event('auth_state_changed'));
                         window.location.href = '/';
                     }}
@@ -86,13 +94,13 @@ export default function TrainerSidebar() {
                 >
                     Logout
                 </button>
-                <div className="flex items-center gap-3 mt-6 pt-4 border-t border-outline-variant/30">
-                    <div className="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold">
-                        T
+                <div className="flex items-center gap-2.5 mt-4 pt-3 border-t border-outline-variant/30">
+                    <div className="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-xs">
+                        E
                     </div>
                     <div className="flex flex-col">
-                        <span className="font-label-md text-label-md text-on-surface">Trainer</span>
-                        <span className="font-body-md text-body-md text-on-surface-variant text-sm">trainer@lemon.edu</span>
+                        <span className="font-semibold text-xs text-on-surface">Elena Cruz</span>
+                        <span className="text-[10px] text-on-surface-variant truncate max-w-[120px]">elena@lemon.edu</span>
                     </div>
                 </div>
             </div>

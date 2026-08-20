@@ -14,9 +14,15 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userRole, setUserRole] = useState('');
 
+    const getCookie = (name: string) => {
+        if (typeof document === 'undefined') return '';
+        const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]*)'));
+        return match ? decodeURIComponent(match[2]) : '';
+    };
+
     const verifyAccess = () => {
-        const loggedIn = localStorage.getItem('is_logged_in') === 'true';
-        const role = localStorage.getItem('user_role') || '';
+        const loggedIn = localStorage.getItem('is_logged_in') === 'true' || getCookie('is_logged_in') === 'true';
+        const role = localStorage.getItem('user_role') || getCookie('user_role') || '';
         
         setIsLoggedIn(loggedIn);
         setUserRole(role);

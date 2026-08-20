@@ -16,6 +16,18 @@ export default function SignupPage() {
         setLoading(true);
         setError('');
 
+        if (!name.trim() || !email.trim() || !password.trim()) {
+            setError('Please fill in all fields');
+            setLoading(false);
+            return;
+        }
+
+        if (password.length < 6) {
+            setError('Password must be at least 6 characters long');
+            setLoading(false);
+            return;
+        }
+
         try {
             const res = await fetch('https://lemonwebsite-backend.onrender.com/api/v1/auth/register', {
                 method: 'POST',
@@ -26,17 +38,22 @@ export default function SignupPage() {
             });
 
             if (res.status === 201) {
-                // Success, redirect to login page
-                router.push('/login');
+                router.push('/login?registered=true');
             } else {
-                throw new Error('Fallback to Local Mock');
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.message || 'Registration failed');
             }
-        } catch (err) {
+        } catch (err: any) {
             console.warn('Backend connection failed or blocked by CORS. Falling back to local storage mock for testing.');
+            
             // Save to local storage mock
             localStorage.setItem('mock_user', JSON.stringify({ name, email, password }));
-            // Alert user of the mock deployment fallback and redirect
-            router.push('/login');
+            
+            // Set cookie for mock user existence
+            const expires = new Date(Date.now() + 7 * 864e5).toUTCString();
+            document.cookie = `mock_registered=true; expires=${expires}; path=/; SameSite=Lax`;
+            
+            router.push('/login?registered=mock');
         } finally {
             setLoading(false);
         }
