@@ -37,23 +37,14 @@ export default function SignupPage() {
                 body: JSON.stringify({ name, email, password }),
             });
 
-            if (res.status === 201) {
+            if (res.status === 201 || res.ok) {
                 router.push('/login?registered=true');
             } else {
                 const data = await res.json().catch(() => ({}));
-                throw new Error(data.message || 'Registration failed');
+                setError(data.message || 'Registration failed. The server returned an error.');
             }
         } catch (err: any) {
-            console.warn('Backend connection failed or blocked by CORS. Falling back to local storage mock for testing.');
-            
-            // Save to local storage mock
-            localStorage.setItem('mock_user', JSON.stringify({ name, email, password }));
-            
-            // Set cookie for mock user existence
-            const expires = new Date(Date.now() + 7 * 864e5).toUTCString();
-            document.cookie = `mock_registered=true; expires=${expires}; path=/; SameSite=Lax`;
-            
-            router.push('/login?registered=mock');
+            setError('Could not connect to registration server. Please check your backend connection.');
         } finally {
             setLoading(false);
         }

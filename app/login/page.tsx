@@ -54,7 +54,7 @@ export default function LoginPage() {
                 body: JSON.stringify({ email, password }),
             });
 
-            if (res.status === 200) {
+            if (res.status === 200 || res.ok) {
                 const data = await res.json().catch(() => ({}));
                 const role = data.role || (email.includes('admin') ? 'admin' : email.includes('trainer') ? 'trainer' : 'student');
                 
@@ -86,72 +86,10 @@ export default function LoginPage() {
                 }
             } else {
                 const errData = await res.json().catch(() => ({}));
-                throw new Error(errData.message || 'Invalid credentials');
+                setError(errData.message || 'Invalid email or password.');
             }
         } catch (err: any) {
-            console.warn('Backend connection failed or blocked by CORS. Checking local storage mock...');
-            
-            let role = 'student';
-            let name = 'User';
-            let mockMatch = false;
-            
-            if (email.includes('admin')) {
-                role = 'admin';
-                name = 'Admin User';
-            } else if (email.includes('trainer')) {
-                role = 'trainer';
-                name = 'Trainer User';
-            }
-
-            const storedUserStr = localStorage.getItem('mock_user');
-            if (storedUserStr) {
-                try {
-                    const storedUser = JSON.parse(storedUserStr);
-                    if (storedUser.email === email) {
-                        if (storedUser.password === password) {
-                            role = storedUser.role || role;
-                            name = storedUser.name || name;
-                            mockMatch = true;
-                        } else {
-                            setError('Incorrect password for this mock user');
-                            setLoading(false);
-                            return;
-                        }
-                    }
-                } catch (e) {
-                    console.error('Error parsing mock_user', e);
-                }
-            } else {
-                // If there's no mock user and it's a general test login, treat as match
-                mockMatch = true;
-            }
-
-            // Fallback: allow sign-in with default mock credentials if backend is down/blocked
-            if (mockMatch || (!storedUserStr && email && password)) {
-                localStorage.setItem('is_logged_in', 'true');
-                localStorage.setItem('user_role', role);
-                localStorage.setItem('user_email', email);
-                localStorage.setItem('user_name', name);
-
-                setCookie('is_logged_in', 'true');
-                setCookie('user_role', role);
-                setCookie('user_email', email);
-                setCookie('user_name', name);
-                
-                window.dispatchEvent(new Event('auth_state_changed'));
-
-                if (role === 'admin') {
-                    router.push('/admin/dashboard');
-                } else if (role === 'trainer') {
-                    router.push('/trainer/dashboard');
-                } else if (returnUrl) {
-                    router.push(returnUrl);
-                } else {
-                    router.push('/');
-                }
-            } else {
-                setError('Invalid email or password');
-            }
+            setError('Could not connect to authentication server. Please check your backend connection.');
         } finally {
             setLoading(false);
         }
