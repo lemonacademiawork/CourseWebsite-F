@@ -34,56 +34,79 @@ export default function AdminCourseManagement() {
     const [saveSuccess, setSaveSuccess] = useState('');
     const [saveLoading, setSaveLoading] = useState(false);
 
-    // Initialize databases
-    useEffect(() => {
-        // Load courses
+    const fetchCourses = async () => {
+        try {
+            const res = await fetch('/api/v1/courses');
+            if (res.ok) {
+                const data = await res.json();
+                if (Array.isArray(data)) {
+                    const mapped = data.map((c: any) => ({
+                        id: c.id || c._id,
+                        title: c.title || c.name || 'Untitled Course',
+                        category: c.category || 'General Craft',
+                        trainer: c.trainer || c.instructor || 'Guest Instructor',
+                        price: c.price || 0,
+                        studentsCount: c.studentsCount || c.enrolledStudents || 0,
+                        status: c.status || 'Published',
+                        createdDate: c.createdDate || 'Aug 20, 2026'
+                    }));
+                    setCourses(mapped);
+                    localStorage.setItem('admin_courses', JSON.stringify(mapped));
+                    return;
+                }
+            }
+        } catch (err) {
+            console.warn('Backend fetch failed, using local storage.');
+        }
+        // Fallback to local storage
         const storedCourses = localStorage.getItem('admin_courses');
-        let initialCourses: CourseItem[] = [];
         if (storedCourses) {
             try {
-                initialCourses = JSON.parse(storedCourses);
+                setCourses(JSON.parse(storedCourses));
             } catch {
-                initialCourses = [];
+                setCourses([]);
             }
         }
-        
-        if (initialCourses.length === 0) {
-            initialCourses = [
-                {
-                    id: 'lippan-art',
-                    title: "The Art of Lippan: Traditional Mud & Mirror Work",
-                    category: "Lippan Art",
-                    trainer: "Aisha Sharma",
-                    price: 49,
-                    studentsCount: 45,
-                    status: 'Published',
-                    createdDate: 'Aug 10, 2026'
-                },
-                {
-                    id: 'mosaic-art',
-                    title: "Contemporary Glass Mosaics",
-                    category: "Mosaic Art",
-                    trainer: "Marcus King",
-                    price: 65,
-                    studentsCount: 12,
-                    status: 'Published',
-                    createdDate: 'Aug 12, 2026'
-                }
-            ];
-            localStorage.setItem('admin_courses', JSON.stringify(initialCourses));
-        }
-        setCourses(initialCourses);
+    };
+
+    // Initialize databases
+    useEffect(() => {
+        fetchCourses();
 
         // Load sessions
         const initialSess = initializeMockSessions();
         setSessions(initialSess);
     }, []);
 
-    const handleCreateCourse = (e: React.FormEvent) => {
+    const handleCreateCourse = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!title.trim()) return;
 
         const newId = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const token = localStorage.getItem('auth_token') || '';
+
+        try {
+            await fetch('/api/v1/courses', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    title: title.trim(),
+                    name: title.trim(),
+                    category: category.trim() || 'General Craft',
+                    trainer: trainer.trim() || 'Guest Instructor',
+                    price: Number(price),
+                    status: status,
+                    description: 'Explore details about ' + title.trim()
+                })
+            });
+        } catch (err) {
+            console.warn('Create course API call failed, falling back to local save.');
+        }
+
+        // Local save fallback / state sync
         const newCourse: CourseItem = {
             id: newId,
             title: title.trim(),
