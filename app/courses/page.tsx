@@ -17,14 +17,14 @@ export default function ExploreCoursesLemonAcademy() {
                     if (Array.isArray(data) && data.length > 0) {
                         // Map backend fields to frontend
                         const mapped = data.map((c: any) => ({
-                            id: c.id,
-                            title: c.title,
+                            id: c.id || c._id,
+                            title: c.title || c.name || 'Untitled Course',
                             category: c.category || 'General Craft',
-                            instructor: c.trainer || 'Guest Instructor',
+                            instructor: c.trainer || c.instructor || 'Guest Instructor',
                             description: c.description || '',
-                            imageUrl: c.imageUrl || 'https://lh3.googleusercontent.com/aida-public/AB6AXuAaoX0RGxpW-j4nvC1oT1ER7ghQq3LTyffaeKwMP7NUMAKKHqHQmjktmUbyLPagZx6VG0o3H4U157TFiWJGVWKEFwAc3hVXQzqSdHoFy7hC98aHC2EyKFdILSTsnS-EXmaDGklBokg2X7ZOMMcfjaSFDKUhNg6zQecW1g1g1W-aIDWhErsUjb9KT097mpys8RjeuJAbVJ2rMZ7tS10zRVyyf0czkAW4IWUW6sgkOQOPwRiE2EbJHQdA',
+                            imageUrl: c.imageUrl || c.image || c.coverImage || 'https://lh3.googleusercontent.com/aida-public/AB6AXuAaoX0RGxpW-j4nvC1oT1ER7ghQq3LTyffaeKwMP7NUMAKKHqHQmjktmUbyLPagZx6VG0o3H4U157TFiWJGVWKEFwAc3hVXQzqSdHoFy7hC98aHC2EyKFdILSTsnS-EXmaDGklBokg2X7ZOMMcfjaSFDKUhNg6zQecW1g1g1W-aIDWhErsUjb9KT097mpys8RjeuJAbVJ2rMZ7tS10zRVyyf0czkAW4IWUW6sgkOQOPwRiE2EbJHQdA',
                             price: c.price || 0,
-                            studentsCount: c.studentsCount || 0
+                            studentsCount: c.studentsCount || c.enrolledStudents || 0
                         }));
                         setCourses(mapped);
                         setLoading(false);
