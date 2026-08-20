@@ -23,6 +23,38 @@ export default function CourseLearningPortal({ params }: { params: Promise<{ cou
     const [course, setCourse] = useState<CourseDetail | null>(null);
     const [activeTab, setActiveTab] = useState<'lessons' | 'zoom' | 'resources' | 'certificate'>('lessons');
     const [sessions, setSessions] = useState<CourseSession[]>([]);
+    const [courseResources, setCourseResources] = useState<any[]>([]);
+    const [resourcesLoading, setResourcesLoading] = useState(false);
+
+    useEffect(() => {
+        if (activeTab === 'resources') {
+            setResourcesLoading(true);
+            fetch(`https://lemonwebsite-backend.onrender.com/api/v1/courses/${courseId}/resources`)
+                .then(res => res.json())
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        const normalized = data.map((item: any) => ({
+                            id: item._id || item.id,
+                            title: item.title || item.name || 'Untitled Resource',
+                            url: item.url || '#',
+                            type: item.type || 'PDF',
+                            size: item.size || '1.0 MB'
+                        }));
+                        setCourseResources(normalized);
+                    } else {
+                        setCourseResources([]);
+                    }
+                    setResourcesLoading(false);
+                })
+                .catch(() => {
+                    setCourseResources([
+                        { id: '1', title: "Substrates Grid Layout Templates", url: "#", type: "PDF", size: "12.4 MB" },
+                        { id: '2', title: "Material Kit Sourcing List", url: "#", type: "Excel", size: "2.1 MB" }
+                    ]);
+                    setResourcesLoading(false);
+                });
+        }
+    }, [activeTab, courseId]);
 
     useEffect(() => {
         const allSessions = initializeMockSessions();
@@ -354,26 +386,38 @@ export default function CourseLearningPortal({ params }: { params: Promise<{ cou
 
                         {activeTab === 'resources' && (
                             <div className="space-y-3">
-                                <div className="flex justify-between items-center p-3 bg-surface-container-low rounded-xl border border-outline-variant/30">
-                                    <div className="flex items-center gap-3">
-                                        <span className="material-symbols-outlined text-primary text-lg">description</span>
-                                        <div>
-                                            <p className="font-semibold text-on-surface">Substrates Grid Layout Templates</p>
-                                            <p className="text-[10px] text-on-surface-variant">PDF (12.4 MB)</p>
-                                        </div>
+                                {resourcesLoading ? (
+                                    <div className="space-y-3">
+                                        <div className="h-14 w-full bg-surface-container-low border border-outline-variant/20 rounded-xl animate-pulse"></div>
+                                        <div className="h-14 w-full bg-surface-container-low border border-outline-variant/20 rounded-xl animate-pulse"></div>
                                     </div>
-                                    <button className="text-primary hover:underline font-semibold">Download</button>
-                                </div>
-                                <div className="flex justify-between items-center p-3 bg-surface-container-low rounded-xl border border-outline-variant/30">
-                                    <div className="flex items-center gap-3">
-                                        <span className="material-symbols-outlined text-primary text-lg">shopping_cart</span>
-                                        <div>
-                                            <p className="font-semibold text-on-surface">Material Kit Sourcing List</p>
-                                            <p className="text-[10px] text-on-surface-variant">Excel (2.1 MB)</p>
-                                        </div>
+                                ) : courseResources.length === 0 ? (
+                                    <div className="text-center py-6 text-on-surface-variant bg-surface-container-low rounded-xl border border-outline-variant/20 italic">
+                                        No resources uploaded for this course.
                                     </div>
-                                    <button className="text-primary hover:underline font-semibold">Download</button>
-                                </div>
+                                ) : (
+                                    courseResources.map((item) => (
+                                        <div key={item.id} className="flex justify-between items-center p-3 bg-surface-container-low rounded-xl border border-outline-variant/30">
+                                            <div className="flex items-center gap-3">
+                                                <span className="material-symbols-outlined text-primary text-lg">
+                                                    {item.type === 'Excel' ? 'table_chart' : item.type === 'Image' ? 'image' : 'description'}
+                                                </span>
+                                                <div>
+                                                    <p className="font-semibold text-on-surface">{item.title}</p>
+                                                    <p className="text-[10px] text-on-surface-variant">{item.type} ({item.size})</p>
+                                                </div>
+                                            </div>
+                                            <a 
+                                                href={item.url} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer" 
+                                                className="text-primary hover:underline font-semibold text-[11px]"
+                                            >
+                                                Download
+                                            </a>
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         )}
 
