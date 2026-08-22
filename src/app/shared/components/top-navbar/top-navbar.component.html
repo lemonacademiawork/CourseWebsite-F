@@ -1,0 +1,174 @@
+<nav class="bg-surface shadow-sm top-0 sticky left-0 right-0 z-50">
+  <div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto text-xs">
+    <!-- Logo -->
+    <a routerLink="/" class="font-display-lg text-lg md:text-xl font-bold text-primary">
+      Lemon Academy
+    </a>
+
+    <!-- Desktop Menu -->
+    <ul class="hidden md:flex gap-6 items-center font-medium">
+      <li>
+        <a routerLink="/" [routerLinkActiveOptions]="{ exact: true }" routerLinkActive="text-primary border-b-2 border-primary pb-1 font-semibold" class="text-on-surface-variant hover:text-primary transition-colors duration-200">
+          Home
+        </a>
+      </li>
+      <li>
+        <a routerLink="/courses" routerLinkActive="text-primary border-b-2 border-primary pb-1 font-semibold" class="text-on-surface-variant hover:text-primary transition-colors duration-200">
+          Courses
+        </a>
+      </li>
+      <li>
+        <a routerLink="/blogs" routerLinkActive="text-primary border-b-2 border-primary pb-1 font-semibold" class="text-on-surface-variant hover:text-primary transition-colors duration-200">
+          Blogs
+        </a>
+      </li>
+      <li>
+        <a routerLink="/gallery" routerLinkActive="text-primary border-b-2 border-primary pb-1 font-semibold" class="text-on-surface-variant hover:text-primary transition-colors duration-200">
+          Gallery
+        </a>
+      </li>
+
+      @if (authService.isLoggedIn() && authService.userRole() === 'student') {
+        <li>
+          <a routerLink="/my-courses" routerLinkActive="text-primary border-b-2 border-primary pb-1 font-semibold" class="text-on-surface-variant hover:text-primary transition-colors duration-200">
+            My Courses
+          </a>
+        </li>
+        @if (hasCourses()) {
+          <li>
+            <a routerLink="/refer-and-earn" routerLinkActive="text-primary border-b-2 border-primary pb-1 font-semibold" class="text-on-surface-variant hover:text-primary transition-colors duration-200">
+              Refer & Earn
+            </a>
+          </li>
+        }
+        <li>
+          <a routerLink="/become-a-trainer" routerLinkActive="text-primary border-b-2 border-primary pb-1 font-semibold" class="text-on-surface-variant hover:text-primary transition-colors duration-200">
+            Become a Trainer
+          </a>
+        </li>
+      }
+    </ul>
+
+    <!-- Right side controls -->
+    <div class="hidden md:flex items-center gap-3">
+      @if (authService.isLoggedIn()) {
+        <div class="flex items-center gap-3">
+          @if (authService.userRole() === 'admin') {
+            <a routerLink="/admin/dashboard" class="font-semibold hover:underline text-primary">
+              Admin Panel
+            </a>
+          }
+          @if (authService.userRole() === 'trainer') {
+            <a routerLink="/trainer/dashboard" class="font-semibold hover:underline text-primary">
+              Trainer Dashboard
+            </a>
+          }
+          <a routerLink="/profile" class="font-medium text-on-surface hover:text-primary">
+            Profile
+          </a>
+          <button 
+            (click)="handleLogout()"
+            class="bg-surface-variant text-on-surface-variant hover:bg-surface-dim px-4 py-2 rounded-lg font-semibold transition-all">
+            Logout
+          </button>
+        </div>
+      } @else {
+        <a routerLink="/login" class="font-semibold px-3 py-2 transition-opacity text-primary hover:opacity-90">
+          Login
+        </a>
+        <a routerLink="/signup" class="font-semibold px-4 py-2.5 rounded-lg transition-opacity bg-primary text-on-primary hover:opacity-90">
+          Sign Up
+        </a>
+      }
+    </div>
+
+    <!-- Mobile Hamburger toggle -->
+    <button 
+      (click)="toggleMobileMenu()"
+      class="md:hidden p-1 rounded-lg text-on-surface">
+      <span class="material-symbols-outlined text-xl">
+        {{ mobileMenuOpen() ? 'close' : 'menu' }}
+      </span>
+    </button>
+  </div>
+
+  <!-- Mobile Drawer Overlay -->
+  @if (mobileMenuOpen()) {
+    <div class="md:hidden absolute top-full left-0 right-0 bg-[#FBF8F1] border-b border-outline-variant/30 shadow-lg py-4 px-margin-mobile flex flex-col gap-4 text-xs z-50">
+      <ul class="flex flex-col gap-2 font-medium">
+        <li>
+          <a (click)="closeMobileMenu()" routerLink="/" [routerLinkActiveOptions]="{ exact: true }" routerLinkActive="text-primary font-bold block py-2 border-l-4 border-primary pl-3 bg-surface-container-low" class="text-on-surface-variant hover:text-primary block py-2 pl-3 transition-colors">
+            Home
+          </a>
+        </li>
+        <li>
+          <a (click)="closeMobileMenu()" routerLink="/courses" routerLinkActive="text-primary font-bold block py-2 border-l-4 border-primary pl-3 bg-surface-container-low" class="text-on-surface-variant hover:text-primary block py-2 pl-3 transition-colors">
+            Courses
+          </a>
+        </li>
+        <li>
+          <a (click)="closeMobileMenu()" routerLink="/blogs" routerLinkActive="text-primary font-bold block py-2 border-l-4 border-primary pl-3 bg-surface-container-low" class="text-on-surface-variant hover:text-primary block py-2 pl-3 transition-colors">
+            Blogs
+          </a>
+        </li>
+        <li>
+          <a (click)="closeMobileMenu()" routerLink="/gallery" routerLinkActive="text-primary font-bold block py-2 border-l-4 border-primary pl-3 bg-surface-container-low" class="text-on-surface-variant hover:text-primary block py-2 pl-3 transition-colors">
+            Gallery
+          </a>
+        </li>
+
+        @if (authService.isLoggedIn() && authService.userRole() === 'student') {
+          <li>
+            <a (click)="closeMobileMenu()" routerLink="/my-courses" routerLinkActive="text-primary font-bold block py-2 border-l-4 border-primary pl-3 bg-surface-container-low" class="text-on-surface-variant hover:text-primary block py-2 pl-3 transition-colors">
+              My Courses
+            </a>
+          </li>
+          @if (hasCourses()) {
+            <li>
+              <a (click)="closeMobileMenu()" routerLink="/refer-and-earn" routerLinkActive="text-primary font-bold block py-2 border-l-4 border-primary pl-3 bg-surface-container-low" class="text-on-surface-variant hover:text-primary block py-2 pl-3 transition-colors">
+                Refer & Earn
+              </a>
+            </li>
+          }
+          <li>
+            <a (click)="closeMobileMenu()" routerLink="/become-a-trainer" routerLinkActive="text-primary font-bold block py-2 border-l-4 border-primary pl-3 bg-surface-container-low" class="text-on-surface-variant hover:text-primary block py-2 pl-3 transition-colors">
+              Become a Trainer
+            </a>
+          </li>
+        }
+      </ul>
+
+      <div class="flex flex-col gap-2 pt-3 border-t border-outline-variant/20">
+        @if (authService.isLoggedIn()) {
+          @if (authService.userRole() === 'admin') {
+            <a (click)="closeMobileMenu()" routerLink="/admin/dashboard" class="text-primary font-bold py-2 pl-3">
+              Admin Panel
+            </a>
+          }
+          @if (authService.userRole() === 'trainer') {
+            <a (click)="closeMobileMenu()" routerLink="/trainer/dashboard" class="text-primary font-bold py-2 pl-3">
+              Trainer Dashboard
+            </a>
+          }
+          <a (click)="closeMobileMenu()" routerLink="/profile" class="text-on-surface font-semibold py-2 pl-3">
+            Profile
+          </a>
+          <button 
+            (click)="handleLogout()"
+            class="w-full bg-surface-variant text-on-surface-variant py-2.5 rounded-lg font-semibold text-center mt-1">
+            Logout
+          </button>
+        } @else {
+          <div class="flex gap-2">
+            <a (click)="closeMobileMenu()" routerLink="/login" class="flex-1 text-center border border-outline text-on-surface py-2 rounded-lg font-semibold">
+              Login
+            </a>
+            <a (click)="closeMobileMenu()" routerLink="/signup" class="flex-1 text-center bg-primary text-on-primary py-2 rounded-lg font-semibold">
+              Sign Up
+            </a>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</nav>

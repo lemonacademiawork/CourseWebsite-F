@@ -1,0 +1,119 @@
+<main class="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-12 text-xs">
+  <div class="flex flex-col md:flex-row gap-8">
+    <!-- Filters Sidebar -->
+    <aside class="w-full md:w-64 flex-shrink-0">
+      <div class="sticky top-24 space-y-8 bg-surface-container-low p-6 rounded-xl border border-surface-variant">
+        <div>
+          <h3 class="font-label-md text-label-md text-on-surface uppercase tracking-widest mb-4 font-bold">Categories</h3>
+          <div class="space-y-3">
+            @for (cat of categories; track cat.slug) {
+              <label class="flex items-center gap-3 cursor-pointer group">
+                <input 
+                  class="form-checkbox text-primary rounded border-outline-variant focus:ring-primary w-4 h-4 accent-primary" 
+                  type="checkbox"
+                  [checked]="selectedCategories().includes(cat.slug)"
+                  (change)="handleCategoryToggle(cat.slug)"
+                />
+                <span class="font-body-md text-on-surface-variant group-hover:text-primary transition-colors">
+                  {{ cat.name }}
+                </span>
+              </label>
+            }
+          </div>
+        </div>
+        <hr class="border-t border-outline-variant" />
+        <div>
+          <h3 class="font-label-md text-label-md text-on-surface uppercase tracking-widest mb-4 font-bold">Level</h3>
+          <div class="space-y-3">
+            @for (level of ['Beginner', 'Intermediate', 'Advanced']; track level) {
+              <label class="flex items-center gap-3 cursor-pointer group">
+                <input class="form-checkbox text-primary rounded border-outline-variant focus:ring-primary w-4 h-4 accent-primary" type="checkbox" />
+                <span class="font-body-md text-on-surface-variant group-hover:text-primary transition-colors">{{ level }}</span>
+              </label>
+            }
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Courses Grid Content -->
+    <div class="flex-grow">
+      <div class="flex justify-between items-center mb-6">
+        <span class="font-body-md text-on-surface-variant">
+          Showing {{ filteredCourses.length }} creative courses
+        </span>
+        <select class="bg-surface-container-low border border-outline-variant rounded-md py-1.5 pl-3 pr-8 font-body-md text-on-surface focus:ring-primary focus:border-primary">
+          <option>Sort by: Recommended</option>
+          <option>Newest</option>
+          <option>Price: Low to High</option>
+          <option>Price: High to Low</option>
+        </select>
+      </div>
+
+      @if (loading()) {
+        <div class="flex flex-col items-center justify-center py-24 space-y-4 bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-8 shadow-sm">
+          <!-- Premium Spinner with Pulse Glow -->
+          <div class="relative flex items-center justify-center">
+            <div class="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+            <div class="absolute w-12 h-12 rounded-full border border-primary/10 animate-ping"></div>
+          </div>
+          <div class="text-center space-y-1 max-w-sm">
+            <p class="font-bold text-on-surface text-sm">Waking up the backend server...</p>
+            <p class="text-[11px] text-on-surface-variant leading-relaxed">
+              Our free-tier server takes about 30 seconds to wake up from sleep mode. Thank you for waiting!
+            </p>
+          </div>
+        </div>
+      } @else if (filteredCourses.length === 0) {
+        <div class="text-center py-16 text-on-surface-variant bg-surface-container-lowest border border-outline-variant/30 rounded-2xl">
+          No courses matching the selected filters.
+        </div>
+      } @else {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          @for (course of filteredCourses; track course.id) {
+            <div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300 group flex flex-col h-full border border-outline-variant/20">
+              <div class="relative h-44 overflow-hidden bg-surface-variant">
+                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" [alt]="course.title" [src]="course.imageUrl" />
+                <div class="absolute top-3 left-3 bg-tertiary-fixed px-2.5 py-0.5 rounded-full text-on-tertiary-fixed text-[10px] font-semibold uppercase tracking-wider">
+                  {{ course.category }}
+                </div>
+              </div>
+              <div class="p-5 flex flex-col flex-grow justify-between gap-4">
+                <div class="space-y-2">
+                  <h3 class="font-bold text-on-surface text-sm leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                    <a [routerLink]="course.id === 'lippan-art' ? '/courses/lippan-art' : '/courses'">{{ course.title }}</a>
+                  </h3>
+                  <p class="text-on-surface-variant line-clamp-2 text-[11px] leading-relaxed">
+                    {{ course.description || "Master new artisanal skills from the foundation to intermediate levels." }}
+                  </p>
+                </div>
+                <div class="space-y-3">
+                  <div class="flex items-center gap-2">
+                    <div class="w-5 h-5 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center text-[10px] font-bold">
+                      {{ getInitials(course.instructor) }}
+                    </div>
+                    <span class="text-on-surface-variant font-medium text-[11px]">{{ course.instructor }}</span>
+                  </div>
+                  <div class="flex justify-between items-center border-t border-surface-variant/45 pt-3">
+                    <div class="flex items-center text-primary-fixed-dim">
+                      <span class="material-symbols-outlined filled text-xs">star</span>
+                      <span class="material-symbols-outlined filled text-xs">star</span>
+                      <span class="material-symbols-outlined filled text-xs">star</span>
+                      <span class="material-symbols-outlined filled text-xs">star</span>
+                      <span class="material-symbols-outlined text-xs">star_half</span>
+                      <span class="text-on-surface font-semibold ml-1 text-[10px]">4.8</span>
+                      <span class="text-on-surface-variant ml-1 text-[10px]">({{ course.studentsCount }})</span>
+                    </div>
+                    <div class="text-right">
+                      <div class="font-bold text-primary text-sm">Rs. {{ course.price }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</main>

@@ -1,0 +1,119 @@
+<main class="bg-surface min-h-screen text-on-surface py-12 md:py-16 text-xs">
+  <div class="max-w-[1200px] mx-auto px-4 mb-12">
+    <span class="bg-tertiary-container text-on-tertiary-container text-xs font-bold uppercase tracking-widest py-1.5 px-4 rounded-full inline-block mb-3">
+      Legal
+    </span>
+    <h1 class="text-4xl md:text-5xl font-extrabold text-on-surface mb-2 playfair">
+      Privacy Policy
+    </h1>
+    <p class="text-on-surface-variant text-xs md:text-sm">
+      Effective Date: August 19, 2026 | Last Updated: August 19, 2026
+    </p>
+  </div>
+
+  <div class="max-w-[1200px] mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-12 relative">
+    <div class="hidden lg:block lg:col-span-1">
+      <div class="sticky top-28 bg-surface-container-low border border-outline-variant/30 rounded-3xl p-6 space-y-3">
+        <h4 class="font-bold text-xs uppercase tracking-wider text-outline mb-2">Table of Contents</h4>
+        <nav class="flex flex-col space-y-1">
+          @for (section of sections; track section.id) {
+            <button
+              (click)="scrollToSection(section.id)"
+              class="text-left text-xs font-semibold py-2 px-3 rounded-xl transition-all cursor-pointer"
+              [class.bg-primary]="activeSection() === section.id"
+              [class.text-white]="activeSection() === section.id"
+              [class.font-bold]="activeSection() === section.id"
+              [class.shadow-sm]="activeSection() === section.id"
+              [class.text-on-surface-variant]="activeSection() !== section.id"
+              [class.hover:bg-surface-container]="activeSection() !== section.id">
+              {{ section.label }}
+            </button>
+          }
+        </nav>
+      </div>
+    </div>
+
+    <div class="lg:col-span-3 space-y-12 leading-relaxed text-sm md:text-base text-on-surface-variant font-body-md">
+      <section id="introduction" class="space-y-4 scroll-mt-24">
+        <h2 class="text-xl md:text-2xl font-extrabold text-on-surface playfair">Introduction</h2>
+        <p>
+          Welcome to Lemon Academy! We respect your privacy and are committed to protecting the personal information you share with us. This Privacy Policy outlines how we collect, use, process, and safeguard your data when you visit our website, enroll in our craft courses, or purchase our premium materials and kits.
+        </p>
+        <div class="bg-tertiary/10 border-l-4 border-tertiary p-5 rounded-r-2xl my-6">
+          <h4 class="font-bold text-tertiary text-xs uppercase tracking-wider mb-1">Key Takeaway</h4>
+          <p class="text-xs text-on-surface-variant leading-relaxed">
+            We only collect the minimal amount of personal data required to deliver premium courses and craft kits. We never sell your personal information to third parties.
+          </p>
+        </div>
+      </section>
+
+      <hr class="border-outline-variant/25" />
+
+      <section id="collection" class="space-y-4 scroll-mt-24">
+        <h2 class="text-xl md:text-2xl font-extrabold text-on-surface playfair">1. Information We Collect</h2>
+        <p>
+          We collect information that you voluntarily provide to us and certain information that is generated automatically when you interact with our platform.
+        </p>
+        <ul class="list-disc pl-5 space-y-2.5 text-sm">
+          <li><strong class="text-on-surface">Account Information:</strong> Name, email, and password.</li>
+          <li><strong class="text-on-surface">Billing and Shipping Details:</strong> For physical kit orders.</li>
+          <li><strong class="text-on-surface">Course Activity:</strong> Progress, lessons completed, certificates.</li>
+        </ul>
+      </section>
+
+      <hr class="border-outline-variant/25" />
+
+      <section id="usage" class="space-y-4 scroll-mt-24">
+        <h2 class="text-xl md:text-2xl font-extrabold text-on-surface playfair">2. How We Use Information</h2>
+        <p>
+          Lemon Academy processes your personal information for providing online learning, sending course updates, and managing student accounts.
+        </p>
+      </section>
+
+      <hr class="border-outline-variant/25" />
+
+      <section id="sharing" class="space-y-4 scroll-mt-24">
+        <h2 class="text-xl md:text-2xl font-extrabold text-on-surface playfair">3. Sharing &amp; Disclosures</h2>
+        <p>
+          We share your information only with trusted payment and hosting service providers vital to operating our academy.
+        </p>
+      </section>
+
+      <hr class="border-outline-variant/25" />
+
+      <section id="security" class="space-y-4 scroll-mt-24">
+        <h2 class="text-xl md:text-2xl font-extrabold text-on-surface playfair">4. Data Security</h2>
+        <p>
+          We implement SSL/TLS encryption and modern cybersecurity standards across our databases and web application.
+        </p>
+      </section>
+
+      <hr class="border-outline-variant/25" />
+
+      <section id="cookies" class="space-y-4 scroll-mt-24">
+        <h2 class="text-xl md:text-2xl font-extrabold text-on-surface playfair">5. Cookies &amp; Tracking</h2>
+        <p>
+          We use cookies to maintain your login session and preserve site preferences.
+        </p>
+      </section>
+
+      <hr class="border-outline-variant/25" />
+
+      <section id="rights" class="space-y-4 scroll-mt-24">
+        <h2 class="text-xl md:text-2xl font-extrabold text-on-surface playfair">6. Your Privacy Rights</h2>
+        <p>
+          You have the right to access, rectify, or request deletion of your account records at any time.
+        </p>
+      </section>
+
+      <hr class="border-outline-variant/25" />
+
+      <section id="updates" class="space-y-4 scroll-mt-24">
+        <h2 class="text-xl md:text-2xl font-extrabold text-on-surface playfair">7. Policy Updates</h2>
+        <p>
+          We may update this Privacy Policy from time to time to align with legal or operational standards.
+        </p>
+      </section>
+    </div>
+  </div>
+</main>

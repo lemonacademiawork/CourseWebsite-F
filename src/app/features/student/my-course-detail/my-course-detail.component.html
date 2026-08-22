@@ -1,0 +1,190 @@
+<main class="min-h-screen bg-[#FBF8F1] py-8 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto text-xs text-on-surface">
+  <div class="mb-6 flex items-center justify-between">
+    <a routerLink="/my-courses" class="text-primary hover:underline font-semibold flex items-center gap-1">
+      <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+      Back to My Courses
+    </a>
+    <span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-[11px]">
+      Active Enrollment
+    </span>
+  </div>
+
+  <div class="bg-surface-container-lowest rounded-2xl p-6 md:p-8 border border-outline-variant/35 shadow-sm space-y-6">
+    <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-outline-variant/20 pb-6">
+      <div>
+        <h1 class="playfair text-2xl md:text-3xl font-bold text-on-surface">The Art of Lippan: Traditional Mud &amp; Mirror Work</h1>
+        <p class="text-on-surface-variant text-xs mt-1">Instructor: Aisha Sharma • Master Artisan of Kutch</p>
+      </div>
+      <a routerLink="/courses/lippan-art/learning" class="bg-primary text-on-primary font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity text-center flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-sm">play_circle</span>
+        Open Workshop Video Player
+      </a>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="flex border-b border-outline-variant/25 gap-4 md:gap-8 overflow-x-auto text-xs font-semibold">
+      <button 
+        (click)="setTab('lessons')"
+        [class.border-b-2]="activeTab() === 'lessons'"
+        [class.border-primary]="activeTab() === 'lessons'"
+        [class.text-primary]="activeTab() === 'lessons'"
+        class="pb-3 text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
+        <span class="material-symbols-outlined text-sm">menu_book</span>
+        Course Curriculum
+      </button>
+      <button 
+        (click)="setTab('zoom')"
+        [class.border-b-2]="activeTab() === 'zoom'"
+        [class.border-primary]="activeTab() === 'zoom'"
+        [class.text-primary]="activeTab() === 'zoom'"
+        class="pb-3 text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
+        <span class="material-symbols-outlined text-sm">video_camera_front</span>
+        Live Zoom Classes
+      </button>
+      <button 
+        (click)="setTab('resources')"
+        [class.border-b-2]="activeTab() === 'resources'"
+        [class.border-primary]="activeTab() === 'resources'"
+        [class.text-primary]="activeTab() === 'resources'"
+        class="pb-3 text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
+        <span class="material-symbols-outlined text-sm">folder_open</span>
+        Materials &amp; Blueprints
+      </button>
+      <button 
+        (click)="setTab('certificate')"
+        [class.border-b-2]="activeTab() === 'certificate'"
+        [class.border-primary]="activeTab() === 'certificate'"
+        [class.text-primary]="activeTab() === 'certificate'"
+        class="pb-3 text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
+        <span class="material-symbols-outlined text-sm">workspace_premium</span>
+        Course Certificate
+      </button>
+    </div>
+
+    <!-- Tab 1: Curriculum -->
+    @if (activeTab() === 'lessons') {
+      <div class="space-y-6">
+        @for (mod of modules; track mod.title) {
+          <div class="border border-outline-variant/30 rounded-xl overflow-hidden bg-surface-container-low">
+            <div class="p-4 bg-surface-container font-bold text-on-surface text-xs border-b border-outline-variant/20">
+              {{ mod.title }}
+            </div>
+            <div class="divide-y divide-outline-variant/15">
+              @for (lesson of mod.lessons; track lesson.id) {
+                <div class="p-3.5 flex items-center justify-between hover:bg-surface-container-lowest transition-colors">
+                  <div class="flex items-center gap-3">
+                    <input 
+                      type="checkbox" 
+                      [checked]="lesson.completed"
+                      (change)="toggleLesson(lesson)"
+                      class="w-4 h-4 accent-primary rounded cursor-pointer"
+                    />
+                    <span [class.line-through]="lesson.completed" [class.text-on-surface-variant]="lesson.completed" class="font-medium text-xs">
+                      {{ lesson.title }}
+                    </span>
+                  </div>
+                  <span class="text-[11px] text-on-surface-variant">{{ lesson.duration }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Tab 2: Live Zoom Classes -->
+    @if (activeTab() === 'zoom') {
+      <div class="space-y-4">
+        @for (session of sessions(); track session.id) {
+          <div class="p-4 rounded-xl border border-outline-variant/30 bg-surface-container-low flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-sm text-on-surface">{{ session.title }}</span>
+                <span 
+                  class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                  [class.bg-green-100]="getStatus(session) === 'LIVE'"
+                  [class.text-green-800]="getStatus(session) === 'LIVE'"
+                  [class.bg-blue-100]="getStatus(session) === 'UPCOMING'"
+                  [class.text-blue-800]="getStatus(session) === 'UPCOMING'"
+                  [class.bg-gray-100]="getStatus(session) === 'COMPLETED' || getStatus(session) === 'RECORDING_AVAILABLE'"
+                  [class.text-gray-800]="getStatus(session) === 'COMPLETED' || getStatus(session) === 'RECORDING_AVAILABLE'">
+                  {{ getStatus(session) }}
+                </span>
+              </div>
+              <p class="text-xs text-on-surface-variant mt-1">{{ session.description }}</p>
+              <p class="text-[11px] text-on-surface-variant font-medium mt-1">
+                Date: {{ session.sessionDate }} • {{ session.startTime }} - {{ session.endTime }}
+              </p>
+            </div>
+            <div class="flex gap-2 w-full md:w-auto">
+              @if (session.zoomLink) {
+                <a [href]="session.zoomLink" target="_blank" class="bg-primary text-on-primary px-4 py-2 rounded-lg font-semibold text-xs hover:opacity-90">
+                  Join Zoom Room
+                </a>
+              }
+              @if (session.recordingLink) {
+                <a [href]="session.recordingLink" target="_blank" class="border border-outline px-4 py-2 rounded-lg font-semibold text-xs text-on-surface hover:bg-surface-variant">
+                  Watch Recording
+                </a>
+              }
+            </div>
+          </div>
+        }
+
+        @if (sessions().length === 0) {
+          <div class="text-center py-12 text-on-surface-variant bg-surface-container-low rounded-xl">
+            <p>No live Zoom classes scheduled yet for this course. Please check back later!</p>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Tab 3: Materials & Blueprints -->
+    @if (activeTab() === 'resources') {
+      <div class="space-y-4">
+        @if (resourcesLoading()) {
+          <div class="text-center py-8 text-on-surface-variant">Loading course materials...</div>
+        } @else if (resources().length === 0) {
+          <div class="text-center py-12 text-on-surface-variant bg-surface-container-low rounded-xl">
+            <p>No downloadable materials currently attached to this course.</p>
+          </div>
+        } @else {
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            @for (res of resources(); track res.id) {
+              <div class="p-4 bg-surface-container-low border border-outline-variant/30 rounded-xl flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <span class="material-symbols-outlined text-primary text-2xl">description</span>
+                  <div>
+                    <span class="font-bold text-xs text-on-surface">{{ res.title }}</span>
+                    <p class="text-[10px] text-on-surface-variant">{{ res.type }} • {{ res.fileSize || '1.5 MB' }}</p>
+                  </div>
+                </div>
+                <a [href]="res.fileUrl" target="_blank" class="bg-primary/10 text-primary font-semibold px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors text-xs">
+                  Download
+                </a>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Tab 4: Certificate -->
+    @if (activeTab() === 'certificate') {
+      <div class="text-center py-8 max-w-lg mx-auto space-y-6">
+        <div class="border-4 border-double border-primary/40 bg-surface-container-lowest p-8 rounded-2xl shadow-sm space-y-4">
+          <div class="text-primary font-bold tracking-widest uppercase text-xs">Certificate of Completion</div>
+          <h2 class="playfair text-2xl font-bold text-on-surface">{{ authService.userName() }}</h2>
+          <p class="text-xs text-on-surface-variant">
+            has successfully completed all modules and live workshops for
+          </p>
+          <div class="font-bold text-sm text-primary">The Art of Lippan: Traditional Mud &amp; Mirror Work</div>
+          <p class="text-[10px] text-on-surface-variant">Instructor: Aisha Sharma • Lemon Academy</p>
+        </div>
+        <button class="bg-primary text-on-primary px-6 py-2.5 rounded-lg font-semibold shadow-sm hover:opacity-90 cursor-pointer">
+          Download PDF Certificate
+        </button>
+      </div>
+    }
+  </div>
+</main>

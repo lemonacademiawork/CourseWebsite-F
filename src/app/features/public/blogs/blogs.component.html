@@ -1,0 +1,133 @@
+<main class="min-h-screen bg-background text-on-background pt-8 pb-16 md:pt-12 md:pb-24">
+  <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop space-y-16">
+
+    <!-- Filters and Search Bar -->
+    <div class="flex flex-col md:flex-row gap-6 justify-between items-center border-b border-outline/15 pb-6">
+      <div class="flex flex-wrap gap-2 justify-center md:justify-start w-full md:w-auto">
+        @for (cat of categories; track cat) {
+          <button
+            (click)="selectCategory(cat)"
+            class="px-4 py-2 font-label-md text-xs rounded-full transition-all duration-200"
+            [class.bg-primary]="selectedCategory() === cat"
+            [class.text-on-primary]="selectedCategory() === cat"
+            [class.shadow-sm]="selectedCategory() === cat"
+            [class.bg-surface-container-low]="selectedCategory() !== cat"
+            [class.text-on-surface-variant]="selectedCategory() !== cat"
+            [class.hover:bg-surface-container-high]="selectedCategory() !== cat">
+            {{ cat }}
+          </button>
+        }
+      </div>
+
+      <div class="relative w-full md:w-80">
+        <input
+          type="text"
+          placeholder="Search articles..."
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          class="w-full bg-surface-container-lowest text-on-surface font-body-md text-sm pl-10 pr-4 py-3 rounded-full border border-outline/20 focus:outline-none focus:border-primary transition-colors"
+        />
+        <span class="material-symbols-outlined absolute left-3 top-3.5 text-on-surface-variant/65 text-sm select-none">
+          search
+        </span>
+      </div>
+    </div>
+
+    <!-- Featured Post Card (Hero) -->
+    @if (selectedCategory() === 'All Stories' && searchQuery() === '') {
+      <div class="bg-surface-container-lowest rounded-2xl overflow-hidden organic-shadow grid grid-cols-1 lg:grid-cols-12 hover-lift">
+        <div class="lg:col-span-7 h-[300px] lg:h-[450px] relative">
+          <img
+            [src]="featuredPost.image"
+            [alt]="featuredPost.title"
+            class="w-full h-full object-cover"
+          />
+        </div>
+        <div class="lg:col-span-5 p-8 flex flex-col justify-center space-y-6">
+          <div>
+            <span class="inline-block px-3 py-1 rounded-full font-label-md text-xs {{ featuredPost.categoryColor }} mb-4">
+              {{ featuredPost.category }}
+            </span>
+            <h2 class="font-headline-md text-2xl md:text-3xl text-on-surface hover:text-primary transition-colors leading-snug font-bold">
+              <a [routerLink]="['/blogs', featuredPost.id]">
+                {{ featuredPost.title }}
+              </a>
+            </h2>
+          </div>
+          <p class="font-body-md text-on-surface-variant text-sm leading-relaxed">
+            {{ featuredPost.excerpt }}
+          </p>
+          <div class="flex items-center justify-between pt-4 border-t border-outline/10 text-xs font-body-md text-on-surface-variant/80">
+            <span>{{ featuredPost.author }} • {{ featuredPost.date }}</span>
+            <span class="text-primary font-label-md font-semibold">{{ featuredPost.readTime }}</span>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Blogs Grid -->
+    @if (filteredPosts.length > 0) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+        @for (post of filteredPosts; track post.id) {
+          <div class="bg-surface-container-lowest rounded-2xl overflow-hidden organic-shadow flex flex-col justify-between hover-lift group">
+            <div>
+              <div class="h-52 overflow-hidden relative">
+                <img
+                  [src]="post.image"
+                  [alt]="post.title"
+                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              </div>
+              <div class="p-6 space-y-4">
+                <span class="inline-block px-3 py-0.5 rounded-full font-label-md text-[10px] {{ post.categoryColor }} uppercase tracking-wider font-semibold">
+                  {{ post.category }}
+                </span>
+                <h3 class="font-headline-sm text-lg text-on-surface group-hover:text-primary transition-colors leading-snug line-clamp-2 font-bold">
+                  <a [routerLink]="['/blogs', post.id]">
+                    {{ post.title }}
+                  </a>
+                </h3>
+                <p class="font-body-md text-xs text-on-surface-variant leading-relaxed line-clamp-3">
+                  {{ post.excerpt }}
+                </p>
+              </div>
+            </div>
+            <div class="px-6 pb-6 pt-4 border-t border-outline/5 flex items-center justify-between text-[11px] font-body-md text-on-surface-variant/80">
+              <span>By {{ post.author }} • {{ post.date }}</span>
+              <span class="text-primary font-label-md font-semibold">{{ post.readTime }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="text-center py-20 bg-surface-container-low rounded-2xl space-y-4">
+        <span class="material-symbols-outlined text-outline text-5xl">search_off</span>
+        <h3 class="font-headline-sm text-lg text-on-surface font-bold">No articles found</h3>
+        <p class="font-body-md text-sm text-on-surface-variant max-w-sm mx-auto">
+          Try adjusting your filters or search keywords to find what you are looking for.
+        </p>
+      </div>
+    }
+
+    <!-- Newsletter Box -->
+    <section class="bg-surface-container rounded-2xl p-8 md:p-12 flex flex-col lg:flex-row items-center justify-between gap-8 organic-shadow">
+      <div class="space-y-3 max-w-lg text-center lg:text-left">
+        <h3 class="font-display-lg text-2xl text-on-surface font-bold">Join the Atelier Circle</h3>
+        <p class="font-body-md text-sm text-on-surface-variant">
+          Receive a monthly dispatch containing craft blueprints, historical deep dives, and early alerts for enrollment openings.
+        </p>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+        <input
+          type="email"
+          placeholder="Enter your email"
+          class="bg-surface-container-lowest text-on-surface font-body-md text-sm px-6 py-4 rounded-lg border border-outline/25 focus:outline-none focus:border-primary w-full sm:w-80"
+        />
+        <button class="bg-primary text-on-primary font-label-md text-sm px-8 py-4 rounded-lg hover:opacity-90 transition-opacity whitespace-nowrap font-semibold">
+          Subscribe
+        </button>
+      </div>
+    </section>
+
+  </div>
+</main>

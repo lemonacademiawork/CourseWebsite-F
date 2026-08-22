@@ -1,0 +1,101 @@
+<div class="relative min-h-screen pb-4 text-xs">
+  <div class="absolute inset-0 pointer-events-none opacity-20" style="background-image: radial-gradient(circle at 100% 0%, #ffe17a 0%, transparent 40%), radial-gradient(circle at 0% 100%, #fe9d7a 0%, transparent 40%)"></div>
+  
+  <div class="max-w-container-max mx-auto px-margin-mobile md:px-6 py-4 relative z-10">
+    <!-- Welcome Header -->
+    <header class="mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-surface-variant/30 pb-3">
+      <div>
+        <h2 class="text-xl font-bold text-on-surface">
+          Welcome Admin
+        </h2>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-surface-container-highest border-2 border-surface-lowest overflow-hidden shadow-sm">
+          <img alt="Admin Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiZ4bmrxwarPOLvbBAsfKmoeRmL05QcB7t86lrFefM6zAXjJCneFxbt0x6IcGjLmHnwjxgnpitPDruTQ__ItHv0vr8v-t9StQwan-mLdx6zEPy80RbJa6UhB912a2K6gd3BD4OzXpUtSJdzxLcpJiPq6cP2K0VPIAK4TrF2zL_MxqdQh0Asw3uN96s4UJ49j1uNVa14BEaVj4fgOMFehpg8fOKGXQBZmuM7y5bJtGCY5LMNow97gf7" />
+        </div>
+      </div>
+    </header>
+
+    <!-- Bento Grid Layout -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-3 auto-rows-min">
+      <!-- KPI 1: Revenue -->
+      <div class="md:col-span-4 bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-3.5 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col justify-between">
+        <div class="flex justify-between items-start">
+          <span class="font-semibold text-[10px] text-on-surface-variant uppercase tracking-wider">Total Revenue</span>
+          <div class="w-7 h-7 rounded-lg bg-primary-container/20 flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined text-base">payments</span>
+          </div>
+        </div>
+        <div class="mt-2">
+          <div class="text-xl font-bold text-on-surface leading-none">Rs. 4,820</div>
+          <div class="flex items-center gap-1 text-[10px] text-primary mt-1 font-semibold">
+            <span>+18% from last month</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI 2: Students -->
+      <div class="md:col-span-4 bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-3.5 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col justify-between">
+        <div class="flex justify-between items-start">
+          <span class="font-semibold text-[10px] text-on-surface-variant uppercase tracking-wider">Total Students</span>
+          <div class="w-7 h-7 rounded-lg bg-tertiary-container/30 flex items-center justify-center text-tertiary">
+            <span class="material-symbols-outlined text-base">group</span>
+          </div>
+        </div>
+        <div class="mt-2">
+          <div class="text-xl font-bold text-on-surface leading-none">128</div>
+          <div class="flex items-center gap-1 text-[10px] text-on-surface-variant mt-1">
+            <span>Across 4 workshops</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI 3: Action Needed -->
+      <div class="md:col-span-4 bg-secondary-fixed/5 border border-secondary/15 rounded-xl p-3.5 flex flex-col justify-between shadow-sm">
+        <div class="flex items-center gap-1.5 mb-1.5 border-b border-secondary/10 pb-1">
+          <span class="material-symbols-outlined text-secondary text-xs font-bold">priority_high</span>
+          <span class="font-semibold text-[10px] text-on-surface uppercase tracking-wider">Action Needed</span>
+        </div>
+        <div class="space-y-1.5 flex-grow flex flex-col justify-center">
+          <a routerLink="/admin/applications" class="flex justify-between items-center bg-surface-container-lowest px-2.5 py-1 rounded-lg border border-outline-variant/15 hover:border-outline-variant/30 transition-colors">
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-on-surface-variant text-sm">assignment_ind</span>
+              <span class="text-[11px] font-medium text-on-surface">Trainer Applications</span>
+            </div>
+            <span class="bg-primary/20 text-primary text-[9px] px-1.5 py-0.5 rounded-full font-bold">2 Pending</span>
+          </a>
+          <a routerLink="/admin/content" class="flex justify-between items-center bg-surface-container-lowest px-2.5 py-1 rounded-lg border border-outline-variant/15 hover:border-outline-variant/30 transition-colors">
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-on-surface-variant text-sm">palette</span>
+              <span class="text-[11px] font-medium text-on-surface">Creative Reviews</span>
+            </div>
+            <span class="bg-surface-variant text-on-surface-variant text-[9px] px-1.5 py-0.5 rounded-full font-bold">0</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick Actions Grid -->
+      <div class="md:col-span-12 bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-4 shadow-sm space-y-3">
+        <h3 class="font-bold text-sm text-on-surface">Quick Administrative Actions</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <a routerLink="/admin/courses" class="p-3 bg-surface-container-low rounded-xl border border-outline-variant/30 hover:bg-surface-container transition-colors flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-primary text-xl">add_circle</span>
+            <span class="font-semibold text-xs">Manage Courses</span>
+          </a>
+          <a routerLink="/admin/content/upload" class="p-3 bg-surface-container-low rounded-xl border border-outline-variant/30 hover:bg-surface-container transition-colors flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-primary text-xl">upload_file</span>
+            <span class="font-semibold text-xs">Upload Content</span>
+          </a>
+          <a routerLink="/admin/coupons/create" class="p-3 bg-surface-container-low rounded-xl border border-outline-variant/30 hover:bg-surface-container transition-colors flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-primary text-xl">local_offer</span>
+            <span class="font-semibold text-xs">Create Coupon</span>
+          </a>
+          <a routerLink="/admin/carousel" class="p-3 bg-surface-container-low rounded-xl border border-outline-variant/30 hover:bg-surface-container transition-colors flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-primary text-xl">view_carousel</span>
+            <span class="font-semibold text-xs">Carousel Banners</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
