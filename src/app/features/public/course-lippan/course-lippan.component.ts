@@ -12,36 +12,41 @@ import { CourseService } from '../../../core/services/course.service';
     <main class="min-h-screen bg-surface py-8 md:py-12 text-xs text-on-surface">
       <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop space-y-7">
         
-        <!-- Clean, Uncluttered Top Header -->
-        <header class="space-y-3 max-w-3xl">
-          <!-- Subtle Top Breadcrumb & Metadata Line -->
-          <div class="flex flex-wrap items-center gap-2.5 text-xs text-on-surface-variant">
-            <a routerLink="/courses" class="inline-flex items-center gap-1 text-primary hover:underline font-semibold transition-colors">
-              <span class="material-symbols-outlined text-[15px]">arrow_back</span>
-              Courses
+        <!-- Clean, Balanced Top Header -->
+        <header class="space-y-4">
+          <!-- Top Utility Row: Left Back Link & Right Metadata -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-outline-variant/15">
+            <!-- Left: Back Navigation -->
+            <a routerLink="/courses" class="inline-flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-primary font-semibold transition-colors">
+              <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+              Back to Courses
             </a>
-            <span class="text-outline-variant/60">/</span>
-            <span class="bg-tertiary-fixed text-on-tertiary-fixed font-semibold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider">
-              Lippan Art
-            </span>
-            <span class="text-outline-variant/60">•</span>
-            <span class="inline-flex items-center gap-1 text-[11px] text-on-surface font-semibold">
-              <span class="material-symbols-outlined text-[13px] text-amber-500 filled">star</span>
-              4.9 <span class="text-on-surface-variant font-normal">(124 reviews)</span>
-            </span>
-            <span class="text-outline-variant/60">•</span>
-            <span class="text-[11px] text-on-surface-variant">1,200+ Students</span>
+
+            <!-- Right: Shifted Category & Reviews Metadata -->
+            <div class="flex flex-wrap items-center gap-2.5 text-xs">
+              <span class="bg-tertiary-fixed text-on-tertiary-fixed font-semibold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider">
+                Lippan Art
+              </span>
+              <span class="text-outline-variant/60">•</span>
+              <span class="inline-flex items-center gap-1 text-[11px] text-on-surface font-semibold">
+                <span class="material-symbols-outlined text-[14px] text-amber-500 filled">star</span>
+                4.9 <span class="text-on-surface-variant font-normal">(124 reviews)</span>
+              </span>
+              <span class="text-outline-variant/60">•</span>
+              <span class="text-[11px] text-on-surface-variant font-medium">1,200+ Students</span>
+            </div>
           </div>
 
-          <!-- Harmonious Title -->
-          <h1 class="text-2xl sm:text-3xl font-bold text-on-surface leading-snug">
-            The Art of Lippan: Traditional Mud &amp; Mirror Work
-          </h1>
+          <!-- Course Title & Description -->
+          <div class="space-y-2 max-w-4xl">
+            <h1 class="text-2xl sm:text-3xl font-bold text-on-surface leading-tight">
+              The Art of Lippan: Traditional Mud &amp; Mirror Work
+            </h1>
 
-          <!-- Gentle Subtitle -->
-          <p class="text-xs sm:text-[13px] text-on-surface-variant leading-relaxed font-normal">
-            Master the ancient Gujarati craft of Lippan Kaam. Create intricate geometric relief murals with modern durable clay and genuine shisha mirrors.
-          </p>
+            <p class="text-xs sm:text-[13px] text-on-surface-variant leading-relaxed font-normal max-w-3xl">
+              Master the ancient Gujarati craft of Lippan Kaam. Create intricate geometric relief murals with modern durable clay and genuine shisha mirrors.
+            </p>
+          </div>
         </header>
 
         <!-- Two-Column Cohesive Layout with Bounded Sticky Sidebar -->
@@ -197,12 +202,16 @@ import { CourseService } from '../../../core/services/course.service';
               
               <!-- Purchase / Enrollment Card -->
               <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/35 shadow-sm space-y-5">
-                <div class="flex items-baseline justify-between border-b border-outline-variant/20 pb-4">
-                  <div>
-                    <span class="text-[10px] text-on-surface-variant font-semibold uppercase tracking-wider">Tuition Fee</span>
-                    <div class="text-2xl sm:text-3xl font-extrabold text-on-surface">Rs. 149</div>
+                <div class="flex items-center justify-between border-b border-outline-variant/20 pb-4">
+                  <div class="space-y-0.5">
+                    <span class="text-[10px] font-bold text-primary uppercase tracking-widest">Course Enrollment</span>
+                    <div class="flex items-baseline gap-2">
+                      <span class="text-2xl font-bold text-primary">Rs. 149</span>
+                      <span class="text-xs text-outline line-through">Rs. 499</span>
+                      <span class="text-[10px] font-semibold text-secondary bg-secondary-fixed/50 px-1.5 py-0.5 rounded">70% OFF</span>
+                    </div>
                   </div>
-                  <span class="text-[11px] font-bold text-green-700 bg-green-50 px-2.5 py-1 rounded-full border border-green-200">
+                  <span class="text-[10px] font-semibold text-tertiary bg-tertiary-fixed/60 px-2.5 py-1 rounded-full border border-tertiary/20">
                     Lifetime Access
                   </span>
                 </div>
