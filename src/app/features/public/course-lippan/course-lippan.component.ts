@@ -67,75 +67,70 @@ import { CourseService } from '../../../core/services/course.service';
         </section>
       </div>
 
-      <div class="w-full lg:w-80 lg:shrink-0 relative space-y-6">
-        <!-- Enrollment Card -->
-        <div class="sticky top-24 bg-surface-container-lowest rounded-xl p-6 organic-shadow border border-surface-container-high space-y-6">
-          <div class="text-center pb-4 border-b border-surface-container-high">
-            <div class="font-display-lg-mobile text-2xl font-bold text-on-surface">Rs. 149</div>
-            <div class="text-on-surface-variant text-xs mt-1">Full Lifetime Access</div>
-          </div>
-          <button 
-            (click)="handleEnroll()"
-            class="w-full bg-primary text-on-primary font-semibold py-3.5 rounded-full hover:opacity-90 transition-opacity shadow-sm text-xs cursor-pointer">
-            {{ enrolled() ? 'Go to My Courses' : 'Enroll Now' }}
-          </button>
-          <button class="w-full border border-outline text-on-surface font-semibold py-3 rounded-full hover:bg-surface-container-low transition-colors duration-200 text-xs">
-            Gift this Course
-          </button>
-          <div class="pt-4 space-y-3">
-            <div class="flex items-center gap-3 text-xs text-on-surface-variant">
-              <span class="material-symbols-outlined text-outline" style="font-size: 18px;">all_inclusive</span>
-              Full lifetime access
+      <!-- Unified Sticky Sidebar (Fits in One Screen) -->
+      <div class="w-full lg:w-80 lg:shrink-0">
+        <div class="sticky top-20 space-y-4">
+          <!-- Enrollment Card -->
+          <div class="bg-surface-container-lowest rounded-xl p-5 organic-shadow border border-surface-container-high space-y-4">
+            <div class="text-center pb-3 border-b border-surface-container-high">
+              <div class="font-display-lg-mobile text-2xl font-bold text-on-surface">Rs. 149</div>
+              <div class="text-on-surface-variant text-xs mt-0.5">Full Lifetime Access</div>
             </div>
-            <div class="flex items-center gap-3 text-xs text-on-surface-variant">
-              <span class="material-symbols-outlined text-outline" style="font-size: 18px;">ondemand_video</span>
-              12 hours of video
-            </div>
-            <div class="flex items-center gap-3 text-xs text-on-surface-variant">
-              <span class="material-symbols-outlined text-outline" style="font-size: 18px;">workspace_premium</span>
-              Certificate of completion
-            </div>
-          </div>
-        </div>
-
-        <!-- Trainer Details Card -->
-        <div class="bg-surface-container-lowest rounded-xl p-6 organic-shadow border border-surface-container-high space-y-4">
-          <h3 class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Meet Your Instructor</h3>
-          <div class="flex items-center gap-3.5">
-            <img 
-              src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200&h=200" 
-              alt="Aisha Sharma" 
-              class="w-14 h-14 rounded-full object-cover border-2 border-primary/25 shadow-sm"
-            />
-            <div>
-              <h4 class="text-sm font-bold text-on-surface">Aisha Sharma</h4>
-              <p class="text-[11px] text-primary font-semibold">Master Lippan Artisan</p>
-              <div class="flex items-center gap-1 text-[10px] text-on-surface-variant mt-0.5">
-                <span class="material-symbols-outlined text-[13px] text-amber-500 filled">star</span>
-                <span class="font-bold text-on-surface">4.9</span>
-                <span>(124 reviews)</span>
+            <button 
+              (click)="handleEnroll()"
+              class="w-full bg-primary text-on-primary font-semibold py-3 rounded-full hover:opacity-90 transition-opacity shadow-sm text-xs cursor-pointer">
+              {{ enrolled() ? 'Go to My Courses' : 'Enroll Now' }}
+            </button>
+            <button class="w-full border border-outline text-on-surface font-semibold py-2.5 rounded-full hover:bg-surface-container-low transition-colors duration-200 text-xs">
+              Gift this Course
+            </button>
+            <div class="pt-3 border-t border-surface-variant/30 space-y-2 text-xs text-on-surface-variant">
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-outline" style="font-size: 16px;">all_inclusive</span>
+                <span>Full lifetime access</span>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-outline" style="font-size: 16px;">ondemand_video</span>
+                <span>12 hours of video</span>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-outline" style="font-size: 16px;">workspace_premium</span>
+                <span>Certificate of completion</span>
               </div>
             </div>
           </div>
 
-          <div class="pt-3 border-t border-surface-variant/40 space-y-2 text-[11px] text-on-surface-variant">
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-primary text-sm">workspace_premium</span>
-              <span><strong>8+ Years</strong> of Craft Experience</span>
+          <!-- Trainer Details Card -->
+          <div class="bg-surface-container-lowest rounded-xl p-4.5 sm:p-5 organic-shadow border border-surface-container-high space-y-3">
+            <div class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider text-outline">Meet Your Instructor</div>
+            <div class="flex items-center gap-3">
+              <img 
+                src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200&h=200" 
+                alt="Aisha Sharma" 
+                class="w-12 h-12 rounded-full object-cover border-2 border-primary/25 shadow-sm shrink-0"
+              />
+              <div class="min-w-0">
+                <h4 class="text-xs font-bold text-on-surface truncate">Aisha Sharma</h4>
+                <p class="text-[10px] text-primary font-semibold truncate">Master Lippan Artisan</p>
+                <div class="flex items-center gap-1 text-[10px] text-on-surface-variant mt-0.5">
+                  <span class="material-symbols-outlined text-[12px] text-amber-500 filled">star</span>
+                  <span class="font-bold text-on-surface">4.9</span>
+                  <span>(124 reviews)</span>
+                </div>
+              </div>
             </div>
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-primary text-sm">groups</span>
-              <span><strong>1,200+</strong> Students Mentored</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-primary text-sm">palette</span>
-              <span>Specialist in Kutch Heritage Murals</span>
+
+            <div class="pt-2.5 border-t border-surface-variant/40 space-y-1.5 text-[10px] text-on-surface-variant">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[14px]">workspace_premium</span>
+                <span><strong>8+ Years</strong> Craft Experience</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[14px]">groups</span>
+                <span><strong>1,200+</strong> Students Mentored</span>
+              </div>
             </div>
           </div>
-
-          <p class="text-[11px] text-on-surface-variant leading-relaxed pt-2.5 border-t border-surface-variant/30 italic">
-            "Preserving centuries-old Kutchi mud & mirror techniques through hands-on, modern workshop learning."
-          </p>
         </div>
       </div>
     </main>
