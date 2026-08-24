@@ -37,15 +37,11 @@ import { CourseService } from '../../../core/services/course.service';
             </div>
           </div>
 
-          <!-- Course Title & Description -->
-          <div class="space-y-2 max-w-4xl">
+          <!-- Course Title -->
+          <div class="max-w-4xl">
             <h1 class="text-2xl sm:text-3xl font-bold text-on-surface leading-tight">
               The Art of Lippan: Traditional Mud &amp; Mirror Work
             </h1>
-
-            <p class="text-xs sm:text-[13px] text-on-surface-variant leading-relaxed font-normal max-w-3xl">
-              Master the ancient Gujarati craft of Lippan Kaam. Create intricate geometric relief murals with modern durable clay and genuine shisha mirrors.
-            </p>
           </div>
         </header>
 
