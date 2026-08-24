@@ -24,24 +24,21 @@ export const HERO_SLIDES: HeroSlide[] = [
     tagline: "Hand-poured Soy Candle Making",
     description: "Create premium organic botanical candles with rich, calming custom aroma profiles and clean burning wax.",
     imageUrl: "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=1600&h=600",
-    route: "/courses",
-    queryParams: { category: 'candle-making' }
+    route: "/courses/candle-making"
   },
   {
     title: "Pour. Swirl. Glow.",
     tagline: "Ocean Resin Art & Liquid Glass",
     description: "Create ultra-glossy ocean tables, trays, and coaster sets with multi-layer pigment swirls and cell lacing.",
     imageUrl: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&q=80&w=1600&h=600",
-    route: "/courses",
-    queryParams: { category: 'resin-art' }
+    route: "/courses/resin-art"
   },
   {
     title: "Craft. Design. Innovate.",
     tagline: "Modern Mosaic Art Techniques",
     description: "Assemble colorful ceramic and glass tiles into elegant designs under expert guidance.",
     imageUrl: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&q=80&w=1600&h=600",
-    route: "/courses",
-    queryParams: { category: 'mosaic-art' }
+    route: "/courses/mosaic-art"
   }
 ];
 

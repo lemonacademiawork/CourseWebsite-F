@@ -71,6 +71,7 @@ export const routes: Routes = [
       { path: 'courses/lippan-art', component: CourseLippanComponent },
       { path: 'courses/lippan-art/learning', component: CourseLearningComponent },
       { path: 'courses/lippan-art/module-1', component: CourseModule1Component },
+      { path: 'courses/:id', component: CourseLippanComponent },
       { path: 'gallery', component: GalleryComponent },
       { path: 'gallery/student-creations', component: GalleryStudentComponent },
       { path: 'login', component: LoginComponent },

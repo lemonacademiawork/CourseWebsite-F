@@ -98,6 +98,21 @@ export class CourseService {
     ];
   }
 
+  getCourse(id: string): Observable<Course | null> {
+    return this.getCourses().pipe(
+      map(courses => {
+        const match = courses.find(c => c.id === id || c.categorySlug === id);
+        if (match) return match;
+        const mockMatch = this.getMockCourses().find(c => c.id === id || c.categorySlug === id);
+        return mockMatch || this.getMockCourses()[0];
+      }),
+      catchError(() => {
+        const mockMatch = this.getMockCourses().find(c => c.id === id || c.categorySlug === id);
+        return of(mockMatch || this.getMockCourses()[0]);
+      })
+    );
+  }
+
   getPurchasedCourses(): Course[] {
     if (typeof window === 'undefined') return [];
     const purchased = localStorage.getItem('purchased_courses');
