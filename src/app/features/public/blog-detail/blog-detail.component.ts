@@ -58,6 +58,64 @@ Here is a guide to mastering the chemistry:
 * **Warm Water Bath**: Keep resin bottles in warm water before mixing. This lowers viscosity and lets trapped bubbles rise out easily.
 * **Stir Slowly**: Stir for 3 full minutes in a single direction. Scraping sides and bottom is critical.
 * **Torching / Heat Gun**: Run a heat gun over your poured resin to break surface tension and pop bubbles instantly.`
+  },
+  3: {
+    id: 3,
+    title: "Sourcing Organic Earth Clay: What EdTech Won't Tell You",
+    category: "Materials Guide",
+    categoryColor: "bg-tertiary-fixed text-on-tertiary-fixed",
+    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDCbTN-TaIudH0njCO5lQnLDpdjSBXonaHMG6x1kUfR2uXaU3Bxee-QSSCUKc_3hc1bwYbqoLL7NkuUAWEXphMhqlZj0UGrH5JKFEqWwuvMewqe0IKttUMNPvDyYvT5VOu5OOT2KLk9GRoWqhQtsYqopj7EjtbduvEldGGe5ADkeQ1K066OVltHrOz2DqpUwcxBAwAUGd1pxzDFD-4yEZpe1-WiuoFTNUcsLqLOtiHOQTnGcvfWTkEy",
+    date: "Jul 28, 2026",
+    author: "Devendra Joshi",
+    readTime: "6 min read",
+    content: `Understanding the mineral balance in pottery and sculpting clays is the secret to pieces that do not warp or develop hairline fractures during firing and curing.
+
+Explore the key factors:
+- Mineral density and plasticity of earthenware
+- Moisture consistency during hand-building
+- Avoiding thermal shock with proper progressive drying intervals.`
+  },
+  4: {
+    id: 4,
+    title: "Preserving Heritage: Clay Art in Kutch Communities",
+    category: "Artisan Spotlight",
+    categoryColor: "bg-secondary-fixed text-on-secondary-fixed",
+    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBPiWCQJI93PXDk9BOTIapmtikie4-YaxmLh1RRYduOa_TDE4AQZkdf8DEkTVGR5nS9OSCOgXvKuV_YYJl7XOPbMsOJ2NapTo5sBgHWGuqHmqZjabmFElFjDdYfpq8LsUXrV3nz9yX7Abr5E1fWw9PM_lVq-u8188AjgPz0txpaTpIy1QYYWuyXi3IwoSn_vw542oHbUWJhQ2iOxYf0kpLG7nJ1g6ftWcf9R78bsl9rLf2ndCoywsoF",
+    date: "Jul 15, 2026",
+    author: "Asha Devi",
+    readTime: "8 min read",
+    content: `In the heart of the Great Rann of Kutch, artisans have turned their traditional mud homes (bhungas) into living galleries of relief mural art.
+
+From sacred geometry to peacock and floral motifs, this craft unites generations of craftswomen preserving cultural storytelling.`
+  },
+  5: {
+    id: 5,
+    title: "Why Artisanal Candle Wax selection is Crucial for Scent Throw",
+    category: "Crafting Tips",
+    categoryColor: "bg-primary-container text-on-primary-container",
+    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAdWftkk77PEWsXT0X8Idf_5qfShUey9va1f3wum-E0_wQoJNhH8DlzGO1jy22TTPACpLEnQy1abVm1vhUtDsMA62pD83tLRBO8N6-irLAYagp8jz-xagrBPejAcQrBrwZzDiv9yycKXiyMImwz2fXE8Ti75v-LV1oM7TZC1DEpm5zIscCEoA4rnAVGfQcAfxeIOZaJ1Y7It8VGiYZDtwrBh2OS8uEZ9TL5ABRz7RQ6Rwxmr6C65H3E",
+    date: "Jul 09, 2026",
+    author: "Karan Johar",
+    readTime: "4 min read",
+    content: `A luxury candle is defined by its hot and cold scent throw, clean melt pool, and smooth crystalline finish.
+
+Key techniques covered:
+- Finding the right pouring temperature (between 135°F and 145°F for soy blends)
+- Percentage load for botanical fragrance and essential oils (6% to 10% optimal)
+- Cotton wick sizing to prevent tunneling and carbon mushrooming.`
+  },
+  6: {
+    id: 6,
+    title: "Macramé Aesthetics: Bohemian Knots in Modern Homes",
+    category: "Community",
+    categoryColor: "bg-surface-variant text-on-surface-variant",
+    image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBVHXmzcgHw7sulCDAb_2pVZHDasOElzMgfYOpkwSglKvHLinvzj21rdsPxypicwnizEKoPexJ1Na-T97ghRpVUopYErNtLhDfD45ZFF1QoglAMu-RCA0-EwCRFZhOcxaYxbPPhKFNBWJJiwjgBrk_B6kk51MBuGYYByp6sai-JomiSRwpZe6nt8MGn_9ZMr4eD4WdQXnXaD8SSKk_xpKDjhN-XmE4k8IC6LLJufKcsw3T7n2EOGjhw",
+    date: "Jun 24, 2026",
+    author: "Rohan Das",
+    readTime: "5 min read",
+    content: `Macramé brings organic texture and warmth to modern minimalist and Scandinavian interior spaces.
+
+Explore basic square knots, half-hitches, and spiral cords to create plant hangers, lanterns, and textured tapestries.`
   }
 };
 

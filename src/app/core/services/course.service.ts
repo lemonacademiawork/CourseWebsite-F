@@ -52,26 +52,48 @@ export class CourseService {
         totalLessons: 20
       },
       {
+        id: 'candle-making',
+        title: 'Artisanal Candle Making: Botanical Soy & Aroma Blending',
+        category: 'Candle Making',
+        categorySlug: 'candle-making',
+        instructor: 'Chloe Bennett',
+        description: 'Learn wax melting, essential oil blending, wick positioning, and botanical embedding to craft luxury scented candles.',
+        imageUrl: 'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=800',
+        price: 179,
+        studentsCount: 112
+      },
+      {
+        id: 'resin-art',
+        title: 'Ocean Resin Pour & Wave Fluid Art',
+        category: 'Resin Art',
+        categorySlug: 'resin-art',
+        instructor: 'Elena Cruz',
+        description: 'Create ultra-glossy ocean tables, trays, and coaster sets with multi-layer pigment swirls and cellular foam effects.',
+        imageUrl: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&q=80&w=800',
+        price: 249,
+        studentsCount: 156
+      },
+      {
         id: 'mosaic-art',
         title: 'Mediterranean Mosaic Tiles & Patterns',
         category: 'Mosaic Art',
         categorySlug: 'mosaic-art',
         instructor: 'Marco Rossi',
         description: 'Learn ancient tile cutting, mortar blending, and geometric tessellation techniques for wall art and decor.',
-        imageUrl: 'https://images.unsplash.com/photo-1584992236310-6edddc08acff',
+        imageUrl: 'https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&q=80&w=800',
         price: 199,
         studentsCount: 88
       },
       {
-        id: 'resin-art',
-        title: 'Ocean Resin Pour & Wave Effects',
-        category: 'Resin Art',
-        categorySlug: 'resin-art',
-        instructor: 'Elena Cruz',
-        description: 'Create ultra-glossy ocean tables, trays, and coaster sets with multi-layer pigment swirls and cellular foam effects.',
-        imageUrl: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675',
-        price: 249,
-        studentsCount: 156
+        id: 'crochet-fiber-arts',
+        title: 'Contemporary Crochet & Macramé Wall Hangings',
+        category: 'Crochet & Fiber Arts',
+        categorySlug: 'crochet-fiber-arts',
+        instructor: 'Maya Lin',
+        description: 'Explore stitches, yarn textures, tension mastery, and modern bohemian fiber art creations for your living space.',
+        imageUrl: 'https://images.unsplash.com/photo-1615486511484-92e172cc4fe0?auto=format&fit=crop&q=80&w=800',
+        price: 139,
+        studentsCount: 94
       }
     ];
   }

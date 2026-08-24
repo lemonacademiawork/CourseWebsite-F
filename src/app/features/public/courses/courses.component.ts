@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import { CourseService } from '../../../core/services/course.service';
 import { Course } from '../../../core/models/course.model';
 
@@ -12,19 +12,26 @@ import { Course } from '../../../core/models/course.model';
 })
 export class CoursesComponent implements OnInit {
   private courseService = inject(CourseService);
+  private route = inject(ActivatedRoute);
 
   courses = signal<Course[]>([]);
   loading = signal<boolean>(true);
   selectedCategories = signal<string[]>([]);
   categories = [
     { name: 'Lippan Art', slug: 'lippan-art' },
+    { name: 'Candle Making', slug: 'candle-making' },
+    { name: 'Resin Art', slug: 'resin-art' },
     { name: 'Mosaic Art', slug: 'mosaic-art' },
     { name: 'Crochet & Fiber Arts', slug: 'crochet-fiber-arts' },
-    { name: 'Resin Art', slug: 'resin-art' },
     { name: 'Pottery', slug: 'pottery' }
   ];
 
   ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      if (params['category']) {
+        this.selectedCategories.set([params['category']]);
+      }
+    });
     this.fetchCourses();
   }
 
