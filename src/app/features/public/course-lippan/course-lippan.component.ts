@@ -7,41 +7,41 @@ import { CourseService } from '../../../core/services/course.service';
 @Component({
   selector: 'app-course-lippan',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   template: `
     <main class="min-h-screen bg-surface py-8 md:py-12 text-xs text-on-surface">
-      <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop space-y-8">
+      <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop space-y-7">
         
-        <!-- Breadcrumb & Top Hero Header -->
-        <header class="space-y-4 max-w-4xl">
-          <nav class="flex items-center gap-2 text-[11px] text-on-surface-variant font-medium">
-            <a routerLink="/courses" class="hover:text-primary transition-colors">Courses</a>
-            <span class="material-symbols-outlined text-[12px]">chevron_right</span>
-            <span class="text-primary font-semibold">Craft &amp; Art</span>
-            <span class="material-symbols-outlined text-[12px]">chevron_right</span>
-            <span class="text-on-surface truncate">Lippan Art</span>
-          </nav>
-
-          <div class="space-y-2.5">
-            <div class="flex flex-wrap items-center gap-2.5">
-              <span class="inline-block px-3 py-1 bg-tertiary-container text-on-tertiary-container rounded-full font-label-md text-[11px] font-semibold">
-                Craft &amp; Art
-              </span>
-              <span class="inline-flex items-center gap-1 text-[11px] font-bold text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
-                <span class="material-symbols-outlined text-[13px] filled">star</span>
-                4.9 (124 reviews)
-              </span>
-              <span class="text-[11px] text-on-surface-variant">• 1,200+ Students Enrolled</span>
-            </div>
-
-            <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-on-surface leading-tight playfair tracking-tight">
-              The Art of Lippan: Traditional Mud &amp; Mirror Work
-            </h1>
-
-            <p class="text-xs sm:text-sm text-on-surface-variant leading-relaxed max-w-3xl">
-              Master the ancient Gujarati craft of Lippan Kaam. Create intricate geometric relief murals with modern durable clay and genuine shisha mirrors.
-            </p>
+        <!-- Clean, Uncluttered Top Header -->
+        <header class="space-y-3 max-w-3xl">
+          <!-- Subtle Top Breadcrumb & Metadata Line -->
+          <div class="flex flex-wrap items-center gap-2.5 text-xs text-on-surface-variant">
+            <a routerLink="/courses" class="inline-flex items-center gap-1 text-primary hover:underline font-semibold transition-colors">
+              <span class="material-symbols-outlined text-[15px]">arrow_back</span>
+              Courses
+            </a>
+            <span class="text-outline-variant/60">/</span>
+            <span class="bg-tertiary-fixed text-on-tertiary-fixed font-semibold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider">
+              Lippan Art
+            </span>
+            <span class="text-outline-variant/60">•</span>
+            <span class="inline-flex items-center gap-1 text-[11px] text-on-surface font-semibold">
+              <span class="material-symbols-outlined text-[13px] text-amber-500 filled">star</span>
+              4.9 <span class="text-on-surface-variant font-normal">(124 reviews)</span>
+            </span>
+            <span class="text-outline-variant/60">•</span>
+            <span class="text-[11px] text-on-surface-variant">1,200+ Students</span>
           </div>
+
+          <!-- Harmonious Title -->
+          <h1 class="text-2xl sm:text-3xl font-bold text-on-surface leading-snug">
+            The Art of Lippan: Traditional Mud &amp; Mirror Work
+          </h1>
+
+          <!-- Gentle Subtitle -->
+          <p class="text-xs sm:text-[13px] text-on-surface-variant leading-relaxed font-normal">
+            Master the ancient Gujarati craft of Lippan Kaam. Create intricate geometric relief murals with modern durable clay and genuine shisha mirrors.
+          </p>
         </header>
 
         <!-- Two-Column Cohesive Layout with Bounded Sticky Sidebar -->
