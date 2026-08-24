@@ -35,22 +35,22 @@ import { RouterLink } from '@angular/router';
         <div class="max-w-container-max mx-auto">
           <h2 class="font-headline-md text-headline-md text-on-surface mb-12 text-center font-bold">Master a Craft</h2>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
-            <div class="group relative h-80 rounded-xl overflow-hidden cursor-pointer">
+            <div [routerLink]="['/courses']" [queryParams]="{ category: 'crochet-fiber-arts' }" class="group relative h-80 rounded-xl overflow-hidden cursor-pointer">
               <img alt="Crochet" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPiWCQJI93PXDk9BOTIapmtikie4-YaxmLh1RRYduOa_TDE4AQZkdf8DEkTVGR5nS9OSCOgXvKuV_YYJl7XOPbMsOJ2NapTo5sBgHWGuqHmqZjabmFElFjDdYfpq8LsUXrV3nz9yX7Abr5E1fWw9PM_lVq-u8188AjgPz0txpaTpIy1QYYWuyXi3IwoSn_vw542oHbUWJhQ2iOxYf0kpLG7nJ1g6ftWcf9R78bsl9rLf2ndCoywsoF" />
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
-                <h3 class="font-headline-sm text-headline-sm text-white font-bold">Crochet</h3>
+                <h3 class="font-headline-sm text-headline-sm text-white font-bold group-hover:text-primary-fixed transition-colors">Crochet</h3>
               </div>
             </div>
-            <div class="group relative h-80 rounded-xl overflow-hidden cursor-pointer">
+            <div [routerLink]="['/courses']" [queryParams]="{ category: 'mosaic-art' }" class="group relative h-80 rounded-xl overflow-hidden cursor-pointer">
               <img alt="Mosaic Art" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXiQLIEpsHtGrZbryHVG2dOarl_iT9qvnszntbv8Io-HDvulcLxdeW-m1Y1LvLsZVTdyll6k3sqZuLN0jnUa8PmjFtQMe1mAq8CIzvCN0yaT2ObdUfIPU2XuH0CbkJ-ZzjHMPf30gtRgX14D6XM6dRo4nkeus9cqsp61icBWZjJAhChFKP93gBX9kTPkDU0dKVth2hhMx3C1QEtY_8tkNWkbpTpJ4ASJfAgMhyr-lLHkbEwd9CJP6X" />
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
-                <h3 class="font-headline-sm text-headline-sm text-white font-bold">Mosaic Art</h3>
+                <h3 class="font-headline-sm text-headline-sm text-white font-bold group-hover:text-primary-fixed transition-colors">Mosaic Art</h3>
               </div>
             </div>
-            <div class="group relative h-80 rounded-xl overflow-hidden cursor-pointer">
+            <div [routerLink]="['/courses']" [queryParams]="{ category: 'candle-making' }" class="group relative h-80 rounded-xl overflow-hidden cursor-pointer">
               <img alt="Candle Making" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdWftkk77PEWsXT0X8Idf_5qfShUey9va1f3wum-E0_wQoJNhH8DlzGO1jy22TTPACpLEnQy1abVm1vhUtDsMA62pD83tLRBO8N6-irLAYagp8jz-xagrBPejAcQrBrwZzDiv9yycKXiyMImwz2fXE8Ti75v-LV1oM7TZC1DEpm5zIscCEoA4rnAVGfQcAfxeIOZaJ1Y7It8VGiYZDtwrBh2OS8uEZ9TL5ABRz7RQ6Rwxmr6C65H3E" />
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
-                <h3 class="font-headline-sm text-headline-sm text-white font-bold">Candle Making</h3>
+                <h3 class="font-headline-sm text-headline-sm text-white font-bold group-hover:text-primary-fixed transition-colors">Candle Making</h3>
               </div>
             </div>
           </div>

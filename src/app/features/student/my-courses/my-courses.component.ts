@@ -19,18 +19,20 @@ import { Course } from '../../../core/models/course.model';
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           @for (course of courses(); track course.id) {
             <div class="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant/35 shadow-sm flex flex-col h-full">
-              <div class="relative h-40 w-full bg-surface-container">
+              <a [routerLink]="['/my-courses', course.id]" class="block relative h-40 w-full bg-surface-container overflow-hidden group cursor-pointer">
                 <img 
                   [alt]="course.title" 
-                  class="w-full h-full object-cover" 
+                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
                   [src]="course.imageUrl" 
                 />
                 <div class="absolute top-3 left-3 bg-primary/20 backdrop-blur-md border border-white/20 px-2.5 py-0.5 rounded-full text-[10px] text-white font-bold uppercase tracking-wider">
                   {{ course.category }}
                 </div>
-              </div>
+              </a>
               <div class="p-4 flex flex-col flex-grow">
-                <h3 class="text-sm font-bold text-on-surface leading-snug">{{ course.title }}</h3>
+                <h3 class="text-sm font-bold text-on-surface leading-snug hover:text-primary transition-colors cursor-pointer">
+                  <a [routerLink]="['/my-courses', course.id]">{{ course.title }}</a>
+                </h3>
                 <p class="text-[10px] text-on-surface-variant mt-1">Instructor: {{ course.instructor }}</p>
                 
                 <div class="mt-6 space-y-1.5">
