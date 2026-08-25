@@ -1,10 +1,32 @@
 export interface CourseResource {
   id: string;
   title: string;
-  type: string;
+  type?: string;
   fileUrl: string;
-  fileSize?: string;
+  fileType?: string;
+  fileSize?: string | number;
+  lessonId?: string;
+  procedureId?: string;
   createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateResourcePayload {
+  title: string;
+  fileUrl: string;
+  fileType: string;
+  fileSize?: number;
+  lessonId?: string;
+  procedureId?: string;
+}
+
+export interface UpdateResourcePayload {
+  title?: string;
+  fileUrl?: string;
+  fileType?: string;
+  fileSize?: number;
+  lessonId?: string;
+  procedureId?: string;
 }
 
 export interface TrainerApplication {

@@ -103,7 +103,7 @@ export class TrainerResourcesComponent implements OnInit {
 
     this.courseService.addResource('lippan-art', {
       title: this.title(),
-      type: 'PDF',
+      fileType: 'PDF',
       fileUrl: this.url()
     }).subscribe({
       next: (item) => {

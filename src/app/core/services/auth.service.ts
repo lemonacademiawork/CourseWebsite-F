@@ -2,7 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap, catchError, of } from 'rxjs';
-import { AuthResponse, User } from '../models/user.model';
+import { AuthResponse, User, UpdateProfilePayload } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root'
@@ -36,6 +36,7 @@ export class AuthService {
     this.userEmail.set(email);
   }
 
+  /** POST /api/v1/auth/login */
   login(credentials: { email: string; password: string }): Observable<any> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, credentials).pipe(
       tap((res) => {
@@ -44,8 +45,12 @@ export class AuthService {
         const role = data.role || (email.toLowerCase().includes('admin') ? 'admin' : email.toLowerCase().includes('trainer') ? 'trainer' : 'student');
         const name = data.name || (email.split('@')[0]) || 'User';
         const token = data.token || 'jwt-' + Date.now();
+        const refreshToken = data.refreshToken || '';
 
         this.persistAuth(true, role, name, email, token);
+        if (refreshToken) {
+          this.storeRefreshToken(refreshToken);
+        }
       }),
       catchError((err) => {
         // Resilient fallback when backend CORS is not configured or backend is unreachable
@@ -61,6 +66,7 @@ export class AuthService {
     );
   }
 
+  /** POST /api/v1/auth/register */
   register(userData: { name: string; email: string; password: string }): Observable<any> {
     return this.http.post(`${this.apiUrl}/auth/register`, userData).pipe(
       catchError(() => {
@@ -69,10 +75,34 @@ export class AuthService {
     );
   }
 
+  /** GET /api/v1/auth/google — redirect to Google OAuth */
   loginWithGoogle(): void {
     window.location.href = 'https://lemonwebsite-backend.onrender.com/api/v1/auth/google';
   }
 
+  /** GET /api/v1/auth/me */
+  getAuthMe(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/auth/me`).pipe(
+      tap((res) => {
+        const profile = res.data || res;
+        if (profile.name || profile.email) {
+          const name = profile.name || this.userName();
+          const email = profile.email || this.userEmail();
+          const role = profile.role || this.userRole();
+          this.persistAuth(true, role, name, email, this.getToken());
+        }
+      }),
+      catchError(() => {
+        return of({
+          name: this.userName(),
+          email: this.userEmail(),
+          role: this.userRole()
+        });
+      })
+    );
+  }
+
+  /** GET /api/v1/users/me */
   fetchUserProfile(): Observable<any> {
     const token = this.getToken();
     if (!token) {
@@ -102,14 +132,66 @@ export class AuthService {
     );
   }
 
+  /** PATCH /api/v1/users/me */
+  updateProfile(payload: UpdateProfilePayload): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/users/me`, payload).pipe(
+      tap((res) => {
+        const profile = res.data || res;
+        if (profile.name) {
+          this.userName.set(profile.name);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('user_name', profile.name);
+            this.setCookie('user_name', profile.name);
+          }
+        }
+      })
+    );
+  }
+
+  /** POST /api/v1/auth/refresh */
+  refreshToken(): Observable<any> {
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) {
+      return of({ success: false, message: 'No refresh token available' });
+    }
+    return this.http.post<any>(`${this.apiUrl}/auth/refresh`, { refreshToken }).pipe(
+      tap((res) => {
+        const data = res.data || res;
+        const newToken = data.token || data.accessToken;
+        if (newToken) {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('auth_token', newToken);
+            this.setCookie('auth_token', newToken);
+          }
+          if (data.refreshToken) {
+            this.storeRefreshToken(data.refreshToken);
+          }
+        }
+      }),
+      catchError(() => {
+        return of({ success: false, message: 'Token refresh failed' });
+      })
+    );
+  }
+
+  /** POST /api/v1/auth/logout */
   logout(): void {
     if (typeof window === 'undefined') return;
+
+    // Call the backend logout endpoint to invalidate the refresh token
+    const token = this.getToken();
+    if (token) {
+      this.http.post(`${this.apiUrl}/auth/logout`, {}).subscribe({
+        error: () => {} // Silently ignore if the backend call fails
+      });
+    }
 
     localStorage.removeItem('is_logged_in');
     localStorage.removeItem('user_role');
     localStorage.removeItem('user_email');
     localStorage.removeItem('user_name');
     localStorage.removeItem('auth_token');
+    localStorage.removeItem('refresh_token');
 
     this.deleteCookie('is_logged_in');
     this.deleteCookie('user_role');
@@ -154,6 +236,16 @@ export class AuthService {
   getToken(): string {
     if (typeof window === 'undefined') return '';
     return localStorage.getItem('auth_token') || this.getCookie('auth_token') || '';
+  }
+
+  getRefreshToken(): string {
+    if (typeof window === 'undefined') return '';
+    return localStorage.getItem('refresh_token') || '';
+  }
+
+  storeRefreshToken(token: string): void {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem('refresh_token', token);
   }
 
   getCookie(name: string): string {
