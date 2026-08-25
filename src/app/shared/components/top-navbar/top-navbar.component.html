@@ -31,7 +31,7 @@
         </a>
       </li>
 
-      @if (authService.isLoggedIn() && authService.userRole() === 'student') {
+      @if (authService.isLoggedIn() && authService.userRole() !== 'admin' && authService.userRole() !== 'trainer') {
         <li>
           <a routerLink="/my-courses" routerLinkActive="text-primary border-b-2 border-primary pb-1 font-semibold" class="text-on-surface-variant hover:text-primary transition-colors duration-200">
             My Courses
@@ -120,7 +120,7 @@
           </a>
         </li>
 
-        @if (authService.isLoggedIn() && authService.userRole() === 'student') {
+        @if (authService.isLoggedIn() && authService.userRole() !== 'admin' && authService.userRole() !== 'trainer') {
           <li>
             <a (click)="closeMobileMenu()" routerLink="/my-courses" routerLinkActive="text-primary font-bold block py-2 border-l-4 border-primary pl-3 bg-surface-container-low" class="text-on-surface-variant hover:text-primary block py-2 pl-3 transition-colors">
               My Courses
