@@ -58,44 +58,38 @@ export class AdminCoursesComponent implements OnInit {
           trainer: c.instructor,
           price: c.price,
           studentsCount: c.studentsCount || 0,
-          status: 'Published',
-          createdDate: 'Aug 20, 2026'
+          status: c.isPublished ? 'Published' : 'Draft',
+          createdDate: c.createdAt ? new Date(c.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recent'
         }));
         this.courses.set(mapped);
       },
       error: () => {
-        this.courses.set([
-          {
-            id: 'lippan-art',
-            title: 'The Art of Lippan: Traditional Mud & Mirror Work',
-            category: 'Lippan Art',
-            trainer: 'Aisha Sharma',
-            price: 149,
-            studentsCount: 124,
-            status: 'Published',
-            createdDate: 'Aug 10, 2026'
-          }
-        ]);
+        this.courses.set([]);
       }
     });
   }
 
   handleCreateCourse(): void {
     if (!this.title().trim()) return;
-    const newCourse: AdminCourseItem = {
-      id: this.title().toLowerCase().replace(/\s+/g, '-'),
-      title: this.title(),
-      category: this.category(),
-      trainer: this.trainer() || 'Aisha Sharma',
-      price: this.price(),
-      studentsCount: 0,
-      status: this.status(),
-      createdDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-    };
+    const slug = this.title().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
-    this.courses.update(list => [newCourse, ...list]);
-    this.isCreating.set(false);
-    this.title.set('');
+    this.courseService.createCourse({
+      title: this.title().trim(),
+      slug: slug || 'course-' + Date.now(),
+      description: `${this.category()} Masterclass with ${this.trainer() || 'Instructor'}`,
+      price: this.price()
+    }).subscribe({
+      next: () => {
+        this.fetchCourses();
+        this.isCreating.set(false);
+        this.title.set('');
+        this.saveSuccess.set('Course published successfully!');
+        setTimeout(() => this.saveSuccess.set(''), 3000);
+      },
+      error: (err) => {
+        console.error('Failed to create course:', err);
+      }
+    });
   }
 
   openSessionManager(courseId: string): void {

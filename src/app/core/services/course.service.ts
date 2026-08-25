@@ -19,89 +19,26 @@ export class CourseService {
         const courseList = json.data || json;
         if (Array.isArray(courseList)) {
           return courseList.map((c: any) => ({
-            id: c.id || c._id || 'lippan-art',
+            id: c.id || c._id || '',
             title: c.title || c.name || 'Untitled Course',
             slug: c.slug || '',
             category: c.category?.name || c.category || 'General Craft',
             categorySlug: c.category?.slug || '',
             categoryId: c.categoryId || '',
-            instructor: c.trainer?.name || c.trainer || 'Guest Instructor',
+            instructor: c.trainer?.name || c.trainer || 'Instructor',
             description: c.description || '',
             imageUrl: c.thumbnailUrl || c.imageUrl || c.image || c.coverImage || 'https://images.unsplash.com/photo-1584992236310-6edddc08acff',
             thumbnailUrl: c.thumbnailUrl || '',
             price: c.price || 0,
             discountedPrice: c.discountedPrice || c.price || 0,
             isPublished: c.isPublished ?? true,
-            studentsCount: c.studentsCount || c.enrolledStudents || 45
+            studentsCount: c.studentsCount || c.enrolledStudents || 0
           }));
         }
-        return this.getMockCourses();
+        return [];
       }),
-      catchError(() => of(this.getMockCourses()))
+      catchError(() => of([]))
     );
-  }
-
-  getMockCourses(): Course[] {
-    return [
-      {
-        id: 'lippan-art',
-        title: 'The Art of Lippan: Traditional Mud & Mirror Work',
-        category: 'Lippan Art',
-        categorySlug: 'lippan-art',
-        instructor: 'Aisha Sharma',
-        description: 'Master the ancient Gujarati art form of Lippan Kaam. Create stunning, intricate murals using modern materials while preserving traditional techniques.',
-        imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAaoX0RGxpW-j4nvC1oT1ER7ghQq3LTyffaeKwMP7NUMAKKHqHQmjktmUbyLPagZx6VG0o3H4U157TFiWJGVWKEFwAc3hVXQzqSdHoFy7hC98aHC2EyKFdILSTsnS-EXmaDGklBokg2X7ZOMMcfjaSFDKUhNg6zQecW1g1g1W-aIDWhErsUjb9KT097mpys8RjeuJAbVJ2rMZ7tS10zRVyyf0czkAW4IWUW6sgkOQOPwRiE2EbJHQdA',
-        price: 149,
-        studentsCount: 124,
-        progress: 65,
-        lessonsCompleted: 13,
-        totalLessons: 20
-      },
-      {
-        id: 'candle-making',
-        title: 'Artisanal Candle Making: Botanical Soy & Aroma Blending',
-        category: 'Candle Making',
-        categorySlug: 'candle-making',
-        instructor: 'Chloe Bennett',
-        description: 'Learn wax melting, essential oil blending, wick positioning, and botanical embedding to craft luxury scented candles.',
-        imageUrl: 'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=800',
-        price: 179,
-        studentsCount: 112
-      },
-      {
-        id: 'resin-art',
-        title: 'Ocean Resin Pour & Wave Fluid Art',
-        category: 'Resin Art',
-        categorySlug: 'resin-art',
-        instructor: 'Elena Cruz',
-        description: 'Create ultra-glossy ocean tables, trays, and coaster sets with multi-layer pigment swirls and cellular foam effects.',
-        imageUrl: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&q=80&w=800',
-        price: 249,
-        studentsCount: 156
-      },
-      {
-        id: 'mosaic-art',
-        title: 'Mediterranean Mosaic Tiles & Patterns',
-        category: 'Mosaic Art',
-        categorySlug: 'mosaic-art',
-        instructor: 'Marco Rossi',
-        description: 'Learn ancient tile cutting, mortar blending, and geometric tessellation techniques for wall art and decor.',
-        imageUrl: 'https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&q=80&w=800',
-        price: 199,
-        studentsCount: 88
-      },
-      {
-        id: 'crochet-fiber-arts',
-        title: 'Contemporary Crochet & Macramé Wall Hangings',
-        category: 'Crochet & Fiber Arts',
-        categorySlug: 'crochet-fiber-arts',
-        instructor: 'Maya Lin',
-        description: 'Explore stitches, yarn textures, tension mastery, and modern bohemian fiber art creations for your living space.',
-        imageUrl: 'https://images.unsplash.com/photo-1615486511484-92e172cc4fe0?auto=format&fit=crop&q=80&w=800',
-        price: 139,
-        studentsCount: 94
-      }
-    ];
   }
 
   /** GET /api/v1/courses/:id — Get course by ID */
@@ -117,7 +54,7 @@ export class CourseService {
             category: c.category?.name || c.category || 'General Craft',
             categorySlug: c.category?.slug || '',
             categoryId: c.categoryId || '',
-            instructor: c.trainer?.name || c.trainer || 'Guest Instructor',
+            instructor: c.trainer?.name || c.trainer || 'Instructor',
             description: c.description || '',
             imageUrl: c.thumbnailUrl || c.imageUrl || c.image || 'https://images.unsplash.com/photo-1584992236310-6edddc08acff',
             thumbnailUrl: c.thumbnailUrl || '',
@@ -127,14 +64,9 @@ export class CourseService {
             studentsCount: c.studentsCount || c.enrolledStudents || 0
           } as Course;
         }
-        // Fallback to mock
-        const mockMatch = this.getMockCourses().find(mc => mc.id === id || mc.categorySlug === id);
-        return mockMatch || this.getMockCourses()[0];
+        return null;
       }),
-      catchError(() => {
-        const mockMatch = this.getMockCourses().find(c => c.id === id || c.categorySlug === id);
-        return of(mockMatch || this.getMockCourses()[0]);
-      })
+      catchError(() => of(null))
     );
   }
 

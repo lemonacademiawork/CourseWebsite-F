@@ -43,7 +43,7 @@ export class CoursesComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.courses.set(this.courseService.getMockCourses());
+        this.courses.set([]);
         this.loading.set(false);
       }
     });

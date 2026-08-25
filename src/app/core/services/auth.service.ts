@@ -1,16 +1,14 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, catchError, of } from 'rxjs';
+import { Observable, tap, catchError, of, throwError } from 'rxjs';
 import { AuthResponse, User, UpdateProfilePayload } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  // Use relative URL so that the Angular dev-server proxy
-  // forwards /api/v1/* → https://lemonwebsite-backend.onrender.com/api/v1/*
-  // This mirrors the Next.js rewrites in next.config.ts
+  // Use relative URL so that requests go through proxy (dev) / vercel rewrite (prod)
   private apiUrl = '/api/v1';
 
   isLoggedIn = signal<boolean>(false);
@@ -41,38 +39,24 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, credentials).pipe(
       tap((res) => {
         const data = (res as any).data || res;
-        const email = credentials.email;
-        const role = data.role || (email.toLowerCase().includes('admin') ? 'admin' : email.toLowerCase().includes('trainer') ? 'trainer' : 'student');
-        const name = data.name || (email.split('@')[0]) || 'User';
-        const token = data.token || 'jwt-' + Date.now();
-        const refreshToken = data.refreshToken || '';
+        const user = data.user || data;
+        const role = user.role || data.role || 'student';
+        const name = user.name || data.name || credentials.email.split('@')[0];
+        const email = user.email || data.email || credentials.email;
+        const token = data.token || data.accessToken || res.token || '';
+        const refreshToken = data.refreshToken || res.refreshToken || '';
 
         this.persistAuth(true, role, name, email, token);
         if (refreshToken) {
           this.storeRefreshToken(refreshToken);
         }
-      }),
-      catchError((err) => {
-        // Resilient fallback when backend CORS is not configured or backend is unreachable
-        const email = credentials.email;
-        const role: 'admin' | 'trainer' | 'student' = email.toLowerCase().includes('admin') ? 'admin' : email.toLowerCase().includes('trainer') ? 'trainer' : 'student';
-        const rawName = email.split('@')[0] || 'User';
-        const name = rawName.charAt(0).toUpperCase() + rawName.slice(1);
-        const token = 'jwt-mock-' + Date.now();
-
-        this.persistAuth(true, role, name, email, token);
-        return of({ success: true, role, name, token, message: 'Logged in successfully' });
       })
     );
   }
 
   /** POST /api/v1/auth/register */
   register(userData: { name: string; email: string; password: string }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/auth/register`, userData).pipe(
-      catchError(() => {
-        return of({ success: true, message: 'Account created successfully' });
-      })
-    );
+    return this.http.post(`${this.apiUrl}/auth/register`, userData);
   }
 
   /** GET /api/v1/auth/google — redirect to Google OAuth */
@@ -85,19 +69,12 @@ export class AuthService {
     return this.http.get<any>(`${this.apiUrl}/auth/me`).pipe(
       tap((res) => {
         const profile = res.data || res;
-        if (profile.name || profile.email) {
+        if (profile && (profile.name || profile.email)) {
           const name = profile.name || this.userName();
           const email = profile.email || this.userEmail();
           const role = profile.role || this.userRole();
           this.persistAuth(true, role, name, email, this.getToken());
         }
-      }),
-      catchError(() => {
-        return of({
-          name: this.userName(),
-          email: this.userEmail(),
-          role: this.userRole()
-        });
       })
     );
   }
@@ -115,19 +92,12 @@ export class AuthService {
     return this.http.get<any>(`${this.apiUrl}/users/me`).pipe(
       tap((res) => {
         const profile = res.data || res;
-        if (profile.name || profile.email) {
+        if (profile && (profile.name || profile.email)) {
           const name = profile.name || this.userName();
           const email = profile.email || this.userEmail();
           const role = profile.role || this.userRole();
           this.persistAuth(true, role, name, email, this.getToken());
         }
-      }),
-      catchError(() => {
-        return of({
-          name: this.userName(),
-          email: this.userEmail(),
-          role: this.userRole()
-        });
       })
     );
   }
@@ -137,7 +107,7 @@ export class AuthService {
     return this.http.patch<any>(`${this.apiUrl}/users/me`, payload).pipe(
       tap((res) => {
         const profile = res.data || res;
-        if (profile.name) {
+        if (profile && profile.name) {
           this.userName.set(profile.name);
           if (typeof window !== 'undefined') {
             localStorage.setItem('user_name', profile.name);
@@ -152,7 +122,7 @@ export class AuthService {
   refreshToken(): Observable<any> {
     const refreshToken = this.getRefreshToken();
     if (!refreshToken) {
-      return of({ success: false, message: 'No refresh token available' });
+      return throwError(() => new Error('No refresh token available'));
     }
     return this.http.post<any>(`${this.apiUrl}/auth/refresh`, { refreshToken }).pipe(
       tap((res) => {
@@ -167,9 +137,6 @@ export class AuthService {
             this.storeRefreshToken(data.refreshToken);
           }
         }
-      }),
-      catchError(() => {
-        return of({ success: false, message: 'Token refresh failed' });
       })
     );
   }
@@ -178,11 +145,11 @@ export class AuthService {
   logout(): void {
     if (typeof window === 'undefined') return;
 
-    // Call the backend logout endpoint to invalidate the refresh token
+    // Call the backend logout endpoint to invalidate the session on backend
     const token = this.getToken();
     if (token) {
       this.http.post(`${this.apiUrl}/auth/logout`, {}).subscribe({
-        error: () => {} // Silently ignore if the backend call fails
+        error: () => {}
       });
     }
 
