@@ -1,6 +1,6 @@
 <main class="min-h-screen bg-[#FBF8F1] py-8 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto text-xs text-on-surface">
   <div class="mb-6 flex items-center justify-between">
-    <a routerLink="/my-courses" class="text-primary hover:underline font-semibold flex items-center gap-1">
+    <a routerLink="/my-courses" class="text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer">
       <span class="material-symbols-outlined text-[16px]">arrow_back</span>
       Back to My Courses
     </a>
@@ -12,13 +12,19 @@
   <div class="bg-surface-container-lowest rounded-2xl p-6 md:p-8 border border-outline-variant/35 shadow-sm space-y-6">
     <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-outline-variant/20 pb-6">
       <div>
-        <h1 class="playfair text-2xl md:text-3xl font-bold text-on-surface">The Art of Lippan: Traditional Mud &amp; Mirror Work</h1>
-        <p class="text-on-surface-variant text-xs mt-1">Instructor: Aisha Sharma • Master Artisan of Kutch</p>
+        <h1 class="playfair text-2xl md:text-3xl font-bold text-on-surface">
+          {{ course()?.title || 'Loading Course...' }}
+        </h1>
+        <p class="text-on-surface-variant text-xs mt-1">
+          Instructor: {{ course()?.instructor || 'Instructor' }} • {{ course()?.category || 'Craft Masterclass' }}
+        </p>
       </div>
-      <a routerLink="/courses/lippan-art/learning" class="bg-primary text-on-primary font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity text-center flex items-center justify-center gap-2">
-        <span class="material-symbols-outlined text-sm">play_circle</span>
-        Open Workshop Video Player
-      </a>
+      @if (course()) {
+        <a [routerLink]="['/courses', course()!.id]" class="bg-primary text-on-primary font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity text-center flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-sm">info</span>
+          View Course Overview
+        </a>
+      }
     </div>
 
     <!-- Navigation Tabs -->
@@ -64,30 +70,57 @@
     <!-- Tab 1: Curriculum -->
     @if (activeTab() === 'lessons') {
       <div class="space-y-6">
-        @for (mod of modules; track mod.title) {
-          <div class="border border-outline-variant/30 rounded-xl overflow-hidden bg-surface-container-low">
-            <div class="p-4 bg-surface-container font-bold text-on-surface text-xs border-b border-outline-variant/20">
-              {{ mod.title }}
-            </div>
-            <div class="divide-y divide-outline-variant/15">
-              @for (lesson of mod.lessons; track lesson.id) {
-                <div class="p-3.5 flex items-center justify-between hover:bg-surface-container-lowest transition-colors">
-                  <div class="flex items-center gap-3">
-                    <input 
-                      type="checkbox" 
-                      [checked]="lesson.completed"
-                      (change)="toggleLesson(lesson)"
-                      class="w-4 h-4 accent-primary rounded cursor-pointer"
-                    />
-                    <span [class.line-through]="lesson.completed" [class.text-on-surface-variant]="lesson.completed" class="font-medium text-xs">
-                      {{ lesson.title }}
-                    </span>
-                  </div>
-                  <span class="text-[11px] text-on-surface-variant">{{ lesson.duration }}</span>
-                </div>
-              }
-            </div>
+        @if (modulesLoading()) {
+          <div class="text-center py-10 text-on-surface-variant">Loading course modules...</div>
+        } @else if (modules().length === 0) {
+          <div class="text-center py-12 text-on-surface-variant bg-surface-container-low rounded-xl">
+            <p>No modules created for this course yet.</p>
           </div>
+        } @else {
+          @for (mod of modules(); track mod.id) {
+            <div class="border border-outline-variant/30 rounded-xl overflow-hidden bg-surface-container-low">
+              <div class="p-4 bg-surface-container font-bold text-on-surface text-xs border-b border-outline-variant/20 flex justify-between items-center">
+                <span>{{ mod.title }}</span>
+                @if (mod.description) {
+                  <span class="text-[11px] font-normal text-on-surface-variant">{{ mod.description }}</span>
+                }
+              </div>
+              <div class="divide-y divide-outline-variant/15">
+                @if (mod.loadingLessons) {
+                  <div class="p-3.5 text-[11px] text-on-surface-variant">Loading lessons...</div>
+                } @else if (!mod.lessonsList || mod.lessonsList.length === 0) {
+                  <div class="p-3.5 text-[11px] text-on-surface-variant">No lessons in this module yet.</div>
+                } @else {
+                  @for (lesson of mod.lessonsList; track lesson.id) {
+                    <div class="p-3.5 flex items-center justify-between hover:bg-surface-container-lowest transition-colors">
+                      <div class="flex items-center gap-3">
+                        <input 
+                          type="checkbox" 
+                          [checked]="isLessonCompleted(lesson.id)"
+                          (change)="toggleLesson(lesson.id)"
+                          class="w-4 h-4 accent-primary rounded cursor-pointer"
+                        />
+                        <span [class.line-through]="isLessonCompleted(lesson.id)" [class.text-on-surface-variant]="isLessonCompleted(lesson.id)" class="font-medium text-xs">
+                          {{ lesson.title }}
+                        </span>
+                      </div>
+                      <div class="flex items-center gap-3">
+                        @if (lesson.durationSeconds) {
+                          <span class="text-[11px] text-on-surface-variant">{{ (lesson.durationSeconds / 60) | number:'1.0-0' }} mins</span>
+                        }
+                        @if (lesson.videoUrl) {
+                          <a [href]="lesson.videoUrl" target="_blank" class="text-primary font-semibold hover:underline flex items-center gap-1 text-[11px]">
+                            <span class="material-symbols-outlined text-[14px]">play_circle</span>
+                            Watch
+                          </a>
+                        }
+                      </div>
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+          }
         }
       </div>
     }
@@ -156,7 +189,7 @@
                   <span class="material-symbols-outlined text-primary text-2xl">description</span>
                   <div>
                     <span class="font-bold text-xs text-on-surface">{{ res.title }}</span>
-                    <p class="text-[10px] text-on-surface-variant">{{ res.type }} • {{ res.fileSize || '1.5 MB' }}</p>
+                    <p class="text-[10px] text-on-surface-variant">{{ res.fileType || res.type || 'Resource' }}</p>
                   </div>
                 </div>
                 <a [href]="res.fileUrl" target="_blank" class="bg-primary/10 text-primary font-semibold px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors text-xs">
@@ -178,8 +211,8 @@
           <p class="text-xs text-on-surface-variant">
             has successfully completed all modules and live workshops for
           </p>
-          <div class="font-bold text-sm text-primary">The Art of Lippan: Traditional Mud &amp; Mirror Work</div>
-          <p class="text-[10px] text-on-surface-variant">Instructor: Aisha Sharma • Lemon Academy</p>
+          <div class="font-bold text-sm text-primary">{{ course()?.title || 'Masterclass Course' }}</div>
+          <p class="text-[10px] text-on-surface-variant">Instructor: {{ course()?.instructor || 'Instructor' }} • Lemon Academy</p>
         </div>
         <button class="bg-primary text-on-primary px-6 py-2.5 rounded-lg font-semibold shadow-sm hover:opacity-90 cursor-pointer">
           Download PDF Certificate

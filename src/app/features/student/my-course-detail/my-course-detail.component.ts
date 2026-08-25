@@ -3,9 +3,19 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SessionService } from '../../../core/services/session.service';
 import { CourseService } from '../../../core/services/course.service';
+import { ModuleService } from '../../../core/services/module.service';
+import { LessonService } from '../../../core/services/lesson.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { CourseSession, SessionStatus } from '../../../core/models/session.model';
 import { CourseResource } from '../../../core/models/common.model';
+import { Course } from '../../../core/models/course.model';
+import { CourseModule } from '../../../core/models/module.model';
+import { Lesson } from '../../../core/models/lesson.model';
+
+interface ModuleWithLessons extends CourseModule {
+  lessonsList?: Lesson[];
+  loadingLessons?: boolean;
+}
 
 @Component({
   selector: 'app-my-course-detail',
@@ -17,45 +27,85 @@ export class MyCourseDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private sessionService = inject(SessionService);
   private courseService = inject(CourseService);
+  private moduleService = inject(ModuleService);
+  private lessonService = inject(LessonService);
   authService = inject(AuthService);
 
-  courseId = signal<string>('lippan-art');
+  courseId = signal<string>('');
+  course = signal<Course | null>(null);
+  courseLoading = signal<boolean>(true);
+
   activeTab = signal<'lessons' | 'zoom' | 'resources' | 'certificate'>('lessons');
   sessions = signal<CourseSession[]>([]);
   resources = signal<CourseResource[]>([]);
   resourcesLoading = signal<boolean>(false);
 
-  modules = [
-    {
-      title: "Module 1: Introduction & Materials",
-      lessons: [
-        { id: 1, title: "1.1 Welcome to the Craft", duration: "10 mins", completed: true },
-        { id: 2, title: "1.2 Sourcing Clay & Substrates", duration: "15 mins", completed: true },
-        { id: 3, title: "1.3 Mirror Shapes and Selection", duration: "12 mins", completed: true },
-      ]
-    },
-    {
-      title: "Module 2: Layouts and Border Grids",
-      lessons: [
-        { id: 4, title: "2.1 Drawing Your Grid Guidelines", duration: "20 mins", completed: true },
-        { id: 5, title: "2.2 Preparing Mud Clay Blend", duration: "18 mins", completed: true },
-        { id: 6, title: "2.3 Applying Clay Border Threads", duration: "25 mins", completed: false },
-      ]
-    },
-    {
-      title: "Module 3: Intricate Mirror Positioning",
-      lessons: [
-        { id: 7, title: "3.1 Central Medallion Layout", duration: "30 mins", completed: false },
-        { id: 8, title: "3.2 Corner Accent Motifs", duration: "22 mins", completed: false },
-      ]
-    }
-  ];
+  modules = signal<ModuleWithLessons[]>([]);
+  modulesLoading = signal<boolean>(false);
+
+  completedLessonIds = signal<Set<string>>(new Set());
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
-      const id = params.get('courseId') || 'lippan-art';
+      const id = params.get('courseId') || '';
       this.courseId.set(id);
-      this.loadSessions();
+      if (id) {
+        this.loadCourse(id);
+        this.loadModules(id);
+        this.loadSessions();
+      }
+    });
+  }
+
+  loadCourse(id: string): void {
+    this.courseLoading.set(true);
+    this.courseService.getCourse(id).subscribe({
+      next: (c) => {
+        this.course.set(c);
+        this.courseLoading.set(false);
+      },
+      error: () => {
+        this.courseLoading.set(false);
+      }
+    });
+  }
+
+  loadModules(courseId: string): void {
+    this.modulesLoading.set(true);
+    this.moduleService.getModules(courseId).subscribe({
+      next: (mods) => {
+        const mapped: ModuleWithLessons[] = mods.map(m => ({ ...m, lessonsList: [], loadingLessons: true }));
+        this.modules.set(mapped);
+        this.modulesLoading.set(false);
+
+        // Fetch lessons for each module
+        mapped.forEach((mod, index) => {
+          this.lessonService.getLessons(mod.id).subscribe({
+            next: (lessons) => {
+              this.modules.update(curr => {
+                const copy = [...curr];
+                if (copy[index]) {
+                  copy[index] = { ...copy[index], lessonsList: lessons, loadingLessons: false };
+                }
+                return copy;
+              });
+            },
+            error: () => {
+              this.modules.update(curr => {
+                const copy = [...curr];
+                if (copy[index]) {
+                  copy[index] = { ...copy[index], lessonsList: [], loadingLessons: false };
+                }
+                return copy;
+              });
+            }
+          });
+        });
+      },
+      error: () => {
+        this.modules.set([]);
+        this.modulesLoading.set(false);
+      }
     });
   }
 
@@ -67,11 +117,13 @@ export class MyCourseDetailComponent implements OnInit {
   }
 
   loadSessions(): void {
+    if (!this.courseId()) return;
     const list = this.sessionService.getSessions(this.courseId());
     this.sessions.set(list);
   }
 
   loadResources(): void {
+    if (!this.courseId()) return;
     this.resourcesLoading.set(true);
     this.courseService.getResources(this.courseId()).subscribe({
       next: (data) => {
@@ -89,7 +141,19 @@ export class MyCourseDetailComponent implements OnInit {
     return this.sessionService.getSessionStatus(session);
   }
 
-  toggleLesson(lesson: any): void {
-    lesson.completed = !lesson.completed;
+  isLessonCompleted(lessonId: string): boolean {
+    return this.completedLessonIds().has(lessonId);
+  }
+
+  toggleLesson(lessonId: string): void {
+    this.completedLessonIds.update(set => {
+      const next = new Set(set);
+      if (next.has(lessonId)) {
+        next.delete(lessonId);
+      } else {
+        next.add(lessonId);
+      }
+      return next;
+    });
   }
 }
