@@ -63,4 +63,9 @@ export interface BlogPost {
   imageUrl?: string;
   image?: string;
   readTime: string;
+  slug?: string;
+  tags?: string[];
+  isPublished?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
