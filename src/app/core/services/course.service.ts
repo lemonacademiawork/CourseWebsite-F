@@ -3,12 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, map, catchError, of } from 'rxjs';
 import { Course, CreateCoursePayload, UpdateCoursePayload } from '../models/course.model';
 import { CourseResource, CreateResourcePayload, UpdateResourcePayload, TrainerApplication } from '../models/common.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CourseService {
-  private apiUrl = '/api/v1';
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 

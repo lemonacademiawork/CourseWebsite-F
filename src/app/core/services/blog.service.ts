@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, catchError, of } from 'rxjs';
 import { BlogPost } from '../models/common.model';
+import { environment } from '../../../environments/environment';
 
 export interface CreateBlogPayload {
   title: string;
@@ -29,7 +30,7 @@ export interface UpdateBlogPayload {
   providedIn: 'root'
 })
 export class BlogService {
-  private apiUrl = '/api/v1';
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 

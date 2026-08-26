@@ -3,13 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap, catchError, of, throwError } from 'rxjs';
 import { AuthResponse, User, UpdateProfilePayload } from '../models/user.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  // Use relative URL so that requests go through proxy (dev) / vercel rewrite (prod)
-  private apiUrl = '/api/v1';
+  private apiUrl = environment.apiUrl;
 
   isLoggedIn = signal<boolean>(false);
   userRole = signal<'admin' | 'trainer' | 'student' | ''>('');
