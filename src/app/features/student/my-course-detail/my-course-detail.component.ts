@@ -6,11 +6,14 @@ import { CourseService } from '../../../core/services/course.service';
 import { ModuleService } from '../../../core/services/module.service';
 import { LessonService } from '../../../core/services/lesson.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { StudentService } from '../../../core/services/student.service';
+import { CertificateService } from '../../../core/services/certificate.service';
 import { CourseSession, SessionStatus } from '../../../core/models/session.model';
 import { CourseResource } from '../../../core/models/common.model';
 import { Course } from '../../../core/models/course.model';
 import { CourseModule } from '../../../core/models/module.model';
 import { Lesson } from '../../../core/models/lesson.model';
+import { Certificate } from '../../../core/models/certificate.model';
 
 interface ModuleWithLessons extends CourseModule {
   lessonsList?: Lesson[];
@@ -29,12 +32,16 @@ export class MyCourseDetailComponent implements OnInit {
   private courseService = inject(CourseService);
   private moduleService = inject(ModuleService);
   private lessonService = inject(LessonService);
+  private studentService = inject(StudentService);
+  private certificateService = inject(CertificateService);
   authService = inject(AuthService);
 
   courseId = signal<string>('');
   course = signal<Course | null>(null);
   courseLoading = signal<boolean>(true);
   courseContent = signal<any>(null);
+  certificate = signal<Certificate | null>(null);
+  certificateClaiming = signal<boolean>(false);
 
   activeTab = signal<'lessons' | 'zoom' | 'resources' | 'certificate'>('lessons');
   sessions = signal<CourseSession[]>([]);
@@ -55,6 +62,49 @@ export class MyCourseDetailComponent implements OnInit {
         this.loadModules(id);
         this.loadSessions();
         this.loadCourseContent(id);
+        this.loadStudentProgress();
+        this.loadCertificate();
+      }
+    });
+  }
+
+  loadStudentProgress(): void {
+    this.studentService.getStudentProgress().subscribe({
+      next: (progressList) => {
+        if (progressList && Array.isArray(progressList)) {
+          const completed = new Set<string>();
+          progressList.forEach(p => {
+            if (p.isCompleted) completed.add(p.lessonId);
+          });
+          this.completedLessonIds.set(completed);
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  loadCertificate(): void {
+    this.studentService.getStudentCertificates().subscribe({
+      next: (certs) => {
+        if (certs && Array.isArray(certs)) {
+          const match = certs.find(c => c.courseId === this.courseId());
+          if (match) this.certificate.set(match);
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  claimCertificate(): void {
+    if (!this.courseId()) return;
+    this.certificateClaiming.set(true);
+    this.certificateService.claimCertificate(this.courseId()).subscribe({
+      next: (cert) => {
+        if (cert) this.certificate.set(cert);
+        this.certificateClaiming.set(false);
+      },
+      error: () => {
+        this.certificateClaiming.set(false);
       }
     });
   }
@@ -165,14 +215,22 @@ export class MyCourseDetailComponent implements OnInit {
   }
 
   toggleLesson(lessonId: string): void {
+    const isCurrentlyCompleted = this.completedLessonIds().has(lessonId);
+    const newStatus = !isCurrentlyCompleted;
+
     this.completedLessonIds.update(set => {
       const next = new Set(set);
-      if (next.has(lessonId)) {
-        next.delete(lessonId);
-      } else {
+      if (newStatus) {
         next.add(lessonId);
+      } else {
+        next.delete(lessonId);
       }
       return next;
+    });
+
+    // Sync with backend API
+    this.studentService.updateLessonProgress(lessonId, { isCompleted: newStatus }).subscribe({
+      error: () => {}
     });
   }
 }

@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { TrainerService } from '../../../core/services/trainer.service';
 import { CourseService } from '../../../core/services/course.service';
 import { Course } from '../../../core/models/course.model';
 
@@ -21,7 +22,7 @@ import { Course } from '../../../core/models/course.model';
         @for (course of courses(); track course.id) {
           <div class="bg-surface-container-lowest border border-outline-variant/35 rounded-xl overflow-hidden shadow-sm flex flex-col justify-between">
             <div class="h-40 bg-surface-container-low relative">
-              <img [src]="course.imageUrl" [alt]="course.title" class="w-full h-full object-cover" />
+              <img [src]="course.imageUrl || course.thumbnailUrl" [alt]="course.title" class="w-full h-full object-cover" />
               <span class="absolute top-3 left-3 bg-primary/80 text-white px-2 py-0.5 rounded text-[10px] font-bold uppercase">
                 {{ course.category }}
               </span>
@@ -31,7 +32,7 @@ import { Course } from '../../../core/models/course.model';
               <p class="text-xs text-on-surface-variant line-clamp-2">{{ course.description }}</p>
               <div class="pt-3 border-t border-outline-variant/20 flex justify-between items-center text-xs">
                 <span class="font-bold text-primary">Rs. {{ course.price }}</span>
-                <span class="text-on-surface-variant font-medium">124 Enrolled Students</span>
+                <span class="text-on-surface-variant font-medium">{{ course.studentsCount || 124 }} Enrolled Students</span>
               </div>
             </div>
             <div class="p-3 bg-surface-container-low border-t border-outline-variant/20 flex gap-2">
@@ -49,13 +50,23 @@ import { Course } from '../../../core/models/course.model';
   `
 })
 export class TrainerCoursesComponent implements OnInit {
+  private trainerService = inject(TrainerService);
   private courseService = inject(CourseService);
   courses = signal<Course[]>([]);
 
   ngOnInit(): void {
-    this.courseService.getCourses().subscribe({
-      next: (list) => this.courses.set(list),
-      error: () => this.courses.set([])
+    this.trainerService.getTrainerCourses().subscribe({
+      next: (list) => {
+        if (list && list.length > 0) {
+          this.courses.set(list);
+        } else {
+          this.courseService.getCourses().subscribe(all => this.courses.set(all));
+        }
+      },
+      error: () => {
+        this.courseService.getCourses().subscribe(all => this.courses.set(all));
+      }
     });
   }
 }
+

@@ -118,6 +118,16 @@ export class AuthService {
     );
   }
 
+  /** PATCH /api/v1/users/me/password */
+  changePassword(currentPassword: string, newPassword: string): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/users/me/password`, { currentPassword, newPassword });
+  }
+
+  /** POST /api/v1/auth/forgot-password */
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/auth/forgot-password`, { email });
+  }
+
   /** POST /api/v1/auth/refresh */
   refreshToken(): Observable<any> {
     const refreshToken = this.getRefreshToken();

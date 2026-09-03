@@ -1,6 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
+import { TrainerService } from '../../../core/services/trainer.service';
+import { TrainerProfile } from '../../../core/models/trainer.model';
 
 @Component({
   selector: 'app-trainer-profile',
@@ -11,24 +13,24 @@ import { AuthService } from '../../../core/services/auth.service';
       <div class="bg-surface-container-lowest border border-outline-variant/35 rounded-2xl p-6 md:p-8 shadow-sm space-y-6">
         <div class="text-center">
           <div class="w-16 h-16 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-xl mx-auto mb-3">
-            {{ authService.userName().charAt(0) || 'T' }}
+            {{ (profile()?.name || authService.userName()).charAt(0) || 'T' }}
           </div>
-          <h2 class="playfair text-xl font-bold text-on-surface">{{ authService.userName() }}</h2>
-          <p class="text-on-surface-variant capitalize mt-0.5">Certified Master Instructor</p>
+          <h2 class="playfair text-xl font-bold text-on-surface">{{ profile()?.name || authService.userName() }}</h2>
+          <p class="text-on-surface-variant capitalize mt-0.5">{{ profile()?.designation || 'Certified Master Instructor' }}</p>
         </div>
 
         <div class="border-t border-outline-variant/20 pt-4 space-y-3">
           <div class="flex justify-between py-2 border-b border-outline-variant/10">
             <span class="font-semibold text-on-surface-variant">Email Address</span>
-            <span>{{ authService.userEmail() }}</span>
+            <span>{{ profile()?.email || authService.userEmail() }}</span>
           </div>
           <div class="flex justify-between py-2 border-b border-outline-variant/10">
             <span class="font-semibold text-on-surface-variant">Teaching Craft</span>
-            <span>Traditional Lippan Art &amp; Mud Work</span>
+            <span>{{ profile()?.expertise || 'Traditional Craft Masterclass' }}</span>
           </div>
           <div class="flex justify-between py-2 border-b border-outline-variant/10">
-            <span class="font-semibold text-on-surface-variant">Active Students</span>
-            <span class="font-bold">450</span>
+            <span class="font-semibold text-on-surface-variant">Contact Phone</span>
+            <span>{{ profile()?.phone || 'N/A' }}</span>
           </div>
         </div>
 
@@ -41,6 +43,17 @@ import { AuthService } from '../../../core/services/auth.service';
     </main>
   `
 })
-export class TrainerProfileComponent {
+export class TrainerProfileComponent implements OnInit {
   authService = inject(AuthService);
+  private trainerService = inject(TrainerService);
+
+  profile = signal<TrainerProfile | null>(null);
+
+  ngOnInit(): void {
+    this.trainerService.getTrainerProfile().subscribe({
+      next: (p) => this.profile.set(p),
+      error: () => {}
+    });
+  }
 }
+

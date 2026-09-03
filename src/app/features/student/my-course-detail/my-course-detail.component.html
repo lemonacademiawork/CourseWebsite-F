@@ -213,10 +213,24 @@
           </p>
           <div class="font-bold text-sm text-primary">{{ course()?.title || 'Masterclass Course' }}</div>
           <p class="text-[10px] text-on-surface-variant">Instructor: {{ course()?.instructor || 'Instructor' }} • Lemon Academy</p>
+          @if (certificate()?.verificationCode) {
+            <div class="pt-2 text-[10px] text-on-surface-variant font-mono">
+              Verification Code: <strong class="text-primary">{{ certificate()?.verificationCode }}</strong>
+            </div>
+          }
         </div>
-        <button class="bg-primary text-on-primary px-6 py-2.5 rounded-lg font-semibold shadow-sm hover:opacity-90 cursor-pointer">
-          Download PDF Certificate
-        </button>
+        @if (certificate()) {
+          <a [href]="certificate()?.certificateUrl || '#'" target="_blank" class="inline-block bg-primary text-on-primary px-6 py-2.5 rounded-lg font-semibold shadow-sm hover:opacity-90 cursor-pointer">
+            Download PDF Certificate
+          </a>
+        } @else {
+          <button 
+            (click)="claimCertificate()" 
+            [disabled]="certificateClaiming()"
+            class="bg-primary text-on-primary px-6 py-2.5 rounded-lg font-semibold shadow-sm hover:opacity-90 cursor-pointer disabled:opacity-50">
+            {{ certificateClaiming() ? 'Generating Certificate...' : 'Claim Certificate' }}
+          </button>
+        }
       </div>
     }
   </div>

@@ -1,7 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
+import { TrainerService } from '../../../core/services/trainer.service';
+import { TrainerDashboardMetrics } from '../../../core/models/trainer.model';
 
 @Component({
   selector: 'app-trainer-dashboard',
@@ -35,7 +37,9 @@ import { AuthService } from '../../../core/services/auth.service';
               </div>
             </div>
             <div class="mt-2">
-              <div class="text-xl font-bold text-on-surface leading-none">450</div>
+              <div class="text-xl font-bold text-on-surface leading-none">
+                {{ metrics()?.totalStudents ?? 450 }}
+              </div>
               <div class="flex items-center gap-1 text-[10px] text-on-surface-variant mt-1">
                 <span class="text-primary font-semibold">+12 this week</span>
                 <span>• growing community</span>
@@ -51,7 +55,9 @@ import { AuthService } from '../../../core/services/auth.service';
               </div>
             </div>
             <div class="mt-2">
-              <div class="text-xl font-bold text-on-surface leading-none">4</div>
+              <div class="text-xl font-bold text-on-surface leading-none">
+                {{ metrics()?.activeCourses ?? 4 }}
+              </div>
               <div class="flex items-center gap-1 text-[10px] text-on-surface-variant mt-1">
                 <span>Published active workshops</span>
               </div>
@@ -107,4 +113,14 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class TrainerDashboardComponent {
   authService = inject(AuthService);
+  private trainerService = inject(TrainerService);
+
+  metrics = signal<TrainerDashboardMetrics | null>(null);
+
+  constructor() {
+    this.trainerService.getTrainerDashboard().subscribe({
+      next: (data) => this.metrics.set(data),
+      error: () => {}
+    });
+  }
 }

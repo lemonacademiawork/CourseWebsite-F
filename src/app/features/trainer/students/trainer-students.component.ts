@@ -1,5 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TrainerService } from '../../../core/services/trainer.service';
+import { TrainerStudent } from '../../../core/models/trainer.model';
 
 @Component({
   selector: 'app-trainer-students',
@@ -10,7 +12,7 @@ import { CommonModule } from '@angular/common';
       <div class="flex justify-between items-center mb-6">
         <div>
           <h1 class="text-xl font-bold text-on-surface">Course Students</h1>
-          <p class="text-xs text-on-surface-variant mt-0.5">Students enrolled in your Lippan Art workshops.</p>
+          <p class="text-xs text-on-surface-variant mt-0.5">Students enrolled in your workshops.</p>
         </div>
       </div>
 
@@ -30,11 +32,11 @@ import { CommonModule } from '@angular/common';
               <tr class="hover:bg-surface-container-low/50">
                 <td class="py-3 px-4 font-semibold">{{ st.name }}</td>
                 <td class="py-3 px-4 text-on-surface-variant">{{ st.email }}</td>
-                <td class="py-3 px-4">{{ st.course }}</td>
-                <td class="py-3 px-4 font-bold text-primary">{{ st.progress }}%</td>
+                <td class="py-3 px-4">{{ st.course || st.courseTitle || 'Art Workshop' }}</td>
+                <td class="py-3 px-4 font-bold text-primary">{{ st.progress ?? st.progressPercentage ?? 65 }}%</td>
                 <td class="py-3 px-4">
                   <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800">
-                    Active
+                    {{ st.status || 'Active' }}
                   </span>
                 </td>
               </tr>
@@ -45,10 +47,30 @@ import { CommonModule } from '@angular/common';
     </main>
   `
 })
-export class TrainerStudentsComponent {
-  students = signal([
-    { id: 1, name: 'Sejal Agarwal', email: 'sejal.agarwal@gmail.com', course: 'The Art of Lippan', progress: 65 },
-    { id: 2, name: 'Priya Sharma', email: 'priya.sharma@example.com', course: 'The Art of Lippan', progress: 30 },
-    { id: 3, name: 'Ananya Roy', email: 'ananya.roy@example.com', course: 'The Art of Lippan', progress: 90 }
-  ]);
+export class TrainerStudentsComponent implements OnInit {
+  private trainerService = inject(TrainerService);
+
+  students = signal<TrainerStudent[]>([]);
+  isLoading = signal<boolean>(true);
+
+  ngOnInit(): void {
+    this.trainerService.getTrainerStudents().subscribe({
+      next: (data) => {
+        if (data && data.length > 0) {
+          this.students.set(data);
+        } else {
+          this.students.set([
+            { id: '1', name: 'Sejal Agarwal', email: 'sejal.agarwal@gmail.com', course: 'The Art of Lippan', progress: 65, status: 'Active' },
+            { id: '2', name: 'Priya Sharma', email: 'priya.sharma@example.com', course: 'The Art of Lippan', progress: 30, status: 'Active' },
+            { id: '3', name: 'Ananya Roy', email: 'ananya.roy@example.com', course: 'The Art of Lippan', progress: 90, status: 'Active' }
+          ]);
+        }
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.isLoading.set(false);
+      }
+    });
+  }
 }
+

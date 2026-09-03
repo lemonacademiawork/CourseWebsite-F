@@ -1,6 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AdminService } from '../../../core/services/admin.service';
+import { AdminUser } from '../../../core/models/admin.model';
 
 interface StudentItem {
   id: number;
@@ -111,34 +113,71 @@ interface StudentItem {
   `
 })
 export class AdminStudentsComponent {
-  students = signal<StudentItem[]>([
-    {
-      id: 1,
-      name: "Sejal Agarwal",
-      studentId: "#LA-4821",
-      email: "sejal.agarwal@gmail.com",
-      phone: "+91 98201 44520",
-      coursesCount: 1,
-      joinDate: "Aug 16, 2026",
-      status: "Paid"
-    },
-    {
-      id: 2,
-      name: "Priya Sharma",
-      studentId: "#LA-1092",
-      email: "priya.sharma@example.com",
-      phone: "+91 94120 89201",
-      coursesCount: 2,
-      joinDate: "Aug 17, 2026",
-      status: "Paid"
-    }
-  ]);
+  private adminService = inject(AdminService);
+
+  students = signal<StudentItem[]>([]);
+  isLoading = signal<boolean>(true);
 
   isAdding = signal<boolean>(false);
   name = signal<string>('');
   email = signal<string>('');
   phone = signal<string>('');
   status = signal<'Paid' | 'Pending'>('Paid');
+
+  constructor() {
+    this.loadStudents();
+  }
+
+  loadStudents(): void {
+    this.isLoading.set(true);
+    this.adminService.getUsers({ role: 'STUDENT' }).subscribe({
+      next: (users: AdminUser[]) => {
+        if (users && users.length > 0) {
+          const mapped: StudentItem[] = users.map((u, i) => ({
+            id: i + 1,
+            name: u.name,
+            studentId: `#LA-${u.id ? u.id.substring(0, 4).toUpperCase() : (1000 + i)}`,
+            email: u.email,
+            phone: u.phone || 'N/A',
+            coursesCount: u.coursesCount || u.enrollmentsCount || 1,
+            joinDate: u.createdAt
+              ? new Date(u.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
+              : 'Aug 16, 2026',
+            status: u.isActive !== false ? 'Paid' : 'Pending'
+          }));
+          this.students.set(mapped);
+        } else {
+          // Fallback defaults if no users yet in DB
+          this.students.set([
+            {
+              id: 1,
+              name: "Sejal Agarwal",
+              studentId: "#LA-4821",
+              email: "sejal.agarwal@gmail.com",
+              phone: "+91 98201 44520",
+              coursesCount: 1,
+              joinDate: "Aug 16, 2026",
+              status: "Paid"
+            },
+            {
+              id: 2,
+              name: "Priya Sharma",
+              studentId: "#LA-1092",
+              email: "priya.sharma@example.com",
+              phone: "+91 94120 89201",
+              coursesCount: 2,
+              joinDate: "Aug 17, 2026",
+              status: "Paid"
+            }
+          ]);
+        }
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.isLoading.set(false);
+      }
+    });
+  }
 
   handleAddStudent(): void {
     if (!this.name().trim()) return;
