@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
-import { CourseService } from '../../../core/services/course.service';
+import { EnrollmentService } from '../../../core/services/enrollment.service';
 
 @Component({
   selector: 'app-refer-and-earn',
@@ -12,7 +12,7 @@ import { CourseService } from '../../../core/services/course.service';
 })
 export class ReferAndEarnComponent implements OnInit {
   private authService = inject(AuthService);
-  private courseService = inject(CourseService);
+  private enrollmentService = inject(EnrollmentService);
 
   isEligible = signal<boolean | null>(null);
   referralCode = signal<string>('');
@@ -24,9 +24,16 @@ export class ReferAndEarnComponent implements OnInit {
       return;
     }
 
-    const purchased = this.courseService.getPurchasedCourses();
-    const eligible = Array.isArray(purchased) && purchased.length > 0;
-    this.isEligible.set(eligible);
+    // Check eligibility via real enrollment API
+    this.enrollmentService.getEnrollments().subscribe({
+      next: (enrollments) => {
+        const eligible = Array.isArray(enrollments) && enrollments.length > 0;
+        this.isEligible.set(eligible);
+      },
+      error: () => {
+        this.isEligible.set(false);
+      }
+    });
 
     const email = this.authService.userEmail() || 'user';
     const code = email.split('@')[0] + '20';
@@ -40,3 +47,4 @@ export class ReferAndEarnComponent implements OnInit {
     setTimeout(() => this.copySuccess.set(false), 2000);
   }
 }
+

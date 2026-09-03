@@ -34,6 +34,7 @@ export class MyCourseDetailComponent implements OnInit {
   courseId = signal<string>('');
   course = signal<Course | null>(null);
   courseLoading = signal<boolean>(true);
+  courseContent = signal<any>(null);
 
   activeTab = signal<'lessons' | 'zoom' | 'resources' | 'certificate'>('lessons');
   sessions = signal<CourseSession[]>([]);
@@ -53,6 +54,7 @@ export class MyCourseDetailComponent implements OnInit {
         this.loadCourse(id);
         this.loadModules(id);
         this.loadSessions();
+        this.loadCourseContent(id);
       }
     });
   }
@@ -66,6 +68,23 @@ export class MyCourseDetailComponent implements OnInit {
       },
       error: () => {
         this.courseLoading.set(false);
+      }
+    });
+  }
+
+  /** Load full protected course content for enrolled students */
+  loadCourseContent(id: string): void {
+    this.courseService.getCourseContent(id).subscribe({
+      next: (content) => {
+        this.courseContent.set(content);
+        // If the content response includes resources, auto-populate
+        if (content?.resources && Array.isArray(content.resources)) {
+          this.resources.set(content.resources);
+        }
+      },
+      error: () => {
+        // Student may not be enrolled — content endpoint returns 403
+        this.courseContent.set(null);
       }
     });
   }

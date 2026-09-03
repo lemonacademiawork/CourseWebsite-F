@@ -91,27 +91,12 @@ export class CourseService {
     return this.http.patch(`${this.apiUrl}/courses/${id}/publish`, {});
   }
 
-  getPurchasedCourses(): Course[] {
-    if (typeof window === 'undefined') return [];
-    const purchased = localStorage.getItem('purchased_courses');
-    if (purchased) {
-      try {
-        return JSON.parse(purchased);
-      } catch {
-        return [];
-      }
-    }
-    return [];
-  }
-
-  enrollCourse(course: Course): void {
-    if (typeof window === 'undefined') return;
-    const list = this.getPurchasedCourses();
-    if (!list.some(c => c.id === course.id)) {
-      list.push(course);
-      localStorage.setItem('purchased_courses', JSON.stringify(list));
-      window.dispatchEvent(new Event('courses_updated'));
-    }
+  /** GET /api/v1/courses/:id/content — Get full protected course content for enrolled students */
+  getCourseContent(id: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/courses/${id}/content`).pipe(
+      map(res => res.data || res),
+      catchError(() => of(null))
+    );
   }
 
   /** GET /api/v1/courses/:courseId/resources */

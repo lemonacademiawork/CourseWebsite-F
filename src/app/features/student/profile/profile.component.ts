@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
-import { CourseService } from '../../../core/services/course.service';
+import { EnrollmentService } from '../../../core/services/enrollment.service';
 
 @Component({
   selector: 'app-profile',
@@ -50,14 +50,20 @@ import { CourseService } from '../../../core/services/course.service';
 })
 export class ProfileComponent implements OnInit {
   authService = inject(AuthService);
-  private courseService = inject(CourseService);
+  private enrollmentService = inject(EnrollmentService);
 
   courseCount = signal<number>(0);
 
   ngOnInit(): void {
     this.authService.fetchUserProfile().subscribe();
-    const purchased = this.courseService.getPurchasedCourses();
-    this.courseCount.set(purchased.length);
+    this.enrollmentService.getEnrollments().subscribe({
+      next: (enrollments) => {
+        this.courseCount.set(enrollments.length);
+      },
+      error: () => {
+        this.courseCount.set(0);
+      }
+    });
   }
 
   getInitials(): string {
@@ -69,3 +75,4 @@ export class ProfileComponent implements OnInit {
     this.authService.logout();
   }
 }
+

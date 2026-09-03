@@ -3,6 +3,7 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { CourseService } from '../../../core/services/course.service';
+import { EnrollmentService } from '../../../core/services/enrollment.service';
 import { Course } from '../../../core/models/course.model';
 
 @Component({
@@ -294,8 +295,10 @@ import { Course } from '../../../core/models/course.model';
 export class CourseLippanComponent implements OnInit {
   private authService = inject(AuthService);
   private courseService = inject(CourseService);
+  private enrollmentService = inject(EnrollmentService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  enrolling = signal<boolean>(false);
 
   enrolled = signal<boolean>(false);
   course = signal<Course>({
@@ -316,8 +319,16 @@ export class CourseLippanComponent implements OnInit {
       this.courseService.getCourse(courseId).subscribe(found => {
         if (found) {
           this.course.set(found);
-          const purchased = this.courseService.getPurchasedCourses();
-          this.enrolled.set(purchased.some(c => c.id === found.id));
+          // Check enrollment status via API
+          if (this.authService.isLoggedIn()) {
+            this.enrollmentService.getEnrollments().subscribe({
+              next: (enrollments) => {
+                const isEnrolled = enrollments.some(e => e.courseId === found.id || e.course?.id === found.id);
+                this.enrolled.set(isEnrolled);
+              },
+              error: () => this.enrolled.set(false)
+            });
+          }
         }
       });
     });
@@ -339,20 +350,24 @@ export class CourseLippanComponent implements OnInit {
       return;
     }
 
-    this.courseService.enrollCourse({
-      id: currentCourse.id,
-      title: currentCourse.title,
-      category: currentCourse.category,
-      instructor: currentCourse.instructor,
-      progress: 0,
-      lessonsCompleted: 0,
-      totalLessons: 20,
-      imageUrl: currentCourse.imageUrl,
-      price: currentCourse.price,
-      description: currentCourse.description
-    });
+    if (this.enrolled()) {
+      this.router.navigate(['/my-courses']);
+      return;
+    }
 
-    this.enrolled.set(true);
-    this.router.navigate(['/my-courses']);
+    this.enrolling.set(true);
+    this.enrollmentService.createEnrollment({
+      courseId: currentCourse.id,
+      source: 'ONLINE_PAYMENT'
+    }).subscribe({
+      next: () => {
+        this.enrolled.set(true);
+        this.enrolling.set(false);
+        this.router.navigate(['/my-courses']);
+      },
+      error: () => {
+        this.enrolling.set(false);
+      }
+    });
   }
 }

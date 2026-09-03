@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BlogPost } from '../../../core/models/common.model';
 import { BlogService } from '../../../core/services/blog.service';
+import { BlogCategoryService } from '../../../core/services/blog-category.service';
+import { BlogCategory } from '../../../core/models/blog-category.model';
 
 @Component({
   selector: 'app-admin-blogs',
@@ -63,6 +65,20 @@ import { BlogService } from '../../../core/services/blog.service';
                   required
                   class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs"
                 />
+              </div>
+            <div>
+                <label class="block font-semibold mb-1">Category</label>
+                <select
+                  [ngModel]="selectedCategoryId()"
+                  (ngModelChange)="selectedCategoryId.set($event)"
+                  name="categoryId"
+                  class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs"
+                >
+                  <option value="">Select Category (optional)</option>
+                  @for (cat of categories(); track cat.id) {
+                    <option [value]="cat.id">{{ cat.name }}</option>
+                  }
+                </select>
               </div>
               <div>
                 <label class="block font-semibold mb-1">Cover Image URL</label>
@@ -172,11 +188,14 @@ export class AdminBlogsComponent implements OnInit {
   content = signal<string>('');
   slug = signal<string>('');
   featuredImageUrl = signal<string>('');
+  selectedCategoryId = signal<string>('');
+  categories = signal<BlogCategory[]>([]);
 
-  constructor(private blogService: BlogService) {}
+  constructor(private blogService: BlogService, private blogCategoryService: BlogCategoryService) {}
 
   ngOnInit(): void {
     this.loadBlogs();
+    this.loadCategories();
   }
 
   loadBlogs(): void {
@@ -184,6 +203,12 @@ export class AdminBlogsComponent implements OnInit {
     this.blogService.getBlogs().subscribe(blogs => {
       this.posts.set(blogs);
       this.isLoading.set(false);
+    });
+  }
+
+  loadCategories(): void {
+    this.blogCategoryService.getCategories().subscribe(cats => {
+      this.categories.set(cats);
     });
   }
 
@@ -197,7 +222,8 @@ export class AdminBlogsComponent implements OnInit {
       title: this.title(),
       slug: this.slug(),
       content: this.content(),
-      featuredImageUrl: this.featuredImageUrl() || undefined
+      featuredImageUrl: this.featuredImageUrl() || undefined,
+      categoryId: this.selectedCategoryId() || undefined
     }).subscribe({
       next: () => {
         this.isWriting.set(false);
@@ -205,6 +231,7 @@ export class AdminBlogsComponent implements OnInit {
         this.content.set('');
         this.slug.set('');
         this.featuredImageUrl.set('');
+        this.selectedCategoryId.set('');
         this.isPublishing.set(false);
         this.loadBlogs();
       },

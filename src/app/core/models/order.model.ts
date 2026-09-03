@@ -19,3 +19,9 @@ export interface CreateOrderPayload {
   razorpayOrderId?: string;
   appliedReferralCode?: string;
 }
+
+export interface UpdateOrderPayload {
+  status?: 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED' | 'REFUNDED';
+  razorpayOrderId?: string;
+  appliedReferralCode?: string;
+}
