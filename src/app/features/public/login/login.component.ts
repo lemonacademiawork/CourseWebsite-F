@@ -50,15 +50,27 @@ export class LoginComponent implements OnInit {
     this.authService.login({ email: this.email(), password: this.password() }).subscribe({
       next: (res) => {
         this.loading.set(false);
-        const role = this.authService.userRole();
+        const role = (this.authService.userRole() || '').toLowerCase();
+        const returnUrl = this.returnUrl();
+
         if (role === 'admin') {
-          this.router.navigate(['/admin/dashboard']);
+          if (returnUrl && returnUrl.startsWith('/admin')) {
+            this.router.navigateByUrl(returnUrl);
+          } else {
+            this.router.navigate(['/admin/dashboard']);
+          }
         } else if (role === 'trainer') {
-          this.router.navigate(['/trainer/dashboard']);
-        } else if (this.returnUrl()) {
-          this.router.navigateByUrl(this.returnUrl()!);
+          if (returnUrl && returnUrl.startsWith('/trainer')) {
+            this.router.navigateByUrl(returnUrl);
+          } else {
+            this.router.navigate(['/trainer/dashboard']);
+          }
         } else {
-          this.router.navigate(['/']);
+          if (returnUrl && !returnUrl.startsWith('/admin') && !returnUrl.startsWith('/trainer') && !returnUrl.startsWith('/403')) {
+            this.router.navigateByUrl(returnUrl);
+          } else {
+            this.router.navigate(['/']);
+          }
         }
       },
       error: (err) => {

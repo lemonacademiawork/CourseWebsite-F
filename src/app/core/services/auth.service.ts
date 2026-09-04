@@ -20,11 +20,21 @@ export class AuthService {
     this.loadAuthState();
   }
 
+  private normalizeRole(role: any): 'admin' | 'trainer' | 'student' | '' {
+    if (!role) return '';
+    const r = String(role).trim().toLowerCase();
+    if (r === 'admin') return 'admin';
+    if (r === 'trainer') return 'trainer';
+    if (r === 'student') return 'student';
+    return 'student';
+  }
+
   loadAuthState(): void {
     if (typeof window === 'undefined') return;
 
     const loggedIn = localStorage.getItem('is_logged_in') === 'true' || this.getCookie('is_logged_in') === 'true';
-    const role = (localStorage.getItem('user_role') || this.getCookie('user_role') || '') as any;
+    const rawRole = localStorage.getItem('user_role') || this.getCookie('user_role') || '';
+    const role = this.normalizeRole(rawRole);
     const name = localStorage.getItem('user_name') || this.getCookie('user_name') || 'User';
     const email = localStorage.getItem('user_email') || this.getCookie('user_email') || '';
 
@@ -40,7 +50,7 @@ export class AuthService {
       tap((res) => {
         const data = (res as any).data || res;
         const user = data.user || data;
-        const role = user.role || data.role || 'student';
+        const role = this.normalizeRole(user.role || data.role || 'student');
         const name = user.name || data.name || credentials.email.split('@')[0];
         const email = user.email || data.email || credentials.email;
         const token = data.token || data.accessToken || res.token || '';
@@ -72,7 +82,7 @@ export class AuthService {
         if (profile && (profile.name || profile.email)) {
           const name = profile.name || this.userName();
           const email = profile.email || this.userEmail();
-          const role = profile.role || this.userRole();
+          const role = this.normalizeRole(profile.role || this.userRole());
           this.persistAuth(true, role, name, email, this.getToken());
         }
       })
@@ -95,7 +105,7 @@ export class AuthService {
         if (profile && (profile.name || profile.email)) {
           const name = profile.name || this.userName();
           const email = profile.email || this.userEmail();
-          const role = profile.role || this.userRole();
+          const role = this.normalizeRole(profile.role || this.userRole());
           this.persistAuth(true, role, name, email, this.getToken());
         }
       })
@@ -185,11 +195,13 @@ export class AuthService {
     this.router.navigate(['/']);
   }
 
-  persistAuth(loggedIn: boolean, role: 'admin' | 'trainer' | 'student', name: string, email: string, token: string): void {
+  persistAuth(loggedIn: boolean, role: 'admin' | 'trainer' | 'student' | string, name: string, email: string, token: string): void {
     if (typeof window === 'undefined') return;
 
+    const normalizedRole = this.normalizeRole(role) || 'student';
+
     localStorage.setItem('is_logged_in', String(loggedIn));
-    localStorage.setItem('user_role', role);
+    localStorage.setItem('user_role', normalizedRole);
     localStorage.setItem('user_name', name);
     localStorage.setItem('user_email', email);
     if (token) {
@@ -198,12 +210,12 @@ export class AuthService {
     }
 
     this.setCookie('is_logged_in', String(loggedIn));
-    this.setCookie('user_role', role);
+    this.setCookie('user_role', normalizedRole);
     this.setCookie('user_name', name);
     this.setCookie('user_email', email);
 
     this.isLoggedIn.set(loggedIn);
-    this.userRole.set(role);
+    this.userRole.set(normalizedRole);
     this.userName.set(name);
     this.userEmail.set(email);
 

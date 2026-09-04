@@ -35,9 +35,19 @@ import { EnrollmentService } from '../../../core/services/enrollment.service';
         </div>
 
         <div class="pt-4 flex flex-col gap-2">
-          <a routerLink="/my-courses" class="w-full text-center bg-primary text-on-primary font-semibold py-2.5 rounded-lg hover:opacity-90 transition-opacity">
-            Go to My Courses
-          </a>
+          @if (authService.userRole() === 'admin') {
+            <a routerLink="/admin/dashboard" class="w-full text-center bg-primary text-on-primary font-semibold py-2.5 rounded-lg hover:opacity-90 transition-opacity">
+              Go to Admin Dashboard
+            </a>
+          } @else if (authService.userRole() === 'trainer') {
+            <a routerLink="/trainer/dashboard" class="w-full text-center bg-primary text-on-primary font-semibold py-2.5 rounded-lg hover:opacity-90 transition-opacity">
+              Go to Trainer Dashboard
+            </a>
+          } @else {
+            <a routerLink="/my-courses" class="w-full text-center bg-primary text-on-primary font-semibold py-2.5 rounded-lg hover:opacity-90 transition-opacity">
+              Go to My Courses
+            </a>
+          }
           <button 
             (click)="handleLogout()"
             class="w-full bg-surface-container text-on-surface font-semibold py-2.5 rounded-lg hover:bg-surface-dim transition-colors cursor-pointer">

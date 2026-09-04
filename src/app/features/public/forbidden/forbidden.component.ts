@@ -28,7 +28,7 @@ export class ForbiddenComponent implements OnInit {
   workspaceLink = signal<string>('/');
 
   ngOnInit(): void {
-    const role = this.authService.userRole();
+    const role = (this.authService.userRole() || '').toLowerCase();
     if (role === 'admin') {
       this.workspaceLink.set('/admin/dashboard');
     } else if (role === 'trainer') {

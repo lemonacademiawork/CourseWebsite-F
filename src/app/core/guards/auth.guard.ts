@@ -22,7 +22,8 @@ export const adminGuard: CanActivateFn = (route, state) => {
 
   authService.loadAuthState();
 
-  if (authService.isLoggedIn() && authService.userRole() === 'admin') {
+  const role = (authService.userRole() || '').toLowerCase();
+  if (authService.isLoggedIn() && role === 'admin') {
     return true;
   }
 
@@ -40,7 +41,8 @@ export const trainerGuard: CanActivateFn = (route, state) => {
 
   authService.loadAuthState();
 
-  if (authService.isLoggedIn() && authService.userRole() === 'trainer') {
+  const role = (authService.userRole() || '').toLowerCase();
+  if (authService.isLoggedIn() && role === 'trainer') {
     return true;
   }
 
@@ -51,3 +53,4 @@ export const trainerGuard: CanActivateFn = (route, state) => {
   }
   return false;
 };
+
