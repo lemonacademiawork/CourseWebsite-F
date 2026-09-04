@@ -59,15 +59,19 @@ export class CourseService {
             description: c.description || '',
             imageUrl: c.thumbnailUrl || c.imageUrl || c.image || 'https://images.unsplash.com/photo-1584992236310-6edddc08acff',
             thumbnailUrl: c.thumbnailUrl || '',
-            price: c.price || 0,
-            discountedPrice: c.discountedPrice || c.price || 0,
+            price: Number(c.price) || 0,
+            discountedPrice: Number(c.discountedPrice) || Number(c.price) || 0,
             isPublished: c.isPublished ?? true,
             studentsCount: c.studentsCount || c.enrolledStudents || 0
           } as Course;
         }
         return null;
       }),
-      catchError(() => of(null))
+      catchError(() => {
+        return this.getCourses().pipe(
+          map(courses => courses.find(c => c.id === id || c.slug === id || c.categorySlug === id) || null)
+        );
+      })
     );
   }
 

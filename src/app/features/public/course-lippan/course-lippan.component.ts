@@ -217,10 +217,24 @@ import { Course } from '../../../core/models/course.model';
                 <div class="space-y-2.5">
                   <button 
                     (click)="handleEnroll()"
-                    class="w-full bg-primary text-on-primary font-semibold py-3.5 rounded-xl hover:opacity-95 transition-opacity shadow-sm text-xs cursor-pointer flex items-center justify-center gap-2">
-                    <span class="material-symbols-outlined text-sm">{{ enrolled() ? 'arrow_forward' : 'lock_open' }}</span>
-                    {{ enrolled() ? 'Go to My Courses' : 'Enroll Now' }}
+                    [disabled]="enrolling()"
+                    class="w-full bg-primary text-on-primary font-semibold py-3.5 rounded-xl hover:opacity-95 transition-opacity shadow-sm text-xs cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                    @if (enrolling()) {
+                      <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                      <span>Enrolling...</span>
+                    } @else {
+                      <span class="material-symbols-outlined text-sm">{{ enrolled() ? 'arrow_forward' : 'lock_open' }}</span>
+                      <span>{{ enrolled() ? 'Go to My Courses' : 'Enroll Now' }}</span>
+                    }
                   </button>
+
+                  @if (enrollmentError()) {
+                    <div class="p-2.5 rounded-lg bg-red-50 text-red-700 border border-red-200 text-[11px] flex items-center gap-1.5">
+                      <span class="material-symbols-outlined text-sm">error</span>
+                      <span>{{ enrollmentError() }}</span>
+                    </div>
+                  }
+
                   <button class="w-full border border-outline-variant/60 text-on-surface font-semibold py-3 rounded-xl hover:bg-surface-container-low transition-colors text-xs cursor-pointer">
                     Gift this Course
                   </button>
@@ -298,9 +312,11 @@ export class CourseLippanComponent implements OnInit {
   private enrollmentService = inject(EnrollmentService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-  enrolling = signal<boolean>(false);
 
+  enrolling = signal<boolean>(false);
   enrolled = signal<boolean>(false);
+  enrollmentError = signal<string>('');
+
   course = signal<Course>({
     id: 'lippan-art',
     title: 'The Art of Lippan: Traditional Mud & Mirror Work',
@@ -323,7 +339,7 @@ export class CourseLippanComponent implements OnInit {
           if (this.authService.isLoggedIn()) {
             this.enrollmentService.getEnrollments().subscribe({
               next: (enrollments) => {
-                const isEnrolled = enrollments.some(e => e.courseId === found.id || e.course?.id === found.id);
+                const isEnrolled = enrollments.some(e => e.courseId === found.id || e.course?.id === found.id || e.id === found.id);
                 this.enrolled.set(isEnrolled);
               },
               error: () => this.enrolled.set(false)
@@ -345,6 +361,8 @@ export class CourseLippanComponent implements OnInit {
 
   handleEnroll(): void {
     const currentCourse = this.course();
+    this.enrollmentError.set('');
+
     if (!this.authService.isLoggedIn()) {
       this.router.navigate(['/login'], { queryParams: { returnUrl: `/courses/${currentCourse.id}` } });
       return;
@@ -365,8 +383,15 @@ export class CourseLippanComponent implements OnInit {
         this.enrolling.set(false);
         this.router.navigate(['/my-courses']);
       },
-      error: () => {
+      error: (err) => {
         this.enrolling.set(false);
+        const errMsg = err?.error?.message || err?.message || 'Failed to enroll. Please try again.';
+        if (errMsg.toLowerCase().includes('already enrolled') || err?.status === 409) {
+          this.enrolled.set(true);
+          this.router.navigate(['/my-courses']);
+        } else {
+          this.enrollmentError.set(errMsg);
+        }
       }
     });
   }
