@@ -18,7 +18,7 @@ import { RouterLink } from '@angular/router';
               Where Traditional Craft Meets Modern Mastery
             </h1>
             <p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl">
-              At Lemon Academy, we believe creativity is a journey best taken with intent, patience, and expert guidance. We are a digital sanctuary designed to connect passionate learners with master artisans of the craft world.
+              At Lemon Academia, we believe creativity is a journey best taken with intent, patience, and expert guidance. We are a digital sanctuary designed to connect passionate learners with master artisans of the craft world.
             </p>
             <div class="flex gap-4">
               <a routerLink="/courses" class="bg-primary text-on-primary font-label-md text-label-md px-8 py-4 rounded-lg hover:opacity-90 transition-opacity hover-lift inline-block text-center font-semibold">

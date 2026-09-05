@@ -58,7 +58,7 @@ const FAQS: FAQ[] = [
     id: 7,
     category: 'billing',
     question: 'Do you offer certificates upon completion?',
-    answer: 'Yes! Upon successfully completing all modules of a course and submitting your final project photo, a personalized digital Lemon Academy Certificate of Completion will be generated for you.'
+    answer: 'Yes! Upon successfully completing all modules of a course and submitting your final project photo, a personalized digital Lemon Academia Certificate of Completion will be generated for you.'
   }
 ];
 

@@ -42,6 +42,7 @@ import { AdminApplicationsReviewComponent } from './features/admin/applications-
 import { AdminCouponsComponent } from './features/admin/coupons/admin-coupons.component';
 import { AdminCouponsCreateComponent } from './features/admin/coupons-create/admin-coupons-create.component';
 import { AdminBlogsComponent } from './features/admin/blogs/admin-blogs.component';
+import { AdminGalleryComponent } from './features/admin/gallery/admin-gallery.component';
 import { AdminCarouselComponent } from './features/admin/carousel/admin-carousel.component';
 import { AdminImportComponent } from './features/admin/import/admin-import.component';
 
@@ -107,6 +108,7 @@ export const routes: Routes = [
       { path: 'coupons', component: AdminCouponsComponent },
       { path: 'coupons/create', component: AdminCouponsCreateComponent },
       { path: 'blogs', component: AdminBlogsComponent },
+      { path: 'gallery', component: AdminGalleryComponent },
       { path: 'carousel', component: AdminCarouselComponent },
       { path: 'import', component: AdminImportComponent }
     ]

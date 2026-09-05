@@ -1,4 +1,4 @@
-# Lemon Academy - Angular Web Application
+# Lemon Academia - Angular Web Application
 
 A modern e-learning and handcrafted art creation platform built with Angular 21, Tailwind CSS v4, and TypeScript.
 

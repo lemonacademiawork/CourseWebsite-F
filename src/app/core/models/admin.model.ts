@@ -50,9 +50,13 @@ export interface AdminGalleryItem {
   studentName?: string;
   studentId?: string;
   courseId?: string;
+  courseTitle?: string;
+  category?: string;
+  description?: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   isFeatured?: boolean;
   adminFeedback?: string;
+  submittedByRole?: string;
   createdAt?: string;
   updatedAt?: string;
 }

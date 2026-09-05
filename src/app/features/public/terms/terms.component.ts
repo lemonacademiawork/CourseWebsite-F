@@ -55,7 +55,7 @@ const SECTIONS = [
           <section id="acceptance" class="space-y-4 scroll-mt-24">
             <h2 class="text-xl md:text-2xl font-extrabold text-on-surface playfair">1. Acceptance of Terms</h2>
             <p>
-              By accessing or using Lemon Academy, you agree to be bound by these Terms of Service and all applicable laws and regulations.
+              By accessing or using Lemon Academia, you agree to be bound by these Terms of Service and all applicable laws and regulations.
             </p>
           </section>
 
@@ -73,7 +73,7 @@ const SECTIONS = [
           <section id="intellectual" class="space-y-4 scroll-mt-24">
             <h2 class="text-xl md:text-2xl font-extrabold text-on-surface playfair">3. Intellectual Property</h2>
             <p>
-              All course curriculum, videos, blueprints, and branding are the exclusive property of Lemon Academy and its master instructors. Unauthorized recording or duplication is strictly prohibited.
+              All course curriculum, videos, blueprints, and branding are the exclusive property of Lemon Academia and its master instructors. Unauthorized recording or duplication is strictly prohibited.
             </p>
           </section>
 
@@ -100,7 +100,7 @@ const SECTIONS = [
           <section id="liability" class="space-y-4 scroll-mt-24">
             <h2 class="text-xl md:text-2xl font-extrabold text-on-surface playfair">6. Limitation of Liability</h2>
             <p>
-              Lemon Academy provides educational crafting tutorials. Users must take reasonable workshop safety precautions when using resin, ceramic cutters, and clay heat tools.
+              Lemon Academia provides educational crafting tutorials. Users must take reasonable workshop safety precautions when using resin, ceramic cutters, and clay heat tools.
             </p>
           </section>
 

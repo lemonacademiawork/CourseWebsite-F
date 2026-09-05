@@ -93,7 +93,7 @@ export class BlogService {
       content: b.content || '',
       category: category,
       categoryColor: this.getCategoryColor(category),
-      author: b.author?.name || b.author || 'Lemon Academy',
+      author: b.author?.name || b.author || 'Lemon Academia',
       date: b.publishedAt || b.createdAt
         ? new Date(b.publishedAt || b.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
         : '',

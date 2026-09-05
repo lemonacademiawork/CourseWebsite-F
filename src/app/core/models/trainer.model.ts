@@ -48,7 +48,11 @@ export interface TrainerGallerySubmission {
   imageUrl: string;
   studentName?: string;
   courseTitle?: string;
+  category?: string;
+  description?: string;
   feedback?: string;
+  adminFeedback?: string;
+  isFeatured?: boolean;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   createdAt: string;
 }

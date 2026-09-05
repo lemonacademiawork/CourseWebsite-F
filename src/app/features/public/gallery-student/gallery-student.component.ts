@@ -10,7 +10,7 @@ import { RouterLink } from '@angular/router';
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
         <div>
           <h1 class="font-display-lg text-display-lg-mobile md:text-display-lg text-on-background mb-2 font-bold">Student Gallery</h1>
-          <p class="text-on-surface-variant text-body-lg font-body-lg max-w-2xl">A curated showcase of creative brilliance from the Lemon Academy community. Be inspired by your peers.</p>
+          <p class="text-on-surface-variant text-body-lg font-body-lg max-w-2xl">A curated showcase of creative brilliance from the Lemon Academia community. Be inspired by your peers.</p>
         </div>
         <button class="flex items-center gap-2 bg-primary text-on-primary font-label-md text-label-md px-6 py-3 rounded-full shadow-sm hover:shadow-md hover:bg-primary/90 transition-all font-semibold cursor-pointer">
           <span class="material-symbols-outlined">upload</span>
