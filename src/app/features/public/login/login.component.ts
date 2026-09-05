@@ -23,6 +23,13 @@ export class LoginComponent implements OnInit {
   info = signal<string>('');
   returnUrl = signal<string | null>(null);
 
+  // Forgot Password modal state
+  showForgotModal = signal<boolean>(false);
+  forgotEmail = signal<string>('');
+  forgotLoading = signal<boolean>(false);
+  forgotSuccess = signal<string>('');
+  forgotError = signal<string>('');
+
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       this.returnUrl.set(params['returnUrl'] || null);
@@ -35,9 +42,48 @@ export class LoginComponent implements OnInit {
     });
   }
 
+  openForgotPassword(event?: Event): void {
+    if (event) event.preventDefault();
+    this.forgotEmail.set(this.email() || '');
+    this.forgotSuccess.set('');
+    this.forgotError.set('');
+    this.showForgotModal.set(true);
+  }
+
+  closeForgotPassword(): void {
+    this.showForgotModal.set(false);
+  }
+
+  handleForgotPasswordSubmit(): void {
+    const email = this.forgotEmail().trim();
+    if (!email) {
+      this.forgotError.set('Please enter your registered email address.');
+      return;
+    }
+
+    this.forgotLoading.set(true);
+    this.forgotError.set('');
+    this.forgotSuccess.set('');
+
+    this.authService.forgotPassword(email).subscribe({
+      next: (res: any) => {
+        this.forgotLoading.set(false);
+        const msg = res?.message || 'Password reset link and instructions have been sent to your email.';
+        this.forgotSuccess.set(msg);
+      },
+      error: (err: any) => {
+        this.forgotLoading.set(false);
+        // Even if server returns 404/generic, show friendly guidance
+        const msg = err?.error?.message || 'Failed to send reset link. Please verify your email address.';
+        this.forgotError.set(msg);
+      }
+    });
+  }
+
   handleGoogleLogin(): void {
     this.authService.loginWithGoogle();
   }
+
 
   handleLogin(): void {
     this.error.set('');

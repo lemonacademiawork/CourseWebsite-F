@@ -11,11 +11,14 @@ import { AuthService } from '../../../core/services/auth.service';
   templateUrl: './reset-password.component.html'
 })
 export class ResetPasswordComponent implements OnInit {
+  mode = signal<'reset' | 'request'>('reset');
   token = signal<string>('');
+  email = signal<string>('');
   newPassword = signal<string>('');
   confirmPassword = signal<string>('');
   isLoading = signal<boolean>(false);
   isSuccess = signal<boolean>(false);
+  requestSuccess = signal<string>('');
   errorMessage = signal<string>('');
   showPassword = signal<boolean>(false);
 
@@ -29,11 +32,38 @@ export class ResetPasswordComponent implements OnInit {
     const tokenParam = this.route.snapshot.queryParamMap.get('token') || this.route.snapshot.paramMap.get('token');
     if (tokenParam) {
       this.token.set(tokenParam);
+      this.mode.set('reset');
+    } else {
+      // If no token in URL, start in request mode
+      this.mode.set('request');
     }
   }
 
   togglePasswordVisibility(): void {
     this.showPassword.update(val => !val);
+  }
+
+  submitRequestLink(): void {
+    const em = this.email().trim();
+    if (!em) {
+      this.errorMessage.set('Please enter your account email address.');
+      return;
+    }
+
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+    this.requestSuccess.set('');
+
+    this.authService.forgotPassword(em).subscribe({
+      next: (res: any) => {
+        this.isLoading.set(false);
+        this.requestSuccess.set(res?.message || 'Password reset link and token have been sent to your email.');
+      },
+      error: (err: any) => {
+        this.isLoading.set(false);
+        this.errorMessage.set(err?.error?.message || 'Failed to send reset link. Please verify your email.');
+      }
+    });
   }
 
   submitReset(): void {
@@ -42,7 +72,7 @@ export class ResetPasswordComponent implements OnInit {
     const confirm = this.confirmPassword();
 
     if (!t) {
-      this.errorMessage.set('Reset token is missing or expired. Please request a new link.');
+      this.errorMessage.set('Reset token is required.');
       return;
     }
 
@@ -67,10 +97,11 @@ export class ResetPasswordComponent implements OnInit {
           this.router.navigate(['/login']);
         }, 3000);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.isLoading.set(false);
-        this.errorMessage.set(err?.error?.message || 'Failed to reset password. The link may have expired.');
+        this.errorMessage.set(err?.error?.message || 'Failed to reset password. The token may have expired.');
       }
     });
   }
 }
+

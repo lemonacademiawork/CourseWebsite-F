@@ -75,9 +75,12 @@
               <input type="checkbox" class="w-[14px] h-[14px] accent-[#6E5410] cursor-pointer" />
               Remember me
             </label>
-            <a routerLink="#" class="text-[#6E5410] hover:underline font-semibold">
+            <button 
+              type="button" 
+              (click)="openForgotPassword($event)" 
+              class="text-[#6E5410] hover:underline font-semibold bg-transparent border-none p-0 cursor-pointer text-[13px]">
               Forgot password?
-            </a>
+            </button>
           </div>
 
           <button 
@@ -118,4 +121,102 @@
       </div>
     </div>
   </div>
+
+  <!-- Forgot Password Modal -->
+  @if (showForgotModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
+      <div class="bg-surface-container-lowest border border-outline-variant/40 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5 bg-[#FBF8F1] text-[#1C1A17]">
+        
+        <div class="flex items-center justify-between border-b border-[#E7E1D3] pb-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#6E5410] text-2xl">lock_reset</span>
+            <h3 class="playfair font-bold text-lg text-[#1C1A17]">Reset Password</h3>
+          </div>
+          <button 
+            type="button" 
+            (click)="closeForgotPassword()" 
+            class="text-[#5B5650] hover:text-[#1C1A17] p-1 rounded-full cursor-pointer">
+            <span class="material-symbols-outlined text-lg">close</span>
+          </button>
+        </div>
+
+        @if (forgotSuccess()) {
+          <div class="p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 text-xs space-y-3">
+            <div class="flex items-start gap-2">
+              <span class="material-symbols-outlined text-green-600 text-base shrink-0">check_circle</span>
+              <p class="leading-relaxed">{{ forgotSuccess() }}</p>
+            </div>
+            <div class="pt-2 border-t border-green-200/60 flex items-center justify-between">
+              <a routerLink="/reset-password" (click)="closeForgotPassword()" class="text-[#6E5410] font-bold hover:underline flex items-center gap-1 text-xs">
+                <span>Enter Reset Token</span>
+                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+              </a>
+              <button 
+                type="button" 
+                (click)="closeForgotPassword()" 
+                class="px-3 py-1 rounded bg-green-700 text-white font-semibold text-xs">
+                Close
+              </button>
+            </div>
+          </div>
+        } @else {
+          <p class="text-xs text-[#5B5650] leading-relaxed">
+            Enter the email address associated with your Lemon Academia account and we'll send you a password reset link and token.
+          </p>
+
+          @if (forgotError()) {
+            <div class="p-2.5 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+              <span class="material-symbols-outlined text-sm">error</span>
+              <span>{{ forgotError() }}</span>
+            </div>
+          }
+
+          <form (ngSubmit)="handleForgotPasswordSubmit()" class="space-y-4">
+            <div class="space-y-1">
+              <label class="block text-[11px] font-semibold uppercase tracking-wider text-[#5B5650]">
+                Email Address
+              </label>
+              <input 
+                type="email" 
+                [(ngModel)]="forgotEmail" 
+                name="forgotEmail" 
+                required
+                placeholder="you@example.com"
+                class="w-full py-2.5 px-3 bg-white border border-[#E7E1D3] rounded-lg text-xs text-[#1C1A17] focus:outline-none focus:border-[#6E5410]"
+              />
+            </div>
+
+            <div class="flex items-center gap-3 pt-2">
+              <button 
+                type="submit" 
+                [disabled]="forgotLoading()"
+                class="flex-1 py-3 bg-[#6E5410] text-white font-bold text-xs rounded-lg hover:bg-[#5c4610] transition-colors flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm">
+                @if (forgotLoading()) {
+                  <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                  <span>Sending Link...</span>
+                } @else {
+                  <span class="material-symbols-outlined text-sm">send</span>
+                  <span>Send Reset Link</span>
+                }
+              </button>
+              <button 
+                type="button" 
+                (click)="closeForgotPassword()" 
+                class="px-4 py-3 bg-[#E7E1D3]/50 text-[#5B5650] font-semibold text-xs rounded-lg hover:bg-[#E7E1D3] transition-colors cursor-pointer">
+                Cancel
+              </button>
+            </div>
+
+            <div class="text-center pt-1">
+              <a routerLink="/reset-password" (click)="closeForgotPassword()" class="text-[11px] text-[#6E5410] hover:underline font-semibold">
+                Already have a reset token? Click here
+              </a>
+            </div>
+          </form>
+        }
+
+      </div>
+    </div>
+  }
 </main>
+

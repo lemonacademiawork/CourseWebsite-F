@@ -84,9 +84,11 @@ export const routes: Routes = [
       { path: 'gallery/student-creations', component: GalleryStudentComponent },
       { path: 'login', component: LoginComponent },
       { path: 'signup', component: SignupComponent },
+      { path: 'forgot-password', component: ResetPasswordComponent },
       { path: 'reset-password', component: ResetPasswordComponent },
       { path: 'verify-certificate', component: VerifyCertificateComponent },
       { path: 'certificates/verify/:code', component: VerifyCertificateComponent },
+
       { path: 'profile', component: ProfileComponent },
       { path: 'my-courses', component: MyCoursesComponent },
       { path: 'my-courses/:courseId', component: MyCourseDetailComponent },
