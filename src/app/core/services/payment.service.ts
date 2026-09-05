@@ -35,4 +35,10 @@ export class PaymentService {
   createPayment(payload: CreatePaymentPayload): Observable<any> {
     return this.http.post(`${this.apiUrl}/payments`, payload);
   }
+
+  /** POST /api/v1/payments/razorpay-order — Create Razorpay order for checkout */
+  createRazorpayOrder(payload: { courseId: string; amount: number; currency?: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/payments/razorpay-order`, payload);
+  }
 }
+

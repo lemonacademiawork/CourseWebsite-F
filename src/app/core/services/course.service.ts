@@ -95,6 +95,33 @@ export class CourseService {
     return this.http.patch(`${this.apiUrl}/courses/${id}/publish`, {});
   }
 
+  /** GET /api/v1/courses/slug/:slug — Get course by slug */
+  getCourseBySlug(slug: string): Observable<Course | null> {
+    return this.http.get<any>(`${this.apiUrl}/courses/slug/${slug}`).pipe(
+      map(res => {
+        const c = res.data || res;
+        return c && (c.id || c._id) ? c : null;
+      }),
+      catchError(() => of(null))
+    );
+  }
+
+  /** GET /api/v1/courses/:courseId/enrollment-status — Check student enrollment status */
+  getCourseEnrollmentStatus(courseId: string): Observable<{ enrolled: boolean; enrollment?: any }> {
+    return this.http.get<any>(`${this.apiUrl}/courses/${courseId}/enrollment-status`).pipe(
+      map(res => res.data || res || { enrolled: false }),
+      catchError(() => of({ enrolled: false }))
+    );
+  }
+
+  /** GET /api/v1/courses/:courseId/progress — Get student course progress */
+  getCourseProgress(courseId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/courses/${courseId}/progress`).pipe(
+      map(res => res.data || res || null),
+      catchError(() => of(null))
+    );
+  }
+
   /** GET /api/v1/courses/:id/content — Get full protected course content for enrolled students */
   getCourseContent(id: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/courses/${id}/content`).pipe(
@@ -102,6 +129,7 @@ export class CourseService {
       catchError(() => of(null))
     );
   }
+
 
   /** GET /api/v1/courses/:courseId/resources */
   getResources(courseId: string): Observable<CourseResource[]> {
