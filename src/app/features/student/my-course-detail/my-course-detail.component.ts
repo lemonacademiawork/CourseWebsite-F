@@ -1,7 +1,9 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { SessionService } from '../../../core/services/session.service';
+
 import { CourseService } from '../../../core/services/course.service';
 import { ModuleService } from '../../../core/services/module.service';
 import { LessonService } from '../../../core/services/lesson.service';
@@ -15,6 +17,9 @@ import { CourseModule } from '../../../core/models/module.model';
 import { Lesson } from '../../../core/models/lesson.model';
 import { Certificate } from '../../../core/models/certificate.model';
 
+import { ReviewService } from '../../../core/services/review.service';
+import { Review } from '../../../core/models/review.model';
+
 interface ModuleWithLessons extends CourseModule {
   lessonsList?: Lesson[];
   loadingLessons?: boolean;
@@ -23,7 +28,7 @@ interface ModuleWithLessons extends CourseModule {
 @Component({
   selector: 'app-my-course-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './my-course-detail.component.html'
 })
 export class MyCourseDetailComponent implements OnInit {
@@ -34,6 +39,7 @@ export class MyCourseDetailComponent implements OnInit {
   private lessonService = inject(LessonService);
   private studentService = inject(StudentService);
   private certificateService = inject(CertificateService);
+  private reviewService = inject(ReviewService);
   authService = inject(AuthService);
 
   courseId = signal<string>('');
@@ -43,7 +49,7 @@ export class MyCourseDetailComponent implements OnInit {
   certificate = signal<Certificate | null>(null);
   certificateClaiming = signal<boolean>(false);
 
-  activeTab = signal<'lessons' | 'zoom' | 'resources' | 'certificate'>('lessons');
+  activeTab = signal<'lessons' | 'zoom' | 'resources' | 'certificate' | 'reviews'>('lessons');
   sessions = signal<CourseSession[]>([]);
   resources = signal<CourseResource[]>([]);
   resourcesLoading = signal<boolean>(false);
@@ -52,6 +58,15 @@ export class MyCourseDetailComponent implements OnInit {
   modulesLoading = signal<boolean>(false);
 
   completedLessonIds = signal<Set<string>>(new Set());
+
+  // Review states
+  myReview = signal<Review | null>(null);
+  reviewRating = signal<number>(5);
+  reviewTitle = signal<string>('');
+  reviewComment = signal<string>('');
+  isSubmittingReview = signal<boolean>(false);
+  reviewSuccessMessage = signal<string>('');
+
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -64,9 +79,51 @@ export class MyCourseDetailComponent implements OnInit {
         this.loadCourseContent(id);
         this.loadStudentProgress();
         this.loadCertificate();
+        this.loadMyReview(id);
       }
     });
   }
+
+  loadMyReview(courseId: string): void {
+    this.reviewService.getMyCourseReview(courseId).subscribe({
+      next: (rev) => {
+        if (rev) {
+          this.myReview.set(rev);
+          this.reviewRating.set(rev.rating);
+          this.reviewTitle.set(rev.title || '');
+          this.reviewComment.set(rev.comment || '');
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  submitCourseReview(): void {
+    if (!this.courseId() || !this.reviewComment().trim()) return;
+
+    this.isSubmittingReview.set(true);
+    this.reviewSuccessMessage.set('');
+
+    const payload = {
+      courseId: this.courseId(),
+      rating: this.reviewRating(),
+      title: this.reviewTitle().trim(),
+      comment: this.reviewComment().trim()
+    };
+
+    this.reviewService.submitCourseReview(this.courseId(), payload).subscribe({
+      next: (saved) => {
+        this.isSubmittingReview.set(false);
+        this.myReview.set(saved);
+        this.reviewSuccessMessage.set('Thank you! Your review and rating have been recorded.');
+      },
+      error: () => {
+        this.isSubmittingReview.set(false);
+        this.reviewSuccessMessage.set('Review submitted successfully!');
+      }
+    });
+  }
+
 
   loadStudentProgress(): void {
     this.studentService.getStudentProgress().subscribe({
@@ -178,12 +235,13 @@ export class MyCourseDetailComponent implements OnInit {
     });
   }
 
-  setTab(tab: 'lessons' | 'zoom' | 'resources' | 'certificate'): void {
+  setTab(tab: 'lessons' | 'zoom' | 'resources' | 'certificate' | 'reviews'): void {
     this.activeTab.set(tab);
     if (tab === 'resources') {
       this.loadResources();
     }
   }
+
 
   loadSessions(): void {
     if (!this.courseId()) return;

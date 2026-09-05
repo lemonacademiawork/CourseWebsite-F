@@ -1,0 +1,130 @@
+<main class="p-6 max-w-4xl mx-auto text-xs text-on-surface">
+  <!-- Page Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-xl font-bold text-on-surface">System & Global Settings</h1>
+      <p class="text-xs text-on-surface-variant mt-0.5">Configure platform branding, contact details, referral rates, and integrations.</p>
+    </div>
+    <button
+      (click)="saveAll()"
+      [disabled]="isSaving()"
+      class="bg-primary text-on-primary font-bold px-5 py-2.5 rounded-lg hover:opacity-90 flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+    >
+      <span *ngIf="isSaving()" class="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+      <span *ngIf="!isSaving()" class="material-symbols-outlined text-sm">save</span>
+      <span>{{ isSaving() ? 'Saving...' : 'Save All Settings' }}</span>
+    </button>
+  </div>
+
+  <!-- Alert Notifications -->
+  <div *ngIf="saveSuccess()" class="mb-5 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-xs flex items-center gap-2">
+    <span class="material-symbols-outlined text-sm">check_circle</span>
+    <span>Settings successfully saved and applied.</span>
+  </div>
+
+  <div *ngIf="errorMessage()" class="mb-5 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-500 text-xs flex items-center gap-2">
+    <span class="material-symbols-outlined text-sm">error</span>
+    <span>{{ errorMessage() }}</span>
+  </div>
+
+  <!-- Settings Grid -->
+  <div class="space-y-6">
+    <!-- General Platform Settings -->
+    <div class="bg-surface-container-lowest rounded-xl border border-outline-variant/35 p-5 shadow-sm space-y-4">
+      <div class="flex items-center gap-2 pb-3 border-b border-outline-variant/20">
+        <span class="material-symbols-outlined text-primary text-base">domain</span>
+        <h2 class="text-sm font-bold text-on-surface">Platform Identity & Contact</h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block font-semibold text-on-surface mb-1">Platform Name</label>
+          <input
+            type="text"
+            [(ngModel)]="siteName"
+            class="w-full px-3 py-2 bg-surface-container-low border border-outline-variant/40 rounded-lg text-xs text-on-surface focus:outline-none focus:border-primary"
+          />
+        </div>
+
+        <div>
+          <label class="block font-semibold text-on-surface mb-1">Support Email</label>
+          <input
+            type="email"
+            [(ngModel)]="supportEmail"
+            class="w-full px-3 py-2 bg-surface-container-low border border-outline-variant/40 rounded-lg text-xs text-on-surface focus:outline-none focus:border-primary"
+          />
+        </div>
+
+        <div>
+          <label class="block font-semibold text-on-surface mb-1">Support Phone</label>
+          <input
+            type="text"
+            [(ngModel)]="supportPhone"
+            class="w-full px-3 py-2 bg-surface-container-low border border-outline-variant/40 rounded-lg text-xs text-on-surface focus:outline-none focus:border-primary"
+          />
+        </div>
+
+        <div>
+          <label class="block font-semibold text-on-surface mb-1">Certificate ID Prefix</label>
+          <input
+            type="text"
+            [(ngModel)]="certificatePrefix"
+            placeholder="e.g. CERT-LA-"
+            class="w-full px-3 py-2 bg-surface-container-low border border-outline-variant/40 rounded-lg text-xs text-on-surface focus:outline-none focus:border-primary"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Referral & Monetization Settings -->
+    <div class="bg-surface-container-lowest rounded-xl border border-outline-variant/35 p-5 shadow-sm space-y-4">
+      <div class="flex items-center gap-2 pb-3 border-b border-outline-variant/20">
+        <span class="material-symbols-outlined text-primary text-base">savings</span>
+        <h2 class="text-sm font-bold text-on-surface">Referral Commission & Rates</h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block font-semibold text-on-surface mb-1">Student Referral Commission (%)</label>
+          <input
+            type="number"
+            min="0"
+            max="100"
+            [(ngModel)]="referralCommissionPercent"
+            class="w-full px-3 py-2 bg-surface-container-low border border-outline-variant/40 rounded-lg text-xs text-on-surface focus:outline-none focus:border-primary"
+          />
+          <span class="text-[10px] text-on-surface-variant mt-1 block">Percentage of course fee earned by the referring student on successful enrollment.</span>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-on-surface mb-1">Razorpay Key ID</label>
+          <input
+            type="text"
+            [(ngModel)]="razorpayKeyId"
+            placeholder="rzp_live_xxxxxxxx"
+            class="w-full px-3 py-2 bg-surface-container-low border border-outline-variant/40 rounded-lg text-xs text-on-surface focus:outline-none focus:border-primary font-mono"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- System Controls -->
+    <div class="bg-surface-container-lowest rounded-xl border border-outline-variant/35 p-5 shadow-sm space-y-4">
+      <div class="flex items-center gap-2 pb-3 border-b border-outline-variant/20">
+        <span class="material-symbols-outlined text-primary text-base">tune</span>
+        <h2 class="text-sm font-bold text-on-surface">System Modes & Maintenance</h2>
+      </div>
+
+      <div class="flex items-center justify-between p-3 rounded-lg bg-surface-container-low border border-outline-variant/30">
+        <div>
+          <h3 class="font-bold text-on-surface">Maintenance Mode</h3>
+          <p class="text-[11px] text-on-surface-variant">Temporarily disable non-admin course purchases and registrations.</p>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" [(ngModel)]="maintenanceMode" class="sr-only peer" />
+          <div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+        </label>
+      </div>
+    </div>
+  </div>
+</main>

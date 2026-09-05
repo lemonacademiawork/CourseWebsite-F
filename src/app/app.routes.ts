@@ -31,6 +31,10 @@ import { TermsComponent } from './features/public/terms/terms.component';
 import { ForbiddenComponent } from './features/public/forbidden/forbidden.component';
 import { NotFoundComponent } from './features/public/not-found/not-found.component';
 
+// New Public Features
+import { VerifyCertificateComponent } from './features/public/verify-certificate/verify-certificate.component';
+import { ResetPasswordComponent } from './features/public/reset-password/reset-password.component';
+
 // Admin Features
 import { AdminDashboardComponent } from './features/admin/dashboard/admin-dashboard.component';
 import { AdminCoursesComponent } from './features/admin/courses/admin-courses.component';
@@ -45,6 +49,9 @@ import { AdminBlogsComponent } from './features/admin/blogs/admin-blogs.componen
 import { AdminGalleryComponent } from './features/admin/gallery/admin-gallery.component';
 import { AdminCarouselComponent } from './features/admin/carousel/admin-carousel.component';
 import { AdminImportComponent } from './features/admin/import/admin-import.component';
+import { AdminCommissionsComponent } from './features/admin/commissions/admin-commissions.component';
+import { AdminSettingsComponent } from './features/admin/settings/admin-settings.component';
+import { AdminReviewsComponent } from './features/admin/reviews/admin-reviews.component';
 
 // Trainer Features
 import { TrainerDashboardComponent } from './features/trainer/dashboard/trainer-dashboard.component';
@@ -77,6 +84,9 @@ export const routes: Routes = [
       { path: 'gallery/student-creations', component: GalleryStudentComponent },
       { path: 'login', component: LoginComponent },
       { path: 'signup', component: SignupComponent },
+      { path: 'reset-password', component: ResetPasswordComponent },
+      { path: 'verify-certificate', component: VerifyCertificateComponent },
+      { path: 'certificates/verify/:code', component: VerifyCertificateComponent },
       { path: 'profile', component: ProfileComponent },
       { path: 'my-courses', component: MyCoursesComponent },
       { path: 'my-courses/:courseId', component: MyCourseDetailComponent },
@@ -109,6 +119,9 @@ export const routes: Routes = [
       { path: 'coupons/create', component: AdminCouponsCreateComponent },
       { path: 'blogs', component: AdminBlogsComponent },
       { path: 'gallery', component: AdminGalleryComponent },
+      { path: 'reviews', component: AdminReviewsComponent },
+      { path: 'commissions', component: AdminCommissionsComponent },
+      { path: 'settings', component: AdminSettingsComponent },
       { path: 'carousel', component: AdminCarouselComponent },
       { path: 'import', component: AdminImportComponent }
     ]
@@ -143,3 +156,4 @@ export const routes: Routes = [
     ]
   }
 ];
+

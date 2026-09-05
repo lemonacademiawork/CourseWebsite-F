@@ -42,4 +42,10 @@ export class LessonService {
   togglePublishLesson(moduleId: string, lessonId: string): Observable<any> {
     return this.http.patch(`${this.apiUrl}/modules/${moduleId}/lessons/${lessonId}/publish`, {});
   }
+
+  /** PATCH /api/v1/courses/:courseId/lessons/reorder */
+  reorderLessons(courseId: string, lessonIds: string[]): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/courses/${courseId}/lessons/reorder`, { lessonIds });
+  }
 }
+

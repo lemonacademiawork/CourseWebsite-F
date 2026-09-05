@@ -65,7 +65,17 @@
         <span class="material-symbols-outlined text-sm">workspace_premium</span>
         Course Certificate
       </button>
+      <button 
+        (click)="setTab('reviews')"
+        [class.border-b-2]="activeTab() === 'reviews'"
+        [class.border-primary]="activeTab() === 'reviews'"
+        [class.text-primary]="activeTab() === 'reviews'"
+        class="pb-3 text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
+        <span class="material-symbols-outlined text-sm">rate_review</span>
+        My Rating &amp; Review
+      </button>
     </div>
+
 
     <!-- Tab 1: Curriculum -->
     @if (activeTab() === 'lessons') {
@@ -233,5 +243,77 @@
         }
       </div>
     }
+
+    <!-- Tab 5: Course Review & Rating -->
+    @if (activeTab() === 'reviews') {
+      <div class="max-w-xl mx-auto space-y-6 py-4">
+        <div class="bg-surface-container-low border border-outline-variant/30 rounded-2xl p-6 space-y-4">
+          <div class="border-b border-outline-variant/20 pb-3">
+            <h3 class="text-base font-bold text-on-surface">Share Your Workshop Experience</h3>
+            <p class="text-[11px] text-on-surface-variant">Your feedback helps fellow students and mentors at Lemon Academia.</p>
+          </div>
+
+          @if (reviewSuccessMessage()) {
+            <div class="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-xs flex items-center gap-2">
+              <span class="material-symbols-outlined text-sm">check_circle</span>
+              <span>{{ reviewSuccessMessage() }}</span>
+            </div>
+          }
+
+          <form (ngSubmit)="submitCourseReview()" class="space-y-4">
+            <div>
+              <label class="block font-semibold text-on-surface mb-1">Your Rating</label>
+              <div class="flex items-center gap-2">
+                @for (star of [1, 2, 3, 4, 5]; track star) {
+                  <button
+                    type="button"
+                    (click)="reviewRating.set(star)"
+                    class="text-2xl transition-transform hover:scale-110 cursor-pointer"
+                    [class.text-amber-500]="reviewRating() >= star"
+                    [class.text-neutral-300]="reviewRating() < star"
+                  >
+                    ★
+                  </button>
+                }
+                <span class="text-xs font-bold text-on-surface ml-2">{{ reviewRating() }} / 5 Stars</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-on-surface mb-1">Review Headline</label>
+              <input
+                type="text"
+                [(ngModel)]="reviewTitle"
+                name="reviewTitle"
+                placeholder="e.g. Inspiring masterclass with clear guidance!"
+                class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-xs text-on-surface focus:outline-none focus:border-primary"
+              />
+            </div>
+
+            <div>
+              <label class="block font-semibold text-on-surface mb-1">Your Detailed Review <span class="text-red-500">*</span></label>
+              <textarea
+                [(ngModel)]="reviewComment"
+                name="reviewComment"
+                rows="4"
+                required
+                placeholder="Describe what you enjoyed most, materials learned, and trainer feedback..."
+                class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-xs text-on-surface focus:outline-none focus:border-primary"
+              ></textarea>
+            </div>
+
+            <button
+              type="submit"
+              [disabled]="isSubmittingReview() || !reviewComment().trim()"
+              class="w-full py-2.5 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 transition flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+            >
+              <span *ngIf="isSubmittingReview()" class="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+              <span>{{ myReview() ? 'Update My Review' : 'Submit Review' }}</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    }
   </div>
 </main>
+

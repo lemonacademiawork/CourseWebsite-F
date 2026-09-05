@@ -20,6 +20,14 @@ export class CertificateService {
     );
   }
 
+  /** GET /api/v1/certificates/course/:courseId — Get certificate by course ID for authenticated student */
+  getCertificateByCourse(courseId: string): Observable<Certificate | null> {
+    return this.http.get<any>(`${this.apiUrl}/course/${courseId}`).pipe(
+      map(res => res.data || res || null),
+      catchError(() => of(null))
+    );
+  }
+
   /** GET /api/v1/certificates/verify/:verificationCode — Verify certificate */
   verifyCertificate(verificationCode: string): Observable<CertificateVerification> {
     return this.http.get<any>(`${this.apiUrl}/verify/${verificationCode}`).pipe(
@@ -35,3 +43,4 @@ export class CertificateService {
     );
   }
 }
+

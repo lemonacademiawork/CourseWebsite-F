@@ -3,6 +3,8 @@ import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { EnrollmentService } from '../../../core/services/enrollment.service';
+import { ReferralService } from '../../../core/services/referral.service';
+import { ReferralSummary, ReferralCommission } from '../../../core/models/referral.model';
 
 @Component({
   selector: 'app-refer-and-earn',
@@ -13,9 +15,12 @@ import { EnrollmentService } from '../../../core/services/enrollment.service';
 export class ReferAndEarnComponent implements OnInit {
   private authService = inject(AuthService);
   private enrollmentService = inject(EnrollmentService);
+  private referralService = inject(ReferralService);
 
   isEligible = signal<boolean | null>(null);
   referralCode = signal<string>('');
+  referralSummary = signal<ReferralSummary | null>(null);
+  commissions = signal<ReferralCommission[]>([]);
   copySuccess = signal<boolean>(false);
 
   ngOnInit(): void {
@@ -29,15 +34,40 @@ export class ReferAndEarnComponent implements OnInit {
       next: (enrollments) => {
         const eligible = Array.isArray(enrollments) && enrollments.length > 0;
         this.isEligible.set(eligible);
+        if (eligible) {
+          this.loadReferralData();
+        }
       },
       error: () => {
-        this.isEligible.set(false);
+        this.isEligible.set(true); // Fallback to accessible
+        this.loadReferralData();
       }
     });
 
     const email = this.authService.userEmail() || 'user';
     const code = email.split('@')[0] + '20';
     this.referralCode.set(code.toUpperCase());
+  }
+
+  loadReferralData(): void {
+    this.referralService.getMyReferrals().subscribe({
+      next: (summary) => {
+        if (summary) {
+          this.referralSummary.set(summary);
+          if (summary.referralCode) {
+            this.referralCode.set(summary.referralCode);
+          }
+        }
+      }
+    });
+
+    this.referralService.getMyCommissions().subscribe({
+      next: (list) => {
+        if (list) {
+          this.commissions.set(list);
+        }
+      }
+    });
   }
 
   handleCopy(): void {
@@ -47,4 +77,5 @@ export class ReferAndEarnComponent implements OnInit {
     setTimeout(() => this.copySuccess.set(false), 2000);
   }
 }
+
 

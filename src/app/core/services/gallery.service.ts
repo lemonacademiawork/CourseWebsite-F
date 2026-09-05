@@ -74,6 +74,33 @@ export class GalleryService {
     return this.http.delete(`${this.apiUrl}/gallery/${id}`);
   }
 
+  /** GET /api/v1/gallery/my — Get all gallery submissions created by the logged-in student */
+  getMyGallerySubmissions(): Observable<AdminGalleryItem[]> {
+    return this.http.get<any>(`${this.apiUrl}/gallery/my`).pipe(
+      map(res => {
+        const data = res.data || res;
+        return Array.isArray(data) ? data : data.items || [];
+      }),
+      catchError(() => of([]))
+    );
+  }
+
+  /** GET /api/v1/courses/:courseId/gallery — Get approved student gallery submissions for a specific course */
+  getCourseGallery(courseId: string): Observable<AdminGalleryItem[]> {
+    return this.http.get<any>(`${this.apiUrl}/courses/${courseId}/gallery`).pipe(
+      map(res => {
+        const data = res.data || res;
+        return Array.isArray(data) ? data : data.items || [];
+      }),
+      catchError(() => of([]))
+    );
+  }
+
+  /** POST /api/v1/courses/:courseId/gallery — Submit project to gallery for a specific course */
+  submitCourseGallery(courseId: string, payload: CreateGalleryPayload): Observable<any> {
+    return this.http.post(`${this.apiUrl}/courses/${courseId}/gallery`, payload);
+  }
+
   /** GET /api/v1/gallery-submissions — Trainer submissions and student works */
   getTrainerGallerySubmissions(): Observable<TrainerGallerySubmission[]> {
     return this.http.get<any>(`${this.apiUrl}/gallery-submissions`).pipe(
@@ -90,3 +117,4 @@ export class GalleryService {
     return this.http.patch(`${this.apiUrl}/gallery-submissions/${id}/feedback`, { feedback });
   }
 }
+

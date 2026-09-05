@@ -1,0 +1,142 @@
+<section class="min-h-screen bg-neutral-900 text-neutral-100 py-16 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="text-center mb-10">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-amber-400/10 border border-amber-400/20 text-amber-400 mb-4 shadow-lg shadow-amber-400/5">
+        <span class="material-symbols-outlined text-3xl">verified_user</span>
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-white mb-2">
+        Certificate Verification
+      </h1>
+      <p class="text-neutral-400 max-w-lg mx-auto text-sm sm:text-base">
+        Verify the authenticity of Lemon Academia certificates issued to students upon course completion.
+      </p>
+    </div>
+
+    <!-- Search Box Card -->
+    <div class="bg-neutral-800/80 border border-neutral-700/60 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl mb-8">
+      <form (ngSubmit)="verify()" class="space-y-4">
+        <label for="code" class="block text-xs font-semibold uppercase tracking-wider text-neutral-400">
+          Enter Certificate Code / ID
+        </label>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <div class="relative flex-1">
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400">
+              pin
+            </span>
+            <input
+              id="code"
+              type="text"
+              [(ngModel)]="verificationCode"
+              name="code"
+              placeholder="e.g. CERT-LIPPAN-2026-XXXX or verification token"
+              class="w-full pl-12 pr-4 py-3.5 bg-neutral-900/90 border border-neutral-700 rounded-2xl text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition duration-200"
+            />
+          </div>
+          <button
+            type="submit"
+            [disabled]="isLoading()"
+            class="px-8 py-3.5 rounded-2xl font-bold bg-gradient-to-r from-amber-400 to-yellow-500 text-neutral-950 hover:brightness-110 active:scale-[0.98] transition duration-200 flex items-center justify-center gap-2 shadow-lg shadow-amber-400/20 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span *ngIf="isLoading()" class="material-symbols-outlined animate-spin text-lg">progress_activity</span>
+            <span *ngIf="!isLoading()" class="material-symbols-outlined text-lg">search</span>
+            <span>{{ isLoading() ? 'Verifying...' : 'Verify Now' }}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Verification Result State -->
+    <div *ngIf="hasSearched()">
+      <!-- SUCCESS: Valid Certificate -->
+      <div *ngIf="isValid() && certificate() as cert" class="bg-gradient-to-b from-neutral-800/90 to-neutral-900 border border-neutral-700/80 rounded-3xl p-6 sm:p-10 shadow-2xl space-y-8 animate-fadeIn">
+        <!-- Status Banner -->
+        <div class="flex items-center gap-3 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+          <span class="material-symbols-outlined text-2xl">verified</span>
+          <div>
+            <h3 class="font-bold text-sm sm:text-base">Authentic & Verified Certificate</h3>
+            <p class="text-xs text-emerald-400/80">This credential was officially issued by Lemon Academia.</p>
+          </div>
+        </div>
+
+        <!-- Certificate Card Preview -->
+        <div class="relative overflow-hidden bg-neutral-950 border-2 border-amber-400/30 rounded-2xl p-8 sm:p-12 text-center shadow-2xl">
+          <!-- Watermark Logo -->
+          <div class="absolute -right-12 -bottom-12 opacity-5 pointer-events-none">
+            <span class="material-symbols-outlined text-[240px]">workspace_premium</span>
+          </div>
+
+          <div class="space-y-6">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 text-amber-400 text-xs font-bold tracking-widest uppercase border border-amber-400/20">
+              Certificate of Completion
+            </div>
+
+            <p class="text-neutral-400 text-sm italic">This is proudly presented to</p>
+
+            <h2 class="text-3xl sm:text-4xl font-serif font-black text-amber-300 tracking-wide">
+              {{ cert.studentName }}
+            </h2>
+
+            <p class="text-neutral-300 text-sm max-w-lg mx-auto">
+              for successfully completing all curriculum modules, practical assignments, and mastery evaluations for the course
+            </p>
+
+            <h3 class="text-xl sm:text-2xl font-bold text-white">
+              {{ cert.courseTitle }}
+            </h3>
+
+            <div class="pt-6 border-t border-neutral-800 grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
+              <div>
+                <span class="block text-xs uppercase text-neutral-400 font-semibold">Certificate ID</span>
+                <span class="font-mono text-sm text-neutral-200">{{ cert.certificateNumber || cert.id }}</span>
+              </div>
+              <div>
+                <span class="block text-xs uppercase text-neutral-400 font-semibold">Issue Date</span>
+                <span class="text-sm text-neutral-200">{{ cert.issuedAt | date:'mediumDate' }}</span>
+              </div>
+              <div>
+                <span class="block text-xs uppercase text-neutral-400 font-semibold">Verification Code</span>
+                <span class="font-mono text-sm text-amber-400 font-bold">{{ cert.verificationCode || cert.id }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex flex-wrap gap-4 justify-end">
+          <button
+            (click)="printCertificate()"
+            class="px-6 py-3 rounded-xl border border-neutral-700 bg-neutral-800 hover:bg-neutral-700 text-white font-semibold flex items-center gap-2 transition"
+          >
+            <span class="material-symbols-outlined text-lg">print</span>
+            <span>Print Certificate</span>
+          </button>
+          <a
+            routerLink="/courses"
+            class="px-6 py-3 rounded-xl font-bold bg-amber-400 hover:bg-amber-300 text-neutral-950 flex items-center gap-2 transition"
+          >
+            <span class="material-symbols-outlined text-lg">school</span>
+            <span>Explore More Courses</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- ERROR: Not Found / Invalid -->
+      <div *ngIf="!isValid()" class="bg-red-500/10 border border-red-500/30 rounded-3xl p-8 text-center space-y-4">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-500/20 text-red-400">
+          <span class="material-symbols-outlined text-2xl">error</span>
+        </div>
+        <h3 class="text-xl font-bold text-red-400">Verification Failed</h3>
+        <p class="text-neutral-300 max-w-md mx-auto text-sm">
+          {{ errorMessage() || 'We could not verify a certificate with the provided code. Please verify the code or contact support.' }}
+        </p>
+        <div class="pt-2">
+          <a routerLink="/support" class="text-amber-400 hover:underline text-sm font-semibold inline-flex items-center gap-1">
+            <span>Contact Lemon Academia Support</span>
+            <span class="material-symbols-outlined text-base">arrow_forward</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

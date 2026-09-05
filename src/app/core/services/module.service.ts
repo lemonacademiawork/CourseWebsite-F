@@ -42,4 +42,10 @@ export class ModuleService {
   togglePublishModule(courseId: string, moduleId: string): Observable<any> {
     return this.http.patch(`${this.apiUrl}/courses/${courseId}/modules/${moduleId}/publish`, {});
   }
+
+  /** PATCH /api/v1/courses/:courseId/modules/reorder */
+  reorderModules(courseId: string, moduleIds: string[]): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/courses/${courseId}/modules/reorder`, { moduleIds });
+  }
 }
+
