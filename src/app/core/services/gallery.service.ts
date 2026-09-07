@@ -32,12 +32,19 @@ export class GalleryService {
 
   constructor(private http: HttpClient) {}
 
-  /** GET /api/v1/gallery — Get approved public gallery items */
-  getPublicGallery(): Observable<AdminGalleryItem[]> {
-    return this.http.get<any>(`${this.apiUrl}/gallery`).pipe(
+  /** GET /api/v1/gallery — Get public approved student gallery submissions */
+  getPublicGallery(params?: { courseId?: string; isFeatured?: boolean; page?: number; limit?: number }): Observable<AdminGalleryItem[]> {
+    let httpParams = new HttpParams();
+    if (params) {
+      if (params.courseId) httpParams = httpParams.set('courseId', params.courseId);
+      if (params.isFeatured !== undefined) httpParams = httpParams.set('isFeatured', String(params.isFeatured));
+      if (params.page) httpParams = httpParams.set('page', String(params.page));
+      if (params.limit) httpParams = httpParams.set('limit', String(params.limit));
+    }
+    return this.http.get<any>(`${this.apiUrl}/gallery`, { params: httpParams }).pipe(
       map(res => {
         const data = res.data || res;
-        return Array.isArray(data) ? data : data.items || [];
+        return Array.isArray(data) ? data : data.items || data.submissions || [];
       }),
       catchError(() => of([]))
     );
