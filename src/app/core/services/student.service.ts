@@ -54,11 +54,14 @@ export class StudentService {
     );
   }
 
-  /** GET /api/v1/students/me/dashboard */
+  /** GET /api/v1/students/dashboard — Student summary statistics */
   getStudentDashboard(): Observable<StudentDashboardMetrics | null> {
-    return this.http.get<any>(`${this.apiUrl}/dashboard`).pipe(
+    return this.http.get<any>(`${environment.apiUrl}/students/dashboard`).pipe(
       map(res => res.data || res),
-      catchError(() => of(null))
+      catchError(() => this.http.get<any>(`${this.apiUrl}/dashboard`).pipe(
+        map(res => res.data || res),
+        catchError(() => of(null))
+      ))
     );
   }
 

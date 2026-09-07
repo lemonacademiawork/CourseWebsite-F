@@ -36,9 +36,16 @@ export class PaymentService {
     return this.http.post(`${this.apiUrl}/payments`, payload);
   }
 
-  /** POST /api/v1/payments/razorpay-order — Create Razorpay order for checkout */
-  createRazorpayOrder(payload: { courseId: string; amount: number; currency?: string }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/payments/razorpay-order`, payload);
+  /** POST /api/v1/payments/create-razorpay-order — Create Razorpay order for checkout */
+  createRazorpayOrder(payload: { courseId?: string; amount: number; currency?: string; receipt?: string }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/payments/create-razorpay-order`, payload).pipe(
+      catchError(() => this.http.post<any>(`${this.apiUrl}/payments/razorpay-order`, payload))
+    );
+  }
+
+  /** POST /api/v1/payments — Record & Verify Payment */
+  verifyAndRecordPayment(payload: { orderId: string; amount: number; currency?: string; paymentMethod: string; razorpayPaymentId?: string; razorpayOrderId?: string; razorpaySignature?: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/payments`, payload);
   }
 }
 

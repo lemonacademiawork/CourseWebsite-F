@@ -33,6 +33,29 @@ export class ReferralService {
     );
   }
 
+  /** GET /api/v1/referrals/my-code — Get authenticated user's unique referral code & share link */
+  getMyCode(): Observable<{ referralCode: string; referralLink: string; shareUrl?: string }> {
+    return this.http.get<any>(`${this.apiUrl}/referrals/my-code`).pipe(
+      map(res => {
+        const data = res.data || res;
+        return {
+          referralCode: data.referralCode || data.code || 'LEMON10',
+          referralLink: data.referralLink || data.link || data.shareUrl || '',
+          shareUrl: data.shareUrl || data.referralLink || data.link || ''
+        };
+      }),
+      catchError(() => this.getMyReferrals().pipe(map(r => ({ referralCode: r.referralCode, referralLink: r.referralLink || '' }))))
+    );
+  }
+
+  /** GET /api/v1/referrals/stats — View total successful referrals & commission earnings */
+  getStats(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/referrals/stats`).pipe(
+      map(res => res.data || res),
+      catchError(() => this.getMyReferrals())
+    );
+  }
+
   /** GET /api/v1/referrals/me — Get logged-in student's referral stats & link */
   getMyReferrals(): Observable<ReferralSummary> {
     return this.http.get<any>(`${this.apiUrl}/referrals/me`).pipe(

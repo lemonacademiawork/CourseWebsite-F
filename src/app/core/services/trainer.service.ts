@@ -20,6 +20,25 @@ export class TrainerService {
 
   constructor(private http: HttpClient) {}
 
+  /** GET /api/v1/trainers — List all public instructor profiles */
+  getTrainers(): Observable<any[]> {
+    return this.http.get<any>(`${environment.apiUrl}/trainers`).pipe(
+      map(res => {
+        const data = res.data || res;
+        return Array.isArray(data) ? data : data.trainers || [];
+      }),
+      catchError(() => of([]))
+    );
+  }
+
+  /** GET /api/v1/trainers/:id — Get instructor public bio and published courses */
+  getTrainer(id: string): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/trainers/${id}`).pipe(
+      map(res => res.data || res),
+      catchError(() => of(null))
+    );
+  }
+
   /** GET /api/v1/trainers/me */
   getTrainerProfile(): Observable<TrainerProfile | null> {
     return this.http.get<any>(`${this.apiUrl}`).pipe(
@@ -44,11 +63,14 @@ export class TrainerService {
     );
   }
 
-  /** GET /api/v1/trainers/me/dashboard */
+  /** GET /api/v1/trainers/dashboard — Instructor dashboard (Total students, revenue, course ratings) */
   getTrainerDashboard(): Observable<TrainerDashboardMetrics | null> {
-    return this.http.get<any>(`${this.apiUrl}/dashboard`).pipe(
+    return this.http.get<any>(`${environment.apiUrl}/trainers/dashboard`).pipe(
       map(res => res.data || res),
-      catchError(() => of(null))
+      catchError(() => this.http.get<any>(`${this.apiUrl}/dashboard`).pipe(
+        map(res => res.data || res),
+        catchError(() => of(null))
+      ))
     );
   }
 

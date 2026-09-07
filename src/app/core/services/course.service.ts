@@ -122,6 +122,14 @@ export class CourseService {
     );
   }
 
+  /** GET /api/v1/courses/:id/full — Get full course curriculum (Enrolled / Creator) */
+  getCourseFull(id: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/courses/${id}/full`).pipe(
+      map(res => res.data || res),
+      catchError(() => this.getCourseContent(id))
+    );
+  }
+
   /** GET /api/v1/courses/:id/content — Get full protected course content for enrolled students */
   getCourseContent(id: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/courses/${id}/content`).pipe(
