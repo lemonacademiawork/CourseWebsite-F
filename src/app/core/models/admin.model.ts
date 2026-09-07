@@ -47,6 +47,8 @@ export interface AdminGalleryItem {
   id: string;
   title: string;
   imageUrl: string;
+  mediaUrl?: string;
+  mediaType?: string;
   studentName?: string;
   studentId?: string;
   courseId?: string;

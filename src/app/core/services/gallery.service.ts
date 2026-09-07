@@ -24,6 +24,28 @@ export interface ModerateGalleryPayload {
   isFeatured?: boolean;
 }
 
+const FALLBACK_ARTISAN_IMAGE = 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=800&q=80';
+
+export function normalizeGalleryItem(item: any): AdminGalleryItem {
+  if (!item) return item;
+  const img = item.mediaUrl || item.imageUrl || item.image || item.media_url || item.url || item.fileUrl || FALLBACK_ARTISAN_IMAGE;
+  const sName = item.studentName || (item.student ? (item.student.name || item.student.fullName) : '') || (item.user ? (item.user.name || item.user.fullName) : '') || item.authorName || 'Artisan Maker';
+  const cTitle = item.courseTitle || (item.course ? item.course.title : '') || 'Artisan Workshop';
+  const cat = item.category || (item.course ? item.course.category : '') || 'Handcrafted Art';
+
+  return {
+    ...item,
+    id: item.id || item._id || String(Math.random()),
+    title: item.title || 'Untitled Creation',
+    imageUrl: img,
+    mediaUrl: img,
+    studentName: sName,
+    courseTitle: cTitle,
+    category: cat,
+    status: item.status || 'APPROVED'
+  };
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -44,7 +66,8 @@ export class GalleryService {
     return this.http.get<any>(`${this.apiUrl}/gallery`, { params: httpParams }).pipe(
       map(res => {
         const data = res.data || res;
-        return Array.isArray(data) ? data : data.items || data.submissions || [];
+        const list = Array.isArray(data) ? data : data.items || data.submissions || [];
+        return list.map(normalizeGalleryItem);
       }),
       catchError(() => of([]))
     );
@@ -62,7 +85,8 @@ export class GalleryService {
     return this.http.get<any>(`${this.apiUrl}/gallery/admin/submissions`, { params: httpParams }).pipe(
       map(res => {
         const data = res.data || res;
-        return Array.isArray(data) ? data : data.items || data.submissions || [];
+        const list = Array.isArray(data) ? data : data.items || data.submissions || [];
+        return list.map(normalizeGalleryItem);
       }),
       catchError(() => of([]))
     );
@@ -99,7 +123,8 @@ export class GalleryService {
     return this.http.get<any>(`${this.apiUrl}/gallery/my`).pipe(
       map(res => {
         const data = res.data || res;
-        return Array.isArray(data) ? data : data.items || [];
+        const list = Array.isArray(data) ? data : data.items || [];
+        return list.map(normalizeGalleryItem);
       }),
       catchError(() => of([]))
     );
@@ -110,7 +135,8 @@ export class GalleryService {
     return this.http.get<any>(`${this.apiUrl}/courses/${courseId}/gallery`).pipe(
       map(res => {
         const data = res.data || res;
-        return Array.isArray(data) ? data : data.items || [];
+        const list = Array.isArray(data) ? data : data.items || [];
+        return list.map(normalizeGalleryItem);
       }),
       catchError(() => of([]))
     );
