@@ -43,20 +43,19 @@ export class GalleryService {
     );
   }
 
-  /** GET /api/v1/admin/gallery — Admin fetch all items with optional filters */
+  /** GET /api/v1/gallery/admin/submissions — Get all gallery submissions for moderation (Admin) */
   getAdminGallery(params?: { status?: string; isFeatured?: boolean; courseId?: string; page?: number; limit?: number }): Observable<AdminGalleryItem[]> {
     let httpParams = new HttpParams();
     if (params) {
-      if (params.status) httpParams = httpParams.set('status', params.status);
-      if (params.isFeatured !== undefined) httpParams = httpParams.set('isFeatured', String(params.isFeatured));
+      if (params.status && params.status !== 'all') httpParams = httpParams.set('status', params.status);
       if (params.courseId) httpParams = httpParams.set('courseId', params.courseId);
       if (params.page) httpParams = httpParams.set('page', String(params.page));
       if (params.limit) httpParams = httpParams.set('limit', String(params.limit));
     }
-    return this.http.get<any>(`${this.apiUrl}/gallery`, { params: httpParams }).pipe(
+    return this.http.get<any>(`${this.apiUrl}/gallery/admin/submissions`, { params: httpParams }).pipe(
       map(res => {
         const data = res.data || res;
-        return Array.isArray(data) ? data : data.items || [];
+        return Array.isArray(data) ? data : data.items || data.submissions || [];
       }),
       catchError(() => of([]))
     );
@@ -74,12 +73,16 @@ export class GalleryService {
     return this.http.post(`${this.apiUrl}/gallery`, body);
   }
 
-  /** PATCH /api/v1/gallery/:id/moderate — Admin approve / reject / feature gallery item */
+  /** PATCH /api/v1/gallery/:id/moderate — Moderate gallery submission (Approve/Reject/Feature) */
   moderateGalleryItem(id: string, payload: ModerateGalleryPayload): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/gallery/${id}/moderate`, payload);
+    const body: any = {};
+    if (payload.status !== undefined) body.status = payload.status;
+    if (payload.isFeatured !== undefined) body.isFeatured = payload.isFeatured;
+    if (payload.adminFeedback !== undefined) body.adminFeedback = payload.adminFeedback;
+    return this.http.patch(`${this.apiUrl}/gallery/${id}/moderate`, body);
   }
 
-  /** DELETE /api/v1/gallery/:id — Delete gallery item */
+  /** DELETE /api/v1/gallery/:id — Delete gallery submission (Author student or Admin) */
   deleteGalleryItem(id: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/gallery/${id}`);
   }
