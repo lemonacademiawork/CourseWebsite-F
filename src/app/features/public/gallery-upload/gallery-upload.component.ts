@@ -24,6 +24,7 @@ export class GalleryUploadComponent implements OnInit {
   // Form Signals
   title = signal<string>('');
   category = signal<string>('Lippan Art');
+  courseId = signal<string>('');
   courseTitle = signal<string>('');
   studentName = signal<string>('');
   description = signal<string>('');
@@ -61,6 +62,7 @@ export class GalleryUploadComponent implements OnInit {
       next: (list) => {
         if (list && list.length > 0) {
           this.courses.set(list);
+          this.courseId.set(list[0].id);
           this.courseTitle.set(list[0].title);
         }
       }
@@ -125,7 +127,7 @@ export class GalleryUploadComponent implements OnInit {
       },
       error: () => {
         this.isUploadingImage.set(false);
-        // If backend upload fails, fallback to using data URL preview for submission
+        // Fallback to data URL
         if (this.previewUrl()) {
           this.imageUrl.set(this.previewUrl());
         }
@@ -153,16 +155,29 @@ export class GalleryUploadComponent implements OnInit {
       return;
     }
 
+    if (!this.authService.isLoggedIn()) {
+      this.errorMessage.set('Please log in to submit your artwork to the gallery showcase.');
+      return;
+    }
+
+    const resolvedCourseId = this.courseId() || (this.courses().length > 0 ? this.courses()[0].id : '');
+    if (!resolvedCourseId) {
+      this.errorMessage.set('Please select a course for this artwork.');
+      return;
+    }
+
     this.isSubmitting.set(true);
     this.errorMessage.set('');
 
     const payload = {
+      courseId: resolvedCourseId,
       title: t,
+      description: this.description().trim() || `${this.category()} handcrafted project`,
+      mediaUrl: img,
+      mediaType: 'IMAGE',
       imageUrl: img,
       studentName: this.studentName().trim() || this.authService.userName() || 'Artisan Student',
-      courseTitle: this.courseTitle().trim() || 'Community Craft Studio',
-      category: this.category(),
-      description: this.description().trim()
+      category: this.category()
     };
 
     this.galleryService.submitGalleryItem(payload).subscribe({
@@ -170,10 +185,10 @@ export class GalleryUploadComponent implements OnInit {
         this.isSubmitting.set(false);
         this.isSuccess.set(true);
       },
-      error: () => {
-        // Optimistic fallback
+      error: (err) => {
         this.isSubmitting.set(false);
-        this.isSuccess.set(true);
+        const backendMsg = err.error?.message || (err.status === 401 ? 'Please log in as an enrolled student to submit artwork.' : 'Failed to submit artwork. Please verify your details.');
+        this.errorMessage.set(backendMsg);
       }
     });
   }

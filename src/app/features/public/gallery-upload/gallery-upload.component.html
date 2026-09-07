@@ -56,6 +56,19 @@
       <!-- Main Form Container -->
       <div class="bg-white border border-[#E7E1D3] rounded-3xl p-6 sm:p-10 shadow-sm space-y-8">
         
+        <!-- Login Notice if not logged in -->
+        @if (!authService.isLoggedIn()) {
+          <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center justify-between gap-3 shadow-xs">
+            <div class="flex items-center gap-2.5">
+              <span class="material-symbols-outlined text-amber-700 text-lg shrink-0">lock</span>
+              <span>You must be signed in with an active student account to submit your artwork to the showcase.</span>
+            </div>
+            <a routerLink="/login" class="px-3.5 py-1.5 rounded-lg bg-[#6E5410] text-white font-bold text-[11px] hover:bg-[#5c4610] shrink-0 transition">
+              Log In Now
+            </a>
+          </div>
+        }
+
         <!-- Error Banner -->
         @if (errorMessage()) {
           <div class="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
@@ -185,24 +198,25 @@
 
             <div class="space-y-1">
               <label class="block text-xs font-bold uppercase tracking-wider text-[#5B5650]">
-                Associated Course / Workshop
+                Associated Course / Workshop <span class="text-red-500">*</span>
               </label>
               @if (courses().length > 0) {
                 <select 
-                  [(ngModel)]="courseTitle"
-                  name="courseTitle"
+                  [(ngModel)]="courseId"
+                  name="courseId"
+                  required
                   class="w-full px-3.5 py-2.5 bg-[#FBF8F1] border border-[#E7E1D3] rounded-xl text-xs text-[#1C1A17] focus:outline-none focus:border-[#6E5410]">
                   @for (c of courses(); track c.id) {
-                    <option [value]="c.title">{{ c.title }}</option>
+                    <option [value]="c.id">{{ c.title }}</option>
                   }
-                  <option value="Self-Guided Studio Project">Self-Guided Studio Project</option>
                 </select>
               } @else {
                 <input 
                   type="text" 
-                  [(ngModel)]="courseTitle"
-                  name="courseTitle"
-                  placeholder="e.g. The Art of Lippan Masterclass"
+                  [(ngModel)]="courseId"
+                  name="courseId"
+                  placeholder="Enter Course ID"
+                  required
                   class="w-full px-3.5 py-2.5 bg-[#FBF8F1] border border-[#E7E1D3] rounded-xl text-xs text-[#1C1A17] focus:outline-none focus:border-[#6E5410]"
                 />
               }

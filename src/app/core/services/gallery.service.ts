@@ -6,12 +6,15 @@ import { AdminGalleryItem } from '../models/admin.model';
 import { TrainerGallerySubmission } from '../models/trainer.model';
 
 export interface CreateGalleryPayload {
+  courseId?: string;
   title: string;
-  imageUrl: string;
+  description?: string;
+  mediaUrl?: string;
+  mediaType?: string;
+  imageUrl?: string;
   studentName?: string;
   courseTitle?: string;
   category?: string;
-  description?: string;
   tags?: string[];
 }
 
@@ -59,9 +62,16 @@ export class GalleryService {
     );
   }
 
-  /** POST /api/v1/gallery — Submit a new artwork to gallery (starts as PENDING for admin approval) */
+  /** POST /api/v1/gallery — Submit a project or artwork to the gallery */
   submitGalleryItem(payload: CreateGalleryPayload): Observable<any> {
-    return this.http.post(`${this.apiUrl}/gallery`, payload);
+    const body = {
+      courseId: payload.courseId,
+      title: payload.title,
+      description: payload.description || '',
+      mediaUrl: payload.mediaUrl || payload.imageUrl || '',
+      mediaType: payload.mediaType || 'IMAGE'
+    };
+    return this.http.post(`${this.apiUrl}/gallery`, body);
   }
 
   /** PATCH /api/v1/gallery/:id/moderate — Admin approve / reject / feature gallery item */
