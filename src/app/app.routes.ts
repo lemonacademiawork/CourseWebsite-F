@@ -15,6 +15,7 @@ import { CoursesComponent } from './features/public/courses/courses.component';
 import { CourseLippanComponent } from './features/public/course-lippan/course-lippan.component';
 import { GalleryComponent } from './features/public/gallery/gallery.component';
 import { GalleryStudentComponent } from './features/public/gallery-student/gallery-student.component';
+import { GalleryUploadComponent } from './features/public/gallery-upload/gallery-upload.component';
 import { LoginComponent } from './features/public/login/login.component';
 import { SignupComponent } from './features/public/signup/signup.component';
 import { ProfileComponent } from './features/student/profile/profile.component';
@@ -82,6 +83,9 @@ export const routes: Routes = [
       { path: 'courses/:id', component: CourseLippanComponent },
       { path: 'gallery', component: GalleryComponent },
       { path: 'gallery/student-creations', component: GalleryStudentComponent },
+      { path: 'gallery/upload', component: GalleryUploadComponent },
+      { path: 'gallery/submit', component: GalleryUploadComponent },
+      { path: 'gallery/share', component: GalleryUploadComponent },
       { path: 'login', component: LoginComponent },
       { path: 'signup', component: SignupComponent },
       { path: 'forgot-password', component: ResetPasswordComponent },

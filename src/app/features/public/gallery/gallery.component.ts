@@ -15,10 +15,16 @@ import { AdminGalleryItem } from '../../../core/models/admin.model';
           <h1 class="font-display-lg text-2xl md:text-3xl font-bold text-on-surface">Community Gallery</h1>
           <p class="text-on-surface-variant text-sm mt-1">Explore approved masterworks and handcrafted creations by our artisans, trainers, and students.</p>
         </div>
-        <a routerLink="/gallery/student-creations" class="bg-primary text-on-primary font-semibold text-xs px-4 py-2.5 rounded-lg hover:opacity-90 transition-opacity inline-flex items-center gap-1.5 shadow-sm">
-          <span class="material-symbols-outlined text-sm">school</span>
-          Student Creations
-        </a>
+        <div class="flex items-center gap-2">
+          <a routerLink="/gallery/student-creations" class="bg-surface-container-high border border-outline-variant/30 text-on-surface font-semibold text-xs px-4 py-2.5 rounded-xl hover:bg-surface-container transition-colors inline-flex items-center gap-1.5 shadow-xs">
+            <span class="material-symbols-outlined text-sm">school</span>
+            Student Showcase
+          </a>
+          <a routerLink="/gallery/upload" class="bg-primary text-on-primary font-semibold text-xs px-4 py-2.5 rounded-xl hover:opacity-90 transition-opacity inline-flex items-center gap-1.5 shadow-sm">
+            <span class="material-symbols-outlined text-sm">add_photo_alternate</span>
+            Share Artwork
+          </a>
+        </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[300px]">

@@ -1,0 +1,251 @@
+<main class="min-h-screen bg-[#FBF8F1] text-[#1C1A17] py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-3xl mx-auto">
+    
+    <!-- Top Back Navigation & Header -->
+    <div class="mb-8">
+      <a routerLink="/gallery/student-creations" class="inline-flex items-center gap-1.5 text-xs text-[#6E5410] hover:underline font-semibold mb-4">
+        <span class="material-symbols-outlined text-sm">arrow_back</span>
+        Back to Student Gallery
+      </a>
+      
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-[#EFE9DC] border border-[#E7E1D3] flex items-center justify-center text-[#6E5410] shadow-sm">
+          <span class="material-symbols-outlined text-2xl">add_photo_alternate</span>
+        </div>
+        <div>
+          <h1 class="playfair text-2xl sm:text-3xl font-bold text-[#1C1A17]">Share Your Creation</h1>
+          <p class="text-xs text-[#5B5650] mt-0.5">Showcase your handcrafted artwork to the Lemon Academia artisan community.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Celebration Card -->
+    @if (isSuccess()) {
+      <div class="bg-white border border-[#E7E1D3] rounded-3xl p-8 sm:p-12 text-center shadow-md space-y-6 animate-fadeIn">
+        <div class="w-20 h-20 bg-green-100 text-green-700 rounded-full flex items-center justify-center mx-auto shadow-sm">
+          <span class="material-symbols-outlined text-4xl">check_circle</span>
+        </div>
+
+        <div class="space-y-2">
+          <h2 class="playfair text-2xl sm:text-3xl font-bold text-[#1C1A17]">Artwork Submitted for Showcase! 🎉</h2>
+          <p class="text-sm text-[#5B5650] max-w-md mx-auto leading-relaxed">
+            Thank you for sharing your masterpiece. It will be reviewed by the Lemon Academia team and published to the public gallery once approved.
+          </p>
+        </div>
+
+        @if (previewUrl()) {
+          <div class="max-w-xs mx-auto rounded-2xl overflow-hidden border-2 border-[#E7E1D3] shadow-sm">
+            <img [src]="previewUrl()" [alt]="title()" class="w-full h-48 object-cover" />
+            <div class="p-3 bg-[#FBF8F1] text-left">
+              <h4 class="font-bold text-xs text-[#1C1A17] line-clamp-1">{{ title() }}</h4>
+              <p class="text-[10px] text-[#5B5650]">{{ category() }} • By {{ studentName() }}</p>
+            </div>
+          </div>
+        }
+
+        <div class="flex flex-wrap justify-center gap-3 pt-4 border-t border-[#E7E1D3]">
+          <a routerLink="/gallery/student-creations" class="px-6 py-2.5 bg-[#6E5410] text-white font-bold text-xs rounded-xl hover:bg-[#5c4610] shadow-sm transition">
+            Explore Gallery Showcase
+          </a>
+          <button (click)="resetForm()" class="px-6 py-2.5 bg-[#EFE9DC] text-[#1C1A17] font-semibold text-xs rounded-xl hover:bg-[#E7E1D3] transition">
+            Submit Another Creation
+          </button>
+        </div>
+      </div>
+    } @else {
+      <!-- Main Form Container -->
+      <div class="bg-white border border-[#E7E1D3] rounded-3xl p-6 sm:p-10 shadow-sm space-y-8">
+        
+        <!-- Error Banner -->
+        @if (errorMessage()) {
+          <div class="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+            <span class="material-symbols-outlined text-base shrink-0">error</span>
+            <span>{{ errorMessage() }}</span>
+          </div>
+        }
+
+        <form (ngSubmit)="submitArtwork()" class="space-y-6">
+          
+          <!-- Image Upload & Drop Area -->
+          <div class="space-y-2">
+            <label class="block text-xs font-bold uppercase tracking-wider text-[#5B5650]">
+              Select Artwork Photograph <span class="text-red-500">*</span>
+            </label>
+
+            <!-- If Image Selected -->
+            @if (previewUrl()) {
+              <div class="relative rounded-2xl overflow-hidden border-2 border-[#6E5410]/40 bg-[#FBF8F1] p-4 flex flex-col sm:flex-row items-center gap-4">
+                <img [src]="previewUrl()" alt="Selected Preview" class="w-36 h-36 object-cover rounded-xl shadow-xs shrink-0" />
+                
+                <div class="space-y-2 flex-grow text-center sm:text-left">
+                  <div class="flex items-center justify-center sm:justify-start gap-2">
+                    <span class="inline-block px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 text-[10px] font-bold">
+                      Image Selected
+                    </span>
+                    @if (isUploadingImage()) {
+                      <span class="inline-flex items-center gap-1 text-[10px] text-amber-700">
+                        <span class="material-symbols-outlined text-xs animate-spin">progress_activity</span>
+                        Uploading to CDN...
+                      </span>
+                    }
+                  </div>
+                  <p class="text-xs text-[#5B5650]">{{ selectedFile()?.name || 'Uploaded artwork' }}</p>
+                  <p class="text-[11px] text-[#5B5650]/80">High-resolution preview ready for submission.</p>
+                  
+                  <div>
+                    <button 
+                      type="button" 
+                      (click)="removeSelectedImage()"
+                      class="px-3 py-1.5 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 text-xs font-semibold inline-flex items-center gap-1 cursor-pointer transition">
+                      <span class="material-symbols-outlined text-xs">delete</span>
+                      Change Image
+                    </button>
+                  </div>
+                </div>
+              </div>
+            } @else {
+              <!-- Drag and Drop Dropzone -->
+              <div 
+                (dragover)="onDragOver($event)"
+                (dragleave)="onDragLeave($event)"
+                (drop)="onDrop($event)"
+                [class.border-[#6E5410]]="dragOver()"
+                [class.bg-[#EFE9DC]/40]="dragOver()"
+                class="border-2 border-dashed border-[#E7E1D3] hover:border-[#6E5410]/60 rounded-2xl p-8 sm:p-12 text-center transition-all bg-[#FBF8F1] cursor-pointer relative group">
+                
+                <input 
+                  type="file" 
+                  accept="image/png, image/jpeg, image/jpg, image/webp" 
+                  (change)="onFileSelected($event)"
+                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                />
+
+                <div class="w-16 h-16 rounded-full bg-white text-[#6E5410] border border-[#E7E1D3] flex items-center justify-center mx-auto mb-3 shadow-xs group-hover:scale-110 transition-transform">
+                  <span class="material-symbols-outlined text-3xl">cloud_upload</span>
+                </div>
+
+                <h3 class="font-bold text-sm text-[#1C1A17] mb-1">
+                  Drag and drop your artwork image here
+                </h3>
+                <p class="text-xs text-[#5B5650] mb-3">
+                  or <span class="text-[#6E5410] font-bold underline">browse files</span> from your device
+                </p>
+                <span class="text-[10px] text-[#5B5650]/70 uppercase tracking-wider font-semibold">
+                  Supports JPG, PNG, WEBP (Max 15MB)
+                </span>
+              </div>
+            }
+          </div>
+
+          <!-- Title & Category Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <label class="block text-xs font-bold uppercase tracking-wider text-[#5B5650]">
+                Artwork Title <span class="text-red-500">*</span>
+              </label>
+              <input 
+                type="text" 
+                [(ngModel)]="title"
+                name="title"
+                required
+                placeholder="e.g. Royal Peacock Lippan Kaam"
+                class="w-full px-3.5 py-2.5 bg-[#FBF8F1] border border-[#E7E1D3] rounded-xl text-xs text-[#1C1A17] focus:outline-none focus:border-[#6E5410]"
+              />
+            </div>
+
+            <div class="space-y-1">
+              <label class="block text-xs font-bold uppercase tracking-wider text-[#5B5650]">
+                Craft Category <span class="text-red-500">*</span>
+              </label>
+              <select 
+                [(ngModel)]="category"
+                name="category"
+                class="w-full px-3.5 py-2.5 bg-[#FBF8F1] border border-[#E7E1D3] rounded-xl text-xs text-[#1C1A17] focus:outline-none focus:border-[#6E5410]">
+                @for (cat of categories; track cat) {
+                  <option [value]="cat">{{ cat }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <!-- Creator Name & Course -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <label class="block text-xs font-bold uppercase tracking-wider text-[#5B5650]">
+                Your Name / Artist Name
+              </label>
+              <input 
+                type="text" 
+                [(ngModel)]="studentName"
+                name="studentName"
+                placeholder="e.g. Sejal Agarwal"
+                class="w-full px-3.5 py-2.5 bg-[#FBF8F1] border border-[#E7E1D3] rounded-xl text-xs text-[#1C1A17] focus:outline-none focus:border-[#6E5410]"
+              />
+            </div>
+
+            <div class="space-y-1">
+              <label class="block text-xs font-bold uppercase tracking-wider text-[#5B5650]">
+                Associated Course / Workshop
+              </label>
+              @if (courses().length > 0) {
+                <select 
+                  [(ngModel)]="courseTitle"
+                  name="courseTitle"
+                  class="w-full px-3.5 py-2.5 bg-[#FBF8F1] border border-[#E7E1D3] rounded-xl text-xs text-[#1C1A17] focus:outline-none focus:border-[#6E5410]">
+                  @for (c of courses(); track c.id) {
+                    <option [value]="c.title">{{ c.title }}</option>
+                  }
+                  <option value="Self-Guided Studio Project">Self-Guided Studio Project</option>
+                </select>
+              } @else {
+                <input 
+                  type="text" 
+                  [(ngModel)]="courseTitle"
+                  name="courseTitle"
+                  placeholder="e.g. The Art of Lippan Masterclass"
+                  class="w-full px-3.5 py-2.5 bg-[#FBF8F1] border border-[#E7E1D3] rounded-xl text-xs text-[#1C1A17] focus:outline-none focus:border-[#6E5410]"
+                />
+              }
+            </div>
+          </div>
+
+          <!-- Description / Story -->
+          <div class="space-y-1">
+            <label class="block text-xs font-bold uppercase tracking-wider text-[#5B5650]">
+              Artwork Story &amp; Techniques Used
+            </label>
+            <textarea 
+              rows="4" 
+              [(ngModel)]="description"
+              name="description"
+              placeholder="Tell fellow makers about your crafting process, materials used, clay curing time, or inspiration..."
+              class="w-full px-3.5 py-2.5 bg-[#FBF8F1] border border-[#E7E1D3] rounded-xl text-xs text-[#1C1A17] focus:outline-none focus:border-[#6E5410] leading-relaxed"></textarea>
+          </div>
+
+          <!-- Submit Buttons -->
+          <div class="flex flex-col sm:flex-row items-center justify-end gap-3 pt-4 border-t border-[#E7E1D3]">
+            <a 
+              routerLink="/gallery/student-creations"
+              class="w-full sm:w-auto px-6 py-3 rounded-xl border border-[#E7E1D3] text-xs font-semibold text-[#5B5650] hover:bg-[#FBF8F1] text-center transition">
+              Cancel
+            </a>
+            <button 
+              type="submit" 
+              [disabled]="isSubmitting() || !previewUrl() || !title().trim()"
+              class="w-full sm:w-auto px-8 py-3 bg-[#6E5410] text-white font-bold text-xs rounded-xl hover:bg-[#5c4610] transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 cursor-pointer">
+              @if (isSubmitting()) {
+                <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                <span>Submitting to Showcase...</span>
+              } @else {
+                <span class="material-symbols-outlined text-sm">send</span>
+                <span>Submit to Showcase</span>
+              }
+            </button>
+          </div>
+
+        </form>
+      </div>
+    }
+
+  </div>
+</main>
