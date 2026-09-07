@@ -38,11 +38,10 @@ import { TrainerDashboardMetrics } from '../../../core/models/trainer.model';
             </div>
             <div class="mt-2">
               <div class="text-xl font-bold text-on-surface leading-none">
-                {{ metrics()?.totalStudents ?? 450 }}
+                {{ metrics()?.totalStudents ?? 0 }}
               </div>
               <div class="flex items-center gap-1 text-[10px] text-on-surface-variant mt-1">
-                <span class="text-primary font-semibold">+12 this week</span>
-                <span>• growing community</span>
+                <span>Enrolled students across your courses</span>
               </div>
             </div>
           </div>
@@ -56,7 +55,7 @@ import { TrainerDashboardMetrics } from '../../../core/models/trainer.model';
             </div>
             <div class="mt-2">
               <div class="text-xl font-bold text-on-surface leading-none">
-                {{ metrics()?.activeCourses ?? 4 }}
+                {{ metrics()?.activeCourses ?? 0 }}
               </div>
               <div class="flex items-center gap-1 text-[10px] text-on-surface-variant mt-1">
                 <span>Published active workshops</span>

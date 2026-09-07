@@ -52,14 +52,21 @@ interface CouponItem {
             }
           </tbody>
         </table>
+
+        @if (coupons().length === 0) {
+          <div class="p-8 text-center bg-surface-container-low text-on-surface-variant">
+            <span class="material-symbols-outlined text-primary text-3xl mb-1">local_offer</span>
+            <p class="font-semibold text-xs text-on-surface">No Discount Coupons Created</p>
+            <p class="text-[11px] text-on-surface-variant mt-0.5 mb-3">Create promotional discount codes for special marketing campaigns.</p>
+            <a routerLink="/admin/coupons/create" class="inline-flex items-center gap-1 px-3 py-1.5 bg-primary text-on-primary rounded-lg text-xs font-semibold hover:opacity-90">
+              <span class="material-symbols-outlined text-xs">add</span> Create First Coupon
+            </a>
+          </div>
+        }
       </div>
     </main>
   `
 })
 export class AdminCouponsComponent {
-  coupons = signal<CouponItem[]>([
-    { id: 1, code: 'LEMON20', discount: 20, usageCount: 42, status: 'Active' },
-    { id: 2, code: 'CRAFT50', discount: 50, usageCount: 18, status: 'Active' },
-    { id: 3, code: 'WELCOME10', discount: 10, usageCount: 105, status: 'Active' }
-  ]);
+  coupons = signal<CouponItem[]>([]);
 }

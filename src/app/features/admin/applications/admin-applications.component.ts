@@ -63,29 +63,18 @@ interface TrainerApp {
             }
           </tbody>
         </table>
+
+        @if (applications().length === 0) {
+          <div class="p-8 text-center bg-surface-container-low text-on-surface-variant">
+            <span class="material-symbols-outlined text-primary text-3xl mb-1">assignment_ind</span>
+            <p class="font-semibold text-xs text-on-surface">No Pending Trainer Applications</p>
+            <p class="text-[11px] text-on-surface-variant mt-0.5">When prospective instructors apply to teach masterclasses, their submissions will be listed here.</p>
+          </div>
+        }
       </div>
     </main>
   `
 })
 export class AdminApplicationsComponent {
-  applications = signal<TrainerApp[]>([
-    {
-      id: 1,
-      name: "Rohit Verma",
-      email: "rohit.verma@example.com",
-      course: "Ceramic Pottery Basics",
-      experience: "6 Years",
-      status: "Pending Approval",
-      date: "Aug 18, 2026"
-    },
-    {
-      id: 2,
-      name: "Meera Nair",
-      email: "meera.nair@example.com",
-      course: "Natural Botanical Inks",
-      experience: "4 Years",
-      status: "Pending Approval",
-      date: "Aug 19, 2026"
-    }
-  ]);
+  applications = signal<TrainerApp[]>([]);
 }

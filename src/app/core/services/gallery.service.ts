@@ -24,25 +24,23 @@ export interface ModerateGalleryPayload {
   isFeatured?: boolean;
 }
 
-const FALLBACK_ARTISAN_IMAGE = 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=800&q=80';
-
 export function normalizeGalleryItem(item: any): AdminGalleryItem {
   if (!item) return item;
-  const img = item.mediaUrl || item.imageUrl || item.image || item.media_url || item.url || item.fileUrl || FALLBACK_ARTISAN_IMAGE;
-  const sName = item.studentName || (item.student ? (item.student.name || item.student.fullName) : '') || (item.user ? (item.user.name || item.user.fullName) : '') || item.authorName || 'Artisan Maker';
-  const cTitle = item.courseTitle || (item.course ? item.course.title : '') || 'Artisan Workshop';
-  const cat = item.category || (item.course ? item.course.category : '') || 'Handcrafted Art';
+  const img = item.mediaUrl || item.imageUrl || item.image || item.media_url || item.url || item.fileUrl || '';
+  const sName = item.studentName || (item.student ? (item.student.name || item.student.fullName) : '') || (item.user ? (item.user.name || item.user.fullName) : '') || item.authorName || '';
+  const cTitle = item.courseTitle || (item.course ? item.course.title : '') || '';
+  const cat = item.category || (item.course ? item.course.category : '') || '';
 
   return {
     ...item,
-    id: item.id || item._id || String(Math.random()),
-    title: item.title || 'Untitled Creation',
+    id: item.id || item._id || '',
+    title: item.title || '',
     imageUrl: img,
     mediaUrl: img,
     studentName: sName,
     courseTitle: cTitle,
     category: cat,
-    status: item.status || 'APPROVED'
+    status: item.status || 'PENDING'
   };
 }
 

@@ -1,6 +1,8 @@
-import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { GalleryService } from '../../../core/services/gallery.service';
+import { AdminGalleryItem } from '../../../core/models/admin.model';
 
 export interface HeroSlide {
   title: string;
@@ -17,28 +19,31 @@ export const HERO_SLIDES: HeroSlide[] = [
     tagline: "Master the art of Lippan Mirror Work",
     description: "Explore mirror & clay magic. Discover traditional Indian craft techniques in our modern online studio classes.",
     imageUrl: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=1600&h=600",
-    route: "/courses/lippan-art"
+    route: "/courses"
   },
   {
     title: "Soothe. Pour. Relax.",
     tagline: "Hand-poured Soy Candle Making",
     description: "Create premium organic botanical candles with rich, calming custom aroma profiles and clean burning wax.",
     imageUrl: "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=1600&h=600",
-    route: "/courses/candle-making"
+    route: "/courses",
+    queryParams: { category: "candle-making" }
   },
   {
     title: "Pour. Swirl. Glow.",
     tagline: "Ocean Resin Art & Liquid Glass",
     description: "Create ultra-glossy ocean tables, trays, and coaster sets with multi-layer pigment swirls and cell lacing.",
     imageUrl: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&q=80&w=1600&h=600",
-    route: "/courses/resin-art"
+    route: "/courses",
+    queryParams: { category: "resin-art" }
   },
   {
     title: "Craft. Design. Innovate.",
     tagline: "Modern Mosaic Art Techniques",
     description: "Assemble colorful ceramic and glass tiles into elegant designs under expert guidance.",
     imageUrl: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&q=80&w=1600&h=600",
-    route: "/courses/mosaic-art"
+    route: "/courses",
+    queryParams: { category: "mosaic-art" }
   }
 ];
 
@@ -49,8 +54,11 @@ export const HERO_SLIDES: HeroSlide[] = [
   templateUrl: './home.component.html'
 })
 export class HomeComponent implements OnInit, OnDestroy {
+  private galleryService = inject(GalleryService);
+
   heroSlides = HERO_SLIDES;
   slides = signal<any[]>([]);
+  galleryItems = signal<AdminGalleryItem[]>([]);
   currentSlide = signal<number>(0);
   private timer: any;
 
@@ -58,9 +66,17 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadCarousel();
+    this.loadGallery();
     if (typeof window !== 'undefined') {
       window.addEventListener('carousel_updated', this.carouselListener);
     }
+  }
+
+  loadGallery(): void {
+    this.galleryService.getPublicGallery({ limit: 6 }).subscribe({
+      next: (items) => this.galleryItems.set(items),
+      error: () => this.galleryItems.set([])
+    });
   }
 
   ngOnDestroy(): void {

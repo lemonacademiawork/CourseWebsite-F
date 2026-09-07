@@ -147,33 +147,12 @@ export class AdminStudentsComponent {
           }));
           this.students.set(mapped);
         } else {
-          // Fallback defaults if no users yet in DB
-          this.students.set([
-            {
-              id: 1,
-              name: "Sejal Agarwal",
-              studentId: "#LA-4821",
-              email: "sejal.agarwal@gmail.com",
-              phone: "+91 98201 44520",
-              coursesCount: 1,
-              joinDate: "Aug 16, 2026",
-              status: "Paid"
-            },
-            {
-              id: 2,
-              name: "Priya Sharma",
-              studentId: "#LA-1092",
-              email: "priya.sharma@example.com",
-              phone: "+91 94120 89201",
-              coursesCount: 2,
-              joinDate: "Aug 17, 2026",
-              status: "Paid"
-            }
-          ]);
+          this.students.set([]);
         }
         this.isLoading.set(false);
       },
       error: () => {
+        this.students.set([]);
         this.isLoading.set(false);
       }
     });

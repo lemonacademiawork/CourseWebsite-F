@@ -248,52 +248,11 @@ export class AdminGalleryComponent implements OnInit {
     this.isLoading.set(true);
     this.galleryService.getAdminGallery().subscribe({
       next: (list) => {
-        if (list && list.length > 0) {
-          this.items.set(list);
-        } else {
-          // Fallback initial sample data to demonstrate full moderation workflow
-          this.items.set([
-            {
-              id: '1',
-              title: 'Mandala Mud Mirror Work',
-              imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBfmBf1HSwY5uR-LAAxu6GpESBkYs22BffeVjJ_nVZyFSdWuRswGeUhxlqCnGAx97UnLPW0ecOB9DC2c3CqgC1b6d2M_GdBM48vhdzppVxuNwgxhXHhGw0c-ojwwa2Pfk3ZwyPO_GtPzr_xDy1OlUWSEpWvopOof-IO7oxPtO6QRlD2lKIw7bN3dZ_UGWSPjzXjEcJv8RBQ2c6QJcPObAIVE9rCB8hsUYBaa_iSyBUMAt5OzWEUgwp9',
-              studentName: 'Elena Cruz (Trainer)',
-              courseTitle: 'The Art of Lippan Masterclass',
-              category: 'Lippan Art',
-              description: 'Intricate symmetrical mud mirror composition using authentic clay slip and mirrors.',
-              status: 'PENDING',
-              isFeatured: false,
-              createdAt: '2026-08-28'
-            },
-            {
-              id: '2',
-              title: 'Geometric Terracotta Vessel',
-              imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAq71zD4kY7nTDde58ZxISgQJ05XWSf-2SsAABr66KdXAYd9wiMfjnx3ROCjH_FoWA7htsaNcXu2PonSBGBgx7Lto46F7ZfZojRz8QcgB6e_UC3EuCIlJ3eAHyGkexhkghUaF9DqElFpN91MA6GyMQi7ufXk1vOwZJBVyTR1DvsspweWMSxBVRCRsvjZsvuCDSfn1m-t0eTPHpvdXvuoG28Uc3b_ErkJrgpY-jcAnhSDnpdsvIhcvvs',
-              studentName: 'Elena Cruz (Trainer)',
-              courseTitle: 'Clay Molding Foundations',
-              category: 'Ceramics & Clay',
-              description: 'Hand-thrown terracotta vessel with tribal incision engravings.',
-              status: 'APPROVED',
-              isFeatured: true,
-              createdAt: '2026-08-25'
-            },
-            {
-              id: '3',
-              title: 'Blue Ochre Resin Geode',
-              imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDt9yOGawqhaqbmuB9P7UgFvZgVCD7j0KURoVlO1CbGC02jeRs-IKWCj3_6lV9fycKoll-uWQZYmbtrnVVvGbgqz0-xknjGsaAe-J4Y0XWtigHaTLy4M6GBwr4Ghg4d6mnf2w9Etr6jUiM4o3d85D2S-y8B5Zp4H-uh3r7uL-pEC2uBucjDsIX0Vf-9AZYcOJ0KEEHHyVurOBDOfwsKw0CvOZZBsTS64rB0oFgNvkAPo3x4tb2hPptE',
-              studentName: 'Kavita Rao',
-              courseTitle: 'Resin & Glass Studio',
-              category: 'Resin Art',
-              description: 'Multi-layered crystal geode with metallic pigments.',
-              status: 'APPROVED',
-              isFeatured: false,
-              createdAt: '2026-08-22'
-            }
-          ]);
-        }
+        this.items.set(list || []);
         this.isLoading.set(false);
       },
       error: () => {
+        this.items.set([]);
         this.isLoading.set(false);
       }
     });

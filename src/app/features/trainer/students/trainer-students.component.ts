@@ -33,7 +33,7 @@ import { TrainerStudent } from '../../../core/models/trainer.model';
                 <td class="py-3 px-4 font-semibold">{{ st.name }}</td>
                 <td class="py-3 px-4 text-on-surface-variant">{{ st.email }}</td>
                 <td class="py-3 px-4">{{ st.course || st.courseTitle || 'Art Workshop' }}</td>
-                <td class="py-3 px-4 font-bold text-primary">{{ st.progress ?? st.progressPercentage ?? 65 }}%</td>
+                <td class="py-3 px-4 font-bold text-primary">{{ st.progress ?? st.progressPercentage ?? 0 }}%</td>
                 <td class="py-3 px-4">
                   <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800">
                     {{ st.status || 'Active' }}
@@ -43,6 +43,14 @@ import { TrainerStudent } from '../../../core/models/trainer.model';
             }
           </tbody>
         </table>
+
+        @if (students().length === 0 && !isLoading()) {
+          <div class="p-8 text-center text-on-surface-variant bg-surface-container-low">
+            <span class="material-symbols-outlined text-primary text-3xl mb-1">groups</span>
+            <p class="font-semibold text-xs">No students enrolled in your workshops yet.</p>
+            <p class="text-[11px] text-on-surface-variant mt-0.5">When students enroll in your workshops, their progress will appear here.</p>
+          </div>
+        }
       </div>
     </main>
   `
@@ -56,18 +64,11 @@ export class TrainerStudentsComponent implements OnInit {
   ngOnInit(): void {
     this.trainerService.getTrainerStudents().subscribe({
       next: (data) => {
-        if (data && data.length > 0) {
-          this.students.set(data);
-        } else {
-          this.students.set([
-            { id: '1', name: 'Sejal Agarwal', email: 'sejal.agarwal@gmail.com', course: 'The Art of Lippan', progress: 65, status: 'Active' },
-            { id: '2', name: 'Priya Sharma', email: 'priya.sharma@example.com', course: 'The Art of Lippan', progress: 30, status: 'Active' },
-            { id: '3', name: 'Ananya Roy', email: 'ananya.roy@example.com', course: 'The Art of Lippan', progress: 90, status: 'Active' }
-          ]);
-        }
+        this.students.set(data || []);
         this.isLoading.set(false);
       },
       error: () => {
+        this.students.set([]);
         this.isLoading.set(false);
       }
     });

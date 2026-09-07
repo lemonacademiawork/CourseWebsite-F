@@ -401,26 +401,10 @@ export class TrainerBlogsComponent implements OnInit {
   loadCategories(): void {
     this.blogCategoryService.getCategories().subscribe({
       next: (cats) => {
-        if (cats && cats.length > 0) {
-          this.categories.set(cats);
-        } else {
-          // Fallback categories if backend returns empty
-          this.categories.set([
-            { id: 'crafting-tips', name: 'Crafting Tips', slug: 'crafting-tips' },
-            { id: 'materials-guide', name: 'Materials Guide', slug: 'materials-guide' },
-            { id: 'artisan-spotlight', name: 'Artisan Spotlight', slug: 'artisan-spotlight' },
-            { id: 'tutorials', name: 'Tutorials & Techniques', slug: 'tutorials' },
-            { id: 'community', name: 'Community Stories', slug: 'community' }
-          ]);
-        }
+        this.categories.set(cats || []);
       },
       error: () => {
-        this.categories.set([
-          { id: 'crafting-tips', name: 'Crafting Tips', slug: 'crafting-tips' },
-          { id: 'materials-guide', name: 'Materials Guide', slug: 'materials-guide' },
-          { id: 'artisan-spotlight', name: 'Artisan Spotlight', slug: 'artisan-spotlight' },
-          { id: 'tutorials', name: 'Tutorials & Techniques', slug: 'tutorials' }
-        ]);
+        this.categories.set([]);
       }
     });
   }

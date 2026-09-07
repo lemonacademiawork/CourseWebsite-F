@@ -315,47 +315,42 @@ export class TrainerGalleryComponent implements OnInit {
   description = signal<string>('');
 
   // Submissions lists
-  mySubmissions = signal<TrainerGallerySubmission[]>([
-    {
-      id: 'trainer-1',
-      title: 'Mandala Mud Mirror Work',
-      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBfmBf1HSwY5uR-LAAxu6GpESBkYs22BffeVjJ_nVZyFSdWuRswGeUhxlqCnGAx97UnLPW0ecOB9DC2c3CqgC1b6d2M_GdBM48vhdzppVxuNwgxhXHhGw0c-ojwwa2Pfk3ZwyPO_GtPzr_xDy1OlUWSEpWvopOof-IO7oxPtO6QRlD2lKIw7bN3dZ_UGWSPjzXjEcJv8RBQ2c6QJcPObAIVE9rCB8hsUYBaa_iSyBUMAt5OzWEUgwp9',
-      studentName: 'Elena Cruz (Trainer)',
-      courseTitle: 'The Art of Lippan Masterclass',
-      category: 'Lippan Art',
-      description: 'Intricate symmetrical mud mirror composition using authentic clay slip and mirrors.',
-      status: 'PENDING',
-      createdAt: 'Aug 28, 2026'
-    }
-  ]);
-
-  studentSubmissions = signal<TrainerGallerySubmission[]>([
-    {
-      id: 'student-1',
-      title: 'Geometric Terracotta Vessel',
-      imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAq71zD4kY7nTDde58ZxISgQJ05XWSf-2SsAABr66KdXAYd9wiMfjnx3ROCjH_FoWA7htsaNcXu2PonSBGBgx7Lto46F7ZfZojRz8QcgB6e_UC3EuCIlJ3eAHyGkexhkghUaF9DqElFpN91MA6GyMQi7ufXk1vOwZJBVyTR1DvsspweWMSxBVRCRsvjZsvuCDSfn1m-t0eTPHpvdXvuoG28Uc3b_ErkJrgpY-jcAnhSDnpdsvIhcvvs',
-      studentName: 'Sejal Agarwal',
-      courseTitle: 'Clay Molding Foundations',
-      category: 'Ceramics & Clay',
-      feedback: 'Excellent symmetry on the vessel base. Next step: smooth out the rim before kiln drying.',
-      status: 'PENDING',
-      createdAt: 'Aug 20, 2026'
-    }
-  ]);
+  mySubmissions = signal<TrainerGallerySubmission[]>([]);
+  studentSubmissions = signal<TrainerGallerySubmission[]>([]);
 
   ngOnInit(): void {
-    this.artistName.set(this.authService.userName() || 'Elena Cruz');
+    this.artistName.set(this.authService.userName() || 'Trainer');
     this.loadSubmissions();
   }
 
   loadSubmissions(): void {
     this.galleryService.getTrainerGallerySubmissions().subscribe({
       next: (items) => {
-        if (items && items.length > 0) {
-          this.studentSubmissions.set(items);
-        }
+        this.studentSubmissions.set(items || []);
       },
-      error: () => {}
+      error: () => {
+        this.studentSubmissions.set([]);
+      }
+    });
+
+    this.galleryService.getMyGallerySubmissions().subscribe({
+      next: (items) => {
+        const mapped: TrainerGallerySubmission[] = (items || []).map(i => ({
+          id: i.id,
+          title: i.title,
+          imageUrl: i.imageUrl || i.mediaUrl || '',
+          studentName: i.studentName || 'Trainer',
+          courseTitle: i.courseTitle,
+          category: i.category,
+          description: i.description,
+          status: (i.status as any) || 'PENDING',
+          createdAt: i.createdAt ? new Date(i.createdAt).toLocaleDateString() : 'Recent'
+        }));
+        this.mySubmissions.set(mapped);
+      },
+      error: () => {
+        this.mySubmissions.set([]);
+      }
     });
   }
 

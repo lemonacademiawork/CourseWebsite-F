@@ -28,10 +28,10 @@
         </div>
         <div class="mt-2">
           <div class="text-xl font-bold text-on-surface leading-none">
-            Rs. {{ (metrics()?.totalRevenue ?? 4820) | number }}
+            Rs. {{ (metrics()?.totalRevenue ?? 0) | number }}
           </div>
-          <div class="flex items-center gap-1 text-[10px] text-primary mt-1 font-semibold">
-            <span>+18% from last month</span>
+          <div class="flex items-center gap-1 text-[10px] text-on-surface-variant mt-1">
+            <span>Verified course enrollments</span>
           </div>
         </div>
       </div>
@@ -46,10 +46,10 @@
         </div>
         <div class="mt-2">
           <div class="text-xl font-bold text-on-surface leading-none">
-            {{ metrics()?.totalStudents ?? 128 }}
+            {{ metrics()?.totalStudents ?? 0 }}
           </div>
           <div class="flex items-center gap-1 text-[10px] text-on-surface-variant mt-1">
-            <span>Across {{ metrics()?.totalCourses ?? 4 }} workshops</span>
+            <span>Across {{ metrics()?.totalCourses ?? 0 }} workshops</span>
           </div>
         </div>
       </div>
@@ -66,7 +66,7 @@
               <span class="material-symbols-outlined text-on-surface-variant text-sm">assignment_ind</span>
               <span class="text-[11px] font-medium text-on-surface">Trainer Applications</span>
             </div>
-            <span class="bg-primary/20 text-primary text-[9px] px-1.5 py-0.5 rounded-full font-bold">2 Pending</span>
+            <span class="bg-primary/20 text-primary text-[9px] px-1.5 py-0.5 rounded-full font-bold">{{ metrics()?.pendingApplications ?? 0 }} Pending</span>
           </a>
           <a routerLink="/admin/content" class="flex justify-between items-center bg-surface-container-lowest px-2.5 py-1 rounded-lg border border-outline-variant/15 hover:border-outline-variant/30 transition-colors">
             <div class="flex items-center gap-1.5">

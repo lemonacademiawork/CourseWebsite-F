@@ -39,7 +39,7 @@ export class SessionService {
     }
   }
 
-  initializeMockSessions(): Record<string, CourseSession[]> {
+  getStoredSessions(): Record<string, CourseSession[]> {
     if (typeof window === 'undefined') return {};
 
     const existing = localStorage.getItem('course_sessions');
@@ -47,26 +47,22 @@ export class SessionService {
       try {
         return JSON.parse(existing);
       } catch {
-        // fallback to init
+        return {};
       }
     }
-
-    const mockSessions: Record<string, CourseSession[]> = {
-      'lippan-art': []
-    };
-
-    localStorage.setItem('course_sessions', JSON.stringify(mockSessions));
-    return mockSessions;
+    return {};
   }
 
   getSessions(courseId: string): CourseSession[] {
-    const all = this.initializeMockSessions();
+    const all = this.getStoredSessions();
     return all[courseId] || [];
   }
 
   saveSessions(courseId: string, sessions: CourseSession[]): void {
-    const all = this.initializeMockSessions();
+    const all = this.getStoredSessions();
     all[courseId] = sessions;
-    localStorage.setItem('course_sessions', JSON.stringify(all));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('course_sessions', JSON.stringify(all));
+    }
   }
 }

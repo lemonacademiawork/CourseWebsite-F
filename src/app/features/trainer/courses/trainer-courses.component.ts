@@ -32,7 +32,7 @@ import { Course } from '../../../core/models/course.model';
               <p class="text-xs text-on-surface-variant line-clamp-2">{{ course.description }}</p>
               <div class="pt-3 border-t border-outline-variant/20 flex justify-between items-center text-xs">
                 <span class="font-bold text-primary">Rs. {{ course.price }}</span>
-                <span class="text-on-surface-variant font-medium">{{ course.studentsCount || 124 }} Enrolled Students</span>
+                <span class="text-on-surface-variant font-medium">{{ course.studentsCount || 0 }} Enrolled Students</span>
               </div>
             </div>
             <div class="p-3 bg-surface-container-low border-t border-outline-variant/20 flex gap-2">
@@ -43,6 +43,14 @@ import { Course } from '../../../core/models/course.model';
                 Blueprints
               </a>
             </div>
+          </div>
+        }
+
+        @if (courses().length === 0) {
+          <div class="col-span-2 text-center py-12 bg-surface-container-low rounded-xl border border-outline-variant/30">
+            <span class="material-symbols-outlined text-primary text-3xl mb-2">school</span>
+            <p class="font-bold text-sm text-on-surface">No Courses Assigned Yet</p>
+            <p class="text-xs text-on-surface-variant mt-1">When an administrator assigns you to a curriculum or you publish a masterclass, it will appear here.</p>
           </div>
         }
       </div>
@@ -60,11 +68,11 @@ export class TrainerCoursesComponent implements OnInit {
         if (list && list.length > 0) {
           this.courses.set(list);
         } else {
-          this.courseService.getCourses().subscribe(all => this.courses.set(all));
+          this.courses.set([]);
         }
       },
       error: () => {
-        this.courseService.getCourses().subscribe(all => this.courses.set(all));
+        this.courses.set([]);
       }
     });
   }

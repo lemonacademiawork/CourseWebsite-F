@@ -36,8 +36,6 @@ export class LoginComponent implements OnInit {
       const reg = params['registered'];
       if (reg === 'true') {
         this.info.set('Account created successfully! Please log in.');
-      } else if (reg === 'mock') {
-        this.info.set('Account created (Local Mock)! Please log in.');
       }
     });
   }

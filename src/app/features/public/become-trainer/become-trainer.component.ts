@@ -60,15 +60,9 @@ export class BecomeTrainerComponent implements OnInit {
         this.loading.set(false);
         this.submitted.set(true);
       },
-      error: () => {
-        // Fallback: save to localStorage
-        if (typeof window !== 'undefined') {
-          const apps = JSON.parse(localStorage.getItem('mock_applications') || '[]');
-          apps.push({ id: Date.now(), ...applicationData });
-          localStorage.setItem('mock_applications', JSON.stringify(apps));
-        }
+      error: (err) => {
         this.loading.set(false);
-        this.submitted.set(true);
+        this.error.set(err?.error?.message || 'Failed to submit application. Please try again.');
       }
     });
   }
