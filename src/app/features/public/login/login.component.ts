@@ -25,16 +25,15 @@ export class LoginComponent implements OnInit {
 
   // Forgot Password modal state
   showForgotModal = signal<boolean>(false);
-  forgotStep = signal<1 | 2>(1);
+  otpSent = signal<boolean>(false);
   forgotEmail = signal<string>('');
   forgotOtp = signal<string>('');
   forgotNewPass = signal<string>('');
   forgotConfirmPass = signal<string>('');
   showForgotPass = signal<boolean>(false);
   forgotLoading = signal<boolean>(false);
-  forgotSuccess = signal<string>('');
   forgotError = signal<string>('');
-  forgotResetToken = signal<string>('');
+  forgotOtpMessage = signal<string>('');
   forgotResendCountdown = signal<number>(0);
   private forgotTimerInterval: any = null;
 
@@ -72,15 +71,17 @@ export class LoginComponent implements OnInit {
     this.forgotOtp.set('');
     this.forgotNewPass.set('');
     this.forgotConfirmPass.set('');
-    this.forgotSuccess.set('');
     this.forgotError.set('');
-    this.forgotResetToken.set('');
-    this.forgotStep.set(1);
+    this.forgotOtpMessage.set('');
+    this.otpSent.set(false);
     this.showForgotModal.set(true);
   }
 
   closeForgotPassword(): void {
     this.showForgotModal.set(false);
+    this.otpSent.set(false);
+    this.forgotError.set('');
+    this.forgotOtpMessage.set('');
     if (this.forgotTimerInterval) {
       clearInterval(this.forgotTimerInterval);
     }
@@ -98,51 +99,55 @@ export class LoginComponent implements OnInit {
     }, 1000);
   }
 
-  handleForgotPasswordSendOtp(): void {
+  handleForgotPasswordSubmit(): void {
+    if (!this.otpSent()) {
+      this.handleSendOtp();
+    } else {
+      this.handleResetPassword();
+    }
+  }
+
+  handleSendOtp(): void {
     const identifier = this.forgotEmail().trim();
     if (!identifier) {
-      this.forgotError.set('Please enter your registered mobile number or email address.');
+      this.forgotError.set('Please enter your email or phone number.');
       return;
     }
 
     this.forgotLoading.set(true);
     this.forgotError.set('');
-    this.forgotSuccess.set('');
+    this.forgotOtpMessage.set('');
 
     this.authService.forgotPassword(identifier).subscribe({
       next: (res: any) => {
         this.forgotLoading.set(false);
         const data = res?.data || res || {};
-        const msg = data.message || res?.message || 'A 6-digit WhatsApp OTP code has been sent!';
-        this.forgotSuccess.set(msg);
-        if (data.resetToken || data.otpCode) {
-          this.forgotOtp.set(data.resetToken || data.otpCode);
-          this.forgotResetToken.set(data.resetToken || data.otpCode);
-        }
-        this.forgotStep.set(2);
+        const msg = data.message || res?.message || 'OTP code sent! Check your WhatsApp.';
+        this.forgotOtpMessage.set(msg);
+        this.otpSent.set(true);
         this.startForgotResendTimer();
       },
       error: (err: any) => {
         this.forgotLoading.set(false);
-        const msg = err?.error?.message || err?.error?.error || 'User not found. Please verify your mobile number or email.';
+        const msg = err?.error?.message || err?.error?.error || 'User not found. Please verify your email or phone number.';
         this.forgotError.set(msg);
       }
     });
   }
 
-  handleModalResetPassword(): void {
+  handleResetPassword(): void {
     const code = this.forgotOtp().trim();
     const phoneNum = this.forgotEmail().trim();
     const pass = this.forgotNewPass();
     const confirm = this.forgotConfirmPass();
 
     if (!phoneNum) {
-      this.forgotError.set('Please provide your registered mobile number or email.');
+      this.forgotError.set('Please enter your email or phone number.');
       return;
     }
 
     if (!code) {
-      this.forgotError.set('Please enter the 6-digit WhatsApp OTP code.');
+      this.forgotError.set('Please enter the 6-digit OTP code.');
       return;
     }
 
@@ -162,12 +167,10 @@ export class LoginComponent implements OnInit {
     this.authService.resetPassword(code, pass, phoneNum).subscribe({
       next: () => {
         this.forgotLoading.set(false);
-        this.forgotSuccess.set('Password reset successfully! You can now log in.');
+        this.info.set('Password reset successfully. Please log in.');
         this.email.set(phoneNum);
         this.password.set('');
-        setTimeout(() => {
-          this.closeForgotPassword();
-        }, 2000);
+        this.closeForgotPassword();
       },
       error: (err: any) => {
         this.forgotLoading.set(false);
