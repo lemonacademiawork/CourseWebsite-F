@@ -219,18 +219,35 @@
 
           <!-- Modal STEP 2: Enter OTP + New Password -->
           @if (forgotStep() === 2) {
-            <div class="bg-[#F6EFE2] border border-[#E7DECD] rounded-lg p-2.5 text-xs text-[#5B5650] flex items-center justify-between">
-              <div class="flex items-center gap-1.5 overflow-hidden">
-                <span class="material-symbols-outlined text-[#25D366] text-sm shrink-0">chat</span>
-                <span class="truncate">OTP for: <strong class="text-[#1C1A17]">{{ forgotEmail() || 'your number' }}</strong></span>
+            @if (forgotEmail()) {
+              <div class="bg-[#F6EFE2] border border-[#E7DECD] rounded-lg p-2.5 text-xs text-[#5B5650] flex items-center justify-between">
+                <div class="flex items-center gap-1.5 overflow-hidden">
+                  <span class="material-symbols-outlined text-[#25D366] text-sm shrink-0">chat</span>
+                  <span class="truncate">OTP for: <strong class="text-[#1C1A17]">{{ forgotEmail() }}</strong></span>
+                </div>
+                <button 
+                  type="button" 
+                  (click)="forgotStep.set(1)" 
+                  class="text-[#6E5410] font-bold text-[11px] hover:underline bg-transparent border-none p-0 cursor-pointer shrink-0 ml-2">
+                  Change
+                </button>
               </div>
-              <button 
-                type="button" 
-                (click)="forgotStep.set(1)" 
-                class="text-[#6E5410] font-bold text-[11px] hover:underline bg-transparent border-none p-0 cursor-pointer shrink-0 ml-2">
-                Change
-              </button>
-            </div>
+            } @else {
+              <div class="space-y-1">
+                <label class="block text-[11px] font-semibold uppercase tracking-wider text-[#5B5650]">
+                  Registered Mobile Number or Email
+                </label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. 9653011178 or you@example.com"
+                  [ngModel]="forgotEmail()" 
+                  (ngModelChange)="forgotEmail.set($event)"
+                  name="forgotEmail" 
+                  required
+                  class="w-full py-2 px-3 bg-white border border-[#E7E1D3] rounded-lg text-xs text-[#1C1A17] focus:outline-none focus:border-[#6E5410]"
+                />
+              </div>
+            }
 
             <form (ngSubmit)="handleModalResetPassword()" class="space-y-3">
               <div class="space-y-1">

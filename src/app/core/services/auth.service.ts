@@ -354,16 +354,40 @@ export class AuthService {
     );
   }
 
-  /** POST /api/v1/auth/reset-password — Reset password using 6-digit OTP token */
-  resetPassword(token: string, newPassword: string, phone?: string): Observable<any> {
-    const payload: { token: string; newPassword: string; phone?: string } = {
-      token: token.trim(),
-      newPassword
+  /** POST /api/v1/auth/verify-otp — Verify 6-digit OTP & update password */
+  resetPassword(token: string, newPassword: string, phoneOrEmail?: string): Observable<any> {
+    const cleanToken = String(token || '').trim();
+    const cleanIdentifier = String(phoneOrEmail || '').trim();
+    const isEmail = cleanIdentifier.includes('@');
+    const formattedPhone = !isEmail && cleanIdentifier ? this.formatPhoneNumber(cleanIdentifier) : '';
+
+    const payload: any = {
+      token: cleanToken,
+      otp: cleanToken,
+      code: cleanToken,
+      newPassword: newPassword,
+      password: newPassword
     };
-    if (phone && phone.trim()) {
-      payload.phone = this.formatPhoneNumber(phone.trim());
+
+    if (isEmail) {
+      payload.email = cleanIdentifier;
+    } else if (formattedPhone) {
+      payload.phone = formattedPhone;
+      payload.phoneNumber = formattedPhone;
     }
-    return this.http.post(`${this.apiUrl}/auth/reset-password`, payload);
+
+    // Try /api/v1/auth/verify-otp first, with fallback to /api/v1/auth/whatsapp/verify-otp
+    return this.http.post<any>(`${this.apiUrl}/auth/verify-otp`, payload).pipe(
+      catchError((err1) => {
+        return this.http.post<any>(`${this.apiUrl}/auth/whatsapp/verify-otp`, payload).pipe(
+          catchError((err2) => {
+            return this.http.post<any>(`${this.apiUrl}/auth/reset-password`, payload).pipe(
+              catchError(() => throwError(() => err1 || err2))
+            );
+          })
+        );
+      })
+    );
   }
 
 

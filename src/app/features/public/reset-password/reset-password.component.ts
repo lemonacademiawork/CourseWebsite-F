@@ -119,6 +119,11 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
     const pass = this.newPassword();
     const confirm = this.confirmPassword();
 
+    if (!phoneNum) {
+      this.errorMessage.set('Please provide your registered mobile number or email.');
+      return;
+    }
+
     if (!t) {
       this.errorMessage.set('Please enter the 6-digit OTP code received on WhatsApp.');
       return;
@@ -137,7 +142,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    this.authService.resetPassword(t, pass, phoneNum || undefined).subscribe({
+    this.authService.resetPassword(t, pass, phoneNum).subscribe({
       next: () => {
         this.isLoading.set(false);
         this.isSuccess.set(true);
@@ -147,7 +152,8 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
       },
       error: (err: any) => {
         this.isLoading.set(false);
-        this.errorMessage.set(err?.error?.message || err?.error?.error || 'Invalid or expired OTP code. Please request a new code.');
+        const msg = err?.error?.message || err?.error?.error || (typeof err?.error === 'string' ? err.error : null) || 'Invalid or expired OTP code. Please request a new code.';
+        this.errorMessage.set(msg);
       }
     });
   }
