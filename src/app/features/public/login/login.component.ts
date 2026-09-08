@@ -67,7 +67,8 @@ export class LoginComponent implements OnInit {
 
   openForgotPassword(event?: Event): void {
     if (event) event.preventDefault();
-    this.forgotEmail.set(this.email() || '');
+    const initial = (this.email() || '').trim();
+    this.forgotEmail.set(initial.length >= 5 ? initial : '');
     this.forgotOtp.set('');
     this.forgotNewPass.set('');
     this.forgotConfirmPass.set('');
