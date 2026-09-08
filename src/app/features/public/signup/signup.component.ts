@@ -17,6 +17,7 @@ export class SignupComponent {
 
   name = signal<string>('');
   email = signal<string>('');
+  phone = signal<string>('');
   password = signal<string>('');
   loading = signal<boolean>(false);
   error = signal<string>('');
@@ -25,7 +26,7 @@ export class SignupComponent {
     this.error.set('');
 
     if (!this.name().trim() || !this.email().trim() || !this.password().trim()) {
-      this.error.set('Please fill in all fields');
+      this.error.set('Please fill in all required fields');
       return;
     }
 
@@ -36,8 +37,9 @@ export class SignupComponent {
 
     this.loading.set(true);
     this.authService.register({
-      name: this.name(),
-      email: this.email(),
+      name: this.name().trim(),
+      email: this.email().trim(),
+      phone: this.phone().trim() || undefined,
       password: this.password()
     }).subscribe({
       next: () => {
@@ -46,8 +48,9 @@ export class SignupComponent {
       },
       error: (err) => {
         this.loading.set(false);
-        const data = err.error || {};
-        this.error.set(data.message || 'Registration failed. The server returned an error.');
+        const data = err?.error || {};
+        const msg = data.message || data.error || (typeof err?.error === 'string' ? err.error : null) || 'Registration failed. Please check your details.';
+        this.error.set(msg);
       }
     });
   }
