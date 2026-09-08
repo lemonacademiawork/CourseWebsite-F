@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
+import { StudentService } from '../../../core/services/student.service';
 import { EnrollmentService } from '../../../core/services/enrollment.service';
 import { PaymentService } from '../../../core/services/payment.service';
 import { Payment } from '../../../core/models/payment.model';
@@ -14,7 +15,7 @@ import { Payment } from '../../../core/models/payment.model';
     <main class="min-h-screen bg-[#FBF8F1] py-12 px-margin-mobile md:px-margin-desktop max-w-xl mx-auto text-xs">
       <div class="bg-surface-container-lowest border border-outline-variant/35 rounded-2xl p-6 md:p-10 shadow-sm space-y-6">
         <div class="text-center">
-          <div class="w-16 h-16 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-xl mx-auto mb-4 border shadow-sm">
+          <div class="w-16 h-16 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-xl mx-auto mb-4 border shadow-sm uppercase tracking-wider">
             {{ getInitials() }}
           </div>
           <h2 class="playfair text-xl font-bold text-on-surface">{{ authService.userName() }}</h2>
@@ -86,6 +87,7 @@ import { Payment } from '../../../core/models/payment.model';
 })
 export class ProfileComponent implements OnInit {
   authService = inject(AuthService);
+  private studentService = inject(StudentService);
   private enrollmentService = inject(EnrollmentService);
   private paymentService = inject(PaymentService);
 
@@ -94,6 +96,23 @@ export class ProfileComponent implements OnInit {
 
   ngOnInit(): void {
     this.authService.fetchUserProfile().subscribe();
+    this.authService.getAuthMe().subscribe();
+
+    this.studentService.getStudentProfile().subscribe({
+      next: (student) => {
+        if (student && (student.name || student.studentProfile?.name)) {
+          const rawName = student.name || student.studentProfile?.name;
+          const formatted = this.authService.resolveDisplayName({ name: rawName }, this.authService.userEmail());
+          this.authService.userName.set(formatted);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('user_name', formatted);
+            this.authService.setCookie('user_name', formatted);
+          }
+        }
+      },
+      error: () => {}
+    });
+
     this.enrollmentService.getEnrollments().subscribe({
       next: (enrollments) => {
         this.courseCount.set(enrollments.length);
@@ -112,12 +131,22 @@ export class ProfileComponent implements OnInit {
   }
 
   getInitials(): string {
-    const name = this.authService.userName() || 'User';
-    return name.split(' ').map(n => n[0]).join('');
+    const name = this.authService.userName() || '';
+    if (!name || name.toLowerCase() === 'user') {
+      const email = this.authService.userEmail();
+      if (email) return email.charAt(0).toUpperCase();
+      return 'M';
+    }
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return (parts[0][0] || 'M').toUpperCase();
   }
 
   handleLogout(): void {
     this.authService.logout();
   }
 }
+
 

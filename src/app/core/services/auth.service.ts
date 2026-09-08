@@ -29,14 +29,65 @@ export class AuthService {
     return 'student';
   }
 
+  capitalizeWords(str: string): string {
+    if (!str) return '';
+    return str
+      .split(/\s+/)
+      .filter(w => w.length > 0)
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(' ');
+  }
+
+  resolveDisplayName(data: any, fallbackEmail?: string): string {
+    const email = fallbackEmail || data?.email || data?.user?.email || '';
+
+    // 1. Direct name fields
+    let candidate = data?.name || data?.fullName || data?.userName || data?.user?.name || data?.user?.fullName;
+
+    // 2. Profile name fields (studentProfile, trainerProfile)
+    if (!candidate || candidate === 'null' || candidate === 'undefined' || candidate === 'User') {
+      candidate = data?.studentProfile?.name ||
+                  data?.trainerProfile?.name ||
+                  data?.user?.studentProfile?.name ||
+                  data?.user?.trainerProfile?.name ||
+                  data?.profile?.name ||
+                  data?.user?.profile?.name;
+    }
+
+    // 3. If candidate exists and is valid
+    if (candidate && typeof candidate === 'string' && candidate.trim() && candidate.toLowerCase() !== 'null' && candidate.toLowerCase() !== 'undefined' && candidate.toLowerCase() !== 'user') {
+      return this.capitalizeWords(candidate.trim());
+    }
+
+    // 4. Derive from email (e.g. manishi23nigam06@gmail.com -> Manishi Nigam)
+    if (email && email.includes('@')) {
+      const localPart = email.split('@')[0];
+      const cleaned = localPart.replace(/[._-]/g, ' ').replace(/[0-9]+/g, ' ').trim();
+      if (cleaned) {
+        return this.capitalizeWords(cleaned);
+      }
+      return this.capitalizeWords(localPart);
+    }
+
+    return candidate && candidate !== 'null' ? candidate : 'User';
+  }
+
   loadAuthState(): void {
     if (typeof window === 'undefined') return;
 
     const loggedIn = localStorage.getItem('is_logged_in') === 'true' || this.getCookie('is_logged_in') === 'true';
     const rawRole = localStorage.getItem('user_role') || this.getCookie('user_role') || '';
     const role = this.normalizeRole(rawRole);
-    const name = localStorage.getItem('user_name') || this.getCookie('user_name') || 'User';
+    let name = localStorage.getItem('user_name') || this.getCookie('user_name') || '';
     const email = localStorage.getItem('user_email') || this.getCookie('user_email') || '';
+
+    if ((!name || name === 'User') && email) {
+      name = this.resolveDisplayName(null, email);
+      localStorage.setItem('user_name', name);
+      this.setCookie('user_name', name);
+    } else if (!name) {
+      name = 'User';
+    }
 
     this.isLoggedIn.set(loggedIn);
     this.userRole.set(role);
@@ -62,8 +113,8 @@ export class AuthService {
         const data = (res as any).data || res;
         const user = data.user || data;
         const role = this.normalizeRole(user.role || data.role || 'student');
-        const name = user.name || user.fullName || data.name || rawIdentifier.split('@')[0];
         const email = user.email || data.email || rawIdentifier;
+        const name = this.resolveDisplayName(user, email);
         const token = data.token || data.accessToken || res.token || '';
         const refreshToken = data.refreshToken || res.refreshToken || '';
 
@@ -135,7 +186,7 @@ export class AuthService {
         role = this.normalizeRole(decoded.role || decoded.userRole || decoded.user?.role || 'student');
       }
       if (!name) {
-        name = decoded.name || decoded.fullName || decoded.userName || decoded.user?.name || decoded.user?.fullName || '';
+        name = this.resolveDisplayName(decoded, email);
       }
       if (!email) {
         email = decoded.email || decoded.userEmail || decoded.user?.email || '';
@@ -143,8 +194,7 @@ export class AuthService {
     }
 
     if (!role) role = 'student';
-    if (!name && email) name = email.split('@')[0];
-    if (!name) name = 'User';
+    name = this.resolveDisplayName({ name }, email);
 
     this.persistAuth(true, role, name, email, token);
 
@@ -202,10 +252,10 @@ export class AuthService {
     return this.http.get<any>(`${this.apiUrl}/auth/me`).pipe(
       tap((res) => {
         const profile = res.data || res;
-        if (profile && (profile.name || profile.email)) {
-          const name = profile.name || this.userName();
-          const email = profile.email || this.userEmail();
-          const role = this.normalizeRole(profile.role || this.userRole());
+        if (profile) {
+          const email = profile.email || profile.user?.email || this.userEmail();
+          const name = this.resolveDisplayName(profile, email) || this.userName();
+          const role = this.normalizeRole(profile.role || profile.user?.role || this.userRole());
           this.persistAuth(true, role, name, email, this.getToken());
         }
       })
@@ -225,10 +275,10 @@ export class AuthService {
     return this.http.get<any>(`${this.apiUrl}/users/me`).pipe(
       tap((res) => {
         const profile = res.data || res;
-        if (profile && (profile.name || profile.email)) {
-          const name = profile.name || this.userName();
-          const email = profile.email || this.userEmail();
-          const role = this.normalizeRole(profile.role || this.userRole());
+        if (profile) {
+          const email = profile.email || profile.user?.email || this.userEmail();
+          const name = this.resolveDisplayName(profile, email) || this.userName();
+          const role = this.normalizeRole(profile.role || profile.user?.role || this.userRole());
           this.persistAuth(true, role, name, email, this.getToken());
         }
       })
