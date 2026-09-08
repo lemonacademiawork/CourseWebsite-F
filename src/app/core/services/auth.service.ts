@@ -306,9 +306,25 @@ export class AuthService {
     return this.http.patch(`${this.apiUrl}/users/me/password`, { currentPassword, newPassword });
   }
 
+  /** Helper to ensure Indian/international numbers have valid country code format */
+  formatPhoneNumber(raw: string): string {
+    const clean = String(raw || '').trim();
+    if (!clean) return '';
+    if (clean.startsWith('+')) return clean;
+    const digits = clean.replace(/\D/g, '');
+    if (digits.length === 10) {
+      return `+91${digits}`;
+    }
+    if (digits.length === 12 && digits.startsWith('91')) {
+      return `+${digits}`;
+    }
+    return clean;
+  }
+
   /** POST /api/v1/auth/whatsapp/send-otp — Send WhatsApp OTP directly */
   sendWhatsAppOtp(phone: string, code?: string): Observable<any> {
-    const payload: { phone: string; code?: string } = { phone: phone.trim() };
+    const formatted = this.formatPhoneNumber(phone);
+    const payload: { phone: string; code?: string } = { phone: formatted };
     if (code) payload.code = code.trim();
     return this.http.post(`${this.apiUrl}/auth/whatsapp/send-otp`, payload).pipe(
       catchError(() => this.http.post(`${this.apiUrl}/auth/whatsapp-otp`, payload))
@@ -317,13 +333,25 @@ export class AuthService {
 
   /** POST /api/v1/auth/forgot-password — Sends 6-digit WhatsApp/Email OTP */
   forgotPassword(identifier: string): Observable<any> {
-    const clean = identifier.trim();
-    const isPhone = !clean.includes('@') && /[0-9]{7,15}/.test(clean.replace(/\D/g, ''));
-    const payload = isPhone
-      ? { phone: clean.replace(/\D/g, ''), identifier: clean }
-      : { email: clean, identifier: clean };
+    const clean = String(identifier || '').trim();
+    const isEmail = clean.includes('@');
 
-    return this.http.post(`${this.apiUrl}/auth/forgot-password`, payload);
+    if (isEmail) {
+      return this.http.post<any>(`${this.apiUrl}/auth/forgot-password`, { email: clean });
+    }
+
+    const formatted = this.formatPhoneNumber(clean);
+    const rawDigits = clean.replace(/\D/g, '');
+
+    // Try formatted phone (+91...) and fallback to raw digits if needed
+    return this.http.post<any>(`${this.apiUrl}/auth/forgot-password`, { phone: formatted }).pipe(
+      catchError((err) => {
+        if (rawDigits && rawDigits !== formatted) {
+          return this.http.post<any>(`${this.apiUrl}/auth/forgot-password`, { phone: rawDigits });
+        }
+        return throwError(() => err);
+      })
+    );
   }
 
   /** POST /api/v1/auth/reset-password — Reset password using 6-digit OTP token */
@@ -333,7 +361,7 @@ export class AuthService {
       newPassword
     };
     if (phone && phone.trim()) {
-      payload.phone = phone.trim().replace(/\D/g, '');
+      payload.phone = this.formatPhoneNumber(phone.trim());
     }
     return this.http.post(`${this.apiUrl}/auth/reset-password`, payload);
   }
