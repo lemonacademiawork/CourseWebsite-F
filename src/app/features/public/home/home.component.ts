@@ -1,8 +1,6 @@
-import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { GalleryService } from '../../../core/services/gallery.service';
-import { AdminGalleryItem } from '../../../core/models/admin.model';
 
 export interface HeroSlide {
   title: string;
@@ -54,11 +52,8 @@ export const HERO_SLIDES: HeroSlide[] = [
   templateUrl: './home.component.html'
 })
 export class HomeComponent implements OnInit, OnDestroy {
-  private galleryService = inject(GalleryService);
-
   heroSlides = HERO_SLIDES;
   slides = signal<any[]>([]);
-  galleryItems = signal<AdminGalleryItem[]>([]);
   currentSlide = signal<number>(0);
   private timer: any;
 
@@ -66,17 +61,9 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadCarousel();
-    this.loadGallery();
     if (typeof window !== 'undefined') {
       window.addEventListener('carousel_updated', this.carouselListener);
     }
-  }
-
-  loadGallery(): void {
-    this.galleryService.getPublicGallery({ limit: 6 }).subscribe({
-      next: (items) => this.galleryItems.set(items),
-      error: () => this.galleryItems.set([])
-    });
   }
 
   ngOnDestroy(): void {
