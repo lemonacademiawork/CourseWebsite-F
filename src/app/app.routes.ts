@@ -23,7 +23,6 @@ import { MyCoursesComponent } from './features/student/my-courses/my-courses.com
 import { MyCourseDetailComponent } from './features/student/my-course-detail/my-course-detail.component';
 import { CourseLearningComponent } from './features/student/course-learning/course-learning.component';
 import { CourseModule1Component } from './features/student/course-module-1/course-module-1.component';
-import { ReferAndEarnComponent } from './features/student/refer-and-earn/refer-and-earn.component';
 import { BecomeTrainerComponent } from './features/public/become-trainer/become-trainer.component';
 import { PrototypeComponent } from './features/public/prototype/prototype.component';
 import { SupportComponent } from './features/public/support/support.component';
@@ -51,9 +50,7 @@ import { AdminBlogsComponent } from './features/admin/blogs/admin-blogs.componen
 import { AdminGalleryComponent } from './features/admin/gallery/admin-gallery.component';
 import { AdminCarouselComponent } from './features/admin/carousel/admin-carousel.component';
 import { AdminImportComponent } from './features/admin/import/admin-import.component';
-import { AdminCommissionsComponent } from './features/admin/commissions/admin-commissions.component';
 import { AdminSettingsComponent } from './features/admin/settings/admin-settings.component';
-import { AdminReviewsComponent } from './features/admin/reviews/admin-reviews.component';
 
 // Trainer Features
 import { TrainerDashboardComponent } from './features/trainer/dashboard/trainer-dashboard.component';
@@ -101,7 +98,6 @@ export const routes: Routes = [
       { path: 'profile', component: ProfileComponent },
       { path: 'my-courses', component: MyCoursesComponent },
       { path: 'my-courses/:courseId', component: MyCourseDetailComponent },
-      { path: 'refer-and-earn', component: ReferAndEarnComponent },
       { path: 'become-a-trainer', component: BecomeTrainerComponent },
       { path: 'become-trainer', redirectTo: 'become-a-trainer', pathMatch: 'full' },
       { path: 'prototype', component: PrototypeComponent },
@@ -131,8 +127,6 @@ export const routes: Routes = [
       { path: 'coupons/create', component: AdminCouponsCreateComponent },
       { path: 'blogs', component: AdminBlogsComponent },
       { path: 'gallery', component: AdminGalleryComponent },
-      { path: 'reviews', component: AdminReviewsComponent },
-      { path: 'commissions', component: AdminCommissionsComponent },
       { path: 'settings', component: AdminSettingsComponent },
       { path: 'carousel', component: AdminCarouselComponent },
       { path: 'import', component: AdminImportComponent }

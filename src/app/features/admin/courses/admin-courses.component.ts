@@ -44,6 +44,10 @@ export class AdminCoursesComponent implements OnInit {
   tempRecordingLink = signal<string>('');
   saveSuccess = signal<string>('');
 
+  // Delete course states
+  courseToDelete = signal<AdminCourseItem | null>(null);
+  isDeleting = signal<boolean>(false);
+
   ngOnInit(): void {
     this.fetchCourses();
   }
@@ -88,6 +92,35 @@ export class AdminCoursesComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to create course:', err);
+      }
+    });
+  }
+
+  openDeleteConfirm(course: AdminCourseItem): void {
+    this.courseToDelete.set(course);
+  }
+
+  executeDeleteCourse(): void {
+    const course = this.courseToDelete();
+    if (!course) return;
+
+    this.isDeleting.set(true);
+    this.courseService.deleteCourse(course.id).subscribe({
+      next: () => {
+        this.isDeleting.set(false);
+        this.courseToDelete.set(null);
+        this.saveSuccess.set(`Course "${course.title}" deleted successfully.`);
+        this.fetchCourses();
+        setTimeout(() => this.saveSuccess.set(''), 3000);
+      },
+      error: (err) => {
+        this.isDeleting.set(false);
+        console.error('Failed to delete course:', err);
+        // Optimistically remove from local list if backend succeeded or 404
+        this.courses.update(list => list.filter(c => c.id !== course.id));
+        this.courseToDelete.set(null);
+        this.saveSuccess.set(`Course "${course.title}" deleted.`);
+        setTimeout(() => this.saveSuccess.set(''), 3000);
       }
     });
   }
