@@ -5,19 +5,27 @@ export interface Coupon {
   code: string;
   discountType: DiscountType;
   discountValue: number;
+  discountPercentage?: number;
+  discount?: number;
   minOrderAmount?: number | null;
+  minOrderValue?: number | null;
   maxDiscountAmount?: number | null;
+  maxDiscount?: number | null;
   usageLimit?: number | null;
   userLimit?: number | null;
   usedCount?: number;
+  usageCount?: number;
   courseId?: string | null;
   course?: {
     id: string;
     title: string;
+    slug?: string;
   } | null;
   description?: string | null;
+  validUntil?: string | null;
   expiresAt?: string | null;
   isActive: boolean;
+  status?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -40,7 +48,7 @@ export interface ValidateCouponResponse {
 
 export interface CreateCouponPayload {
   code: string;
-  discountType: DiscountType;
+  discountType?: DiscountType;
   discountValue: number;
   minOrderAmount?: number;
   maxDiscountAmount?: number;

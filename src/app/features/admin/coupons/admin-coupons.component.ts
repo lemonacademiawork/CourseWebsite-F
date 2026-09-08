@@ -1,14 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-
-interface CouponItem {
-  id: number;
-  code: string;
-  discount: number;
-  usageCount: number;
-  status: 'Active' | 'Expired';
-}
+import { CouponService } from '../../../core/services/coupon.service';
+import { Coupon } from '../../../core/models/coupon.model';
 
 @Component({
   selector: 'app-admin-coupons',
@@ -32,28 +26,52 @@ interface CouponItem {
           <thead>
             <tr class="bg-surface-container-low border-b border-outline-variant text-on-surface-variant font-semibold">
               <th class="py-3 px-4">Coupon Code</th>
-              <th class="py-3 px-4">Discount %</th>
-              <th class="py-3 px-4">Usage Count</th>
+              <th class="py-3 px-4">Discount</th>
+              <th class="py-3 px-4">Min. Order</th>
+              <th class="py-3 px-4">Usage</th>
               <th class="py-3 px-4">Status</th>
+              <th class="py-3 px-4 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-outline-variant/15">
             @for (coupon of coupons(); track coupon.id) {
               <tr class="hover:bg-surface-container-low/50">
-                <td class="py-3 px-4 font-mono font-bold text-primary">{{ coupon.code }}</td>
-                <td class="py-3 px-4 font-semibold">{{ coupon.discount }}% OFF</td>
-                <td class="py-3 px-4">{{ coupon.usageCount }} times</td>
                 <td class="py-3 px-4">
-                  <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800">
-                    {{ coupon.status }}
+                  <div class="font-mono font-bold text-primary">{{ coupon.code }}</div>
+                  @if (coupon.description) {
+                    <div class="text-[10px] text-on-surface-variant line-clamp-1">{{ coupon.description }}</div>
+                  }
+                </td>
+                <td class="py-3 px-4 font-semibold">
+                  {{ coupon.discountType === 'FLAT' ? ('₹' + (coupon.discountValue || coupon.discount || 0)) : ((coupon.discountValue || coupon.discountPercentage || coupon.discount || 0) + '% OFF') }}
+                </td>
+                <td class="py-3 px-4 text-on-surface-variant">
+                  {{ coupon.minOrderAmount ? ('₹' + coupon.minOrderAmount) : 'No Min' }}
+                </td>
+                <td class="py-3 px-4">
+                  {{ coupon.usedCount ?? coupon.usageCount ?? 0 }}{{ coupon.usageLimit ? (' / ' + coupon.usageLimit) : ' times' }}
+                </td>
+                <td class="py-3 px-4">
+                  <span 
+                    class="px-2 py-0.5 rounded text-[10px] font-bold"
+                    [ngClass]="coupon.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                    {{ coupon.isActive ? 'Active' : 'Inactive' }}
                   </span>
+                </td>
+                <td class="py-3 px-4 text-right">
+                  <button 
+                    (click)="deleteCoupon(coupon.id)" 
+                    class="p-1 hover:bg-surface-container text-red-600 rounded cursor-pointer"
+                    title="Delete Coupon">
+                    <span class="material-symbols-outlined text-[16px]">delete</span>
+                  </button>
                 </td>
               </tr>
             }
           </tbody>
         </table>
 
-        @if (coupons().length === 0) {
+        @if (coupons().length === 0 && !loading()) {
           <div class="p-8 text-center bg-surface-container-low text-on-surface-variant">
             <span class="material-symbols-outlined text-primary text-3xl mb-1">local_offer</span>
             <p class="font-semibold text-xs text-on-surface">No Discount Coupons Created</p>
@@ -67,6 +85,35 @@ interface CouponItem {
     </main>
   `
 })
-export class AdminCouponsComponent {
-  coupons = signal<CouponItem[]>([]);
+export class AdminCouponsComponent implements OnInit {
+  private couponService = inject(CouponService);
+
+  coupons = signal<Coupon[]>([]);
+  loading = signal<boolean>(true);
+
+  ngOnInit(): void {
+    this.loadCoupons();
+  }
+
+  loadCoupons(): void {
+    this.loading.set(true);
+    this.couponService.getAllCoupons().subscribe({
+      next: (data) => {
+        this.coupons.set(data);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+      }
+    });
+  }
+
+  deleteCoupon(id: string): void {
+    if (!confirm('Are you sure you want to delete this coupon?')) return;
+    this.couponService.deleteCoupon(id).subscribe({
+      next: () => {
+        this.coupons.update(list => list.filter(c => c.id !== id));
+      }
+    });
+  }
 }

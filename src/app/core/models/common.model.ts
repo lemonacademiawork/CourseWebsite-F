@@ -31,23 +31,42 @@ export interface UpdateResourcePayload {
 
 export interface TrainerApplication {
   id?: string | number;
+  fullName?: string;
   name: string;
   email: string;
-  course: string;
+  phone?: string;
+  course?: string;
+  expertise?: string;
   runningDates?: string;
-  experience: string;
+  yearsOfExperience?: number;
+  experience: string | number;
+  bio?: string;
   portfolioUrl?: string;
-  status: 'Pending Approval' | 'Approved' | 'Rejected';
+  sampleVideoUrl?: string;
+  resumeUrl?: string;
+  status: 'Pending Approval' | 'Approved' | 'Rejected' | 'PENDING' | 'APPROVED' | 'REJECTED';
+  feedbackNotes?: string;
+  adminFeedback?: string;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Coupon {
   id: string;
   code: string;
-  discountPercentage: number;
-  validUntil: string;
+  discountPercentage?: number;
+  discountValue?: number;
+  discount?: number;
+  discountType?: 'PERCENTAGE' | 'FLAT';
+  minOrderAmount?: number | null;
+  maxDiscountAmount?: number | null;
+  validUntil?: string;
+  expiresAt?: string;
   isActive: boolean;
-  usageCount: number;
+  usageCount?: number;
+  usedCount?: number;
+  usageLimit?: number | null;
+  userLimit?: number | null;
 }
 
 export interface BlogPost {
