@@ -146,9 +146,13 @@
               <span class="material-symbols-outlined text-green-600 text-base shrink-0">check_circle</span>
               <p class="leading-relaxed">{{ forgotSuccess() }}</p>
             </div>
-            <div class="pt-2 border-t border-green-200/60 flex items-center justify-between">
-              <a routerLink="/reset-password" (click)="closeForgotPassword()" class="text-[#6E5410] font-bold hover:underline flex items-center gap-1 text-xs">
-                <span>Enter Reset Token</span>
+            <div class="pt-2 border-t border-green-200/60 flex items-center justify-between gap-2">
+              <a 
+                [routerLink]="['/reset-password']" 
+                [queryParams]="{ token: forgotResetToken() || null, phone: forgotEmail() || null }" 
+                (click)="closeForgotPassword()" 
+                class="text-[#6E5410] font-bold hover:underline flex items-center gap-1 text-xs">
+                <span>Enter OTP &amp; Reset Password</span>
                 <span class="material-symbols-outlined text-sm">arrow_forward</span>
               </a>
               <button 
@@ -160,8 +164,9 @@
             </div>
           </div>
         } @else {
-          <p class="text-xs text-[#5B5650] leading-relaxed">
-            Enter the email address associated with your Lemon Academia account and we'll send you a password reset link and token.
+          <p class="text-xs text-[#5B5650] leading-relaxed flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[#25D366] text-base">chat</span>
+            <span>Enter your registered 10-digit mobile number or email to receive a 6-digit WhatsApp OTP verification code.</span>
           </p>
 
           @if (forgotError()) {
@@ -174,14 +179,14 @@
           <form (ngSubmit)="handleForgotPasswordSubmit()" class="space-y-4">
             <div class="space-y-1">
               <label class="block text-[11px] font-semibold uppercase tracking-wider text-[#5B5650]">
-                Email Address
+                Mobile Number or Email
               </label>
               <input 
-                type="email" 
+                type="text" 
                 [(ngModel)]="forgotEmail" 
                 name="forgotEmail" 
                 required
-                placeholder="you@example.com"
+                placeholder="e.g. 9876543210 or you@example.com"
                 class="w-full py-2.5 px-3 bg-white border border-[#E7E1D3] rounded-lg text-xs text-[#1C1A17] focus:outline-none focus:border-[#6E5410]"
               />
             </div>
@@ -193,10 +198,10 @@
                 class="flex-1 py-3 bg-[#6E5410] text-white font-bold text-xs rounded-lg hover:bg-[#5c4610] transition-colors flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm">
                 @if (forgotLoading()) {
                   <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
-                  <span>Sending Link...</span>
+                  <span>Sending WhatsApp OTP...</span>
                 } @else {
                   <span class="material-symbols-outlined text-sm">send</span>
-                  <span>Send Reset Link</span>
+                  <span>Send WhatsApp OTP</span>
                 }
               </button>
               <button 
@@ -208,8 +213,8 @@
             </div>
 
             <div class="text-center pt-1">
-              <a routerLink="/reset-password" (click)="closeForgotPassword()" class="text-[11px] text-[#6E5410] hover:underline font-semibold">
-                Already have a reset token? Click here
+              <a [routerLink]="['/reset-password']" (click)="closeForgotPassword()" class="text-[11px] text-[#6E5410] hover:underline font-semibold">
+                Already have a 6-digit OTP code? Click here
               </a>
             </div>
           </form>

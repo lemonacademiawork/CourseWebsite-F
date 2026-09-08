@@ -306,14 +306,36 @@ export class AuthService {
     return this.http.patch(`${this.apiUrl}/users/me/password`, { currentPassword, newPassword });
   }
 
-  /** POST /api/v1/auth/forgot-password */
-  forgotPassword(email: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/auth/forgot-password`, { email });
+  /** POST /api/v1/auth/whatsapp/send-otp — Send WhatsApp OTP directly */
+  sendWhatsAppOtp(phone: string, code?: string): Observable<any> {
+    const payload: { phone: string; code?: string } = { phone: phone.trim() };
+    if (code) payload.code = code.trim();
+    return this.http.post(`${this.apiUrl}/auth/whatsapp/send-otp`, payload).pipe(
+      catchError(() => this.http.post(`${this.apiUrl}/auth/whatsapp-otp`, payload))
+    );
   }
 
-  /** POST /api/v1/auth/reset-password */
-  resetPassword(token: string, newPassword: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/auth/reset-password`, { token, newPassword });
+  /** POST /api/v1/auth/forgot-password — Sends 6-digit WhatsApp/Email OTP */
+  forgotPassword(identifier: string): Observable<any> {
+    const clean = identifier.trim();
+    const isPhone = !clean.includes('@') && /[0-9]{7,15}/.test(clean.replace(/\D/g, ''));
+    const payload = isPhone
+      ? { phone: clean.replace(/\D/g, ''), identifier: clean }
+      : { email: clean, identifier: clean };
+
+    return this.http.post(`${this.apiUrl}/auth/forgot-password`, payload);
+  }
+
+  /** POST /api/v1/auth/reset-password — Reset password using 6-digit OTP token */
+  resetPassword(token: string, newPassword: string, phone?: string): Observable<any> {
+    const payload: { token: string; newPassword: string; phone?: string } = {
+      token: token.trim(),
+      newPassword
+    };
+    if (phone && phone.trim()) {
+      payload.phone = phone.trim().replace(/\D/g, '');
+    }
+    return this.http.post(`${this.apiUrl}/auth/reset-password`, payload);
   }
 
 

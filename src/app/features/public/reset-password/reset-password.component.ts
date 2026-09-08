@@ -15,6 +15,7 @@ import { AuthService } from '../../../core/services/auth.service';
 export class ResetPasswordComponent implements OnInit {
   mode = signal<'reset' | 'request'>('reset');
   token = signal<string>('');
+  phone = signal<string>('');
   email = signal<string>('');
   newPassword = signal<string>('');
   confirmPassword = signal<string>('');
@@ -31,14 +32,25 @@ export class ResetPasswordComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const tokenParam = this.route.snapshot.queryParamMap.get('token') || this.route.snapshot.paramMap.get('token');
-    if (tokenParam) {
-      this.token.set(tokenParam);
-      this.mode.set('reset');
-    } else {
-      // If no token in URL, start in request mode
-      this.mode.set('request');
-    }
+    this.route.queryParams.subscribe(params => {
+      const tokenParam = params['token'] || this.route.snapshot.paramMap.get('token');
+      const phoneParam = params['phone'];
+      const emailParam = params['email'];
+
+      if (tokenParam) {
+        this.token.set(tokenParam);
+        this.mode.set('reset');
+      } else {
+        this.mode.set('request');
+      }
+
+      if (phoneParam) {
+        this.phone.set(phoneParam);
+      }
+      if (emailParam) {
+        this.email.set(emailParam);
+      }
+    });
   }
 
   togglePasswordVisibility(): void {
@@ -46,9 +58,9 @@ export class ResetPasswordComponent implements OnInit {
   }
 
   submitRequestLink(): void {
-    const em = this.email().trim();
-    if (!em) {
-      this.errorMessage.set('Please enter your account email address.');
+    const identifier = this.phone().trim() || this.email().trim();
+    if (!identifier) {
+      this.errorMessage.set('Please enter your mobile number or email address.');
       return;
     }
 
@@ -56,25 +68,31 @@ export class ResetPasswordComponent implements OnInit {
     this.errorMessage.set('');
     this.requestSuccess.set('');
 
-    this.authService.forgotPassword(em).subscribe({
+    this.authService.forgotPassword(identifier).subscribe({
       next: (res: any) => {
         this.isLoading.set(false);
-        this.requestSuccess.set(res?.message || 'Password reset link and token have been sent to your email.');
+        const data = res?.data || res || {};
+        const msg = data.message || res?.message || 'A 6-digit verification OTP has been sent to your WhatsApp!';
+        this.requestSuccess.set(msg);
+        if (data.resetToken || data.otpCode) {
+          this.token.set(data.resetToken || data.otpCode);
+        }
       },
       error: (err: any) => {
         this.isLoading.set(false);
-        this.errorMessage.set(err?.error?.message || 'Failed to send reset link. Please verify your email.');
+        this.errorMessage.set(err?.error?.message || 'Failed to send WhatsApp OTP. Please check your number.');
       }
     });
   }
 
   submitReset(): void {
     const t = this.token().trim();
+    const phoneNum = this.phone().trim();
     const pass = this.newPassword();
     const confirm = this.confirmPassword();
 
     if (!t) {
-      this.errorMessage.set('Reset token is required.');
+      this.errorMessage.set('6-digit OTP code / reset token is required.');
       return;
     }
 
@@ -91,8 +109,8 @@ export class ResetPasswordComponent implements OnInit {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    this.authService.resetPassword(t, pass).subscribe({
-      next: () => {
+    this.authService.resetPassword(t, pass, phoneNum || undefined).subscribe({
+      next: (res: any) => {
         this.isLoading.set(false);
         this.isSuccess.set(true);
         setTimeout(() => {
@@ -101,7 +119,7 @@ export class ResetPasswordComponent implements OnInit {
       },
       error: (err: any) => {
         this.isLoading.set(false);
-        this.errorMessage.set(err?.error?.message || 'Failed to reset password. The token may have expired.');
+        this.errorMessage.set(err?.error?.message || 'Failed to reset password. The OTP code may have expired or is incorrect.');
       }
     });
   }

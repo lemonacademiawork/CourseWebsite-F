@@ -57,11 +57,16 @@ export class LoginComponent implements OnInit {
     });
   }
 
+  forgotResetUrl = signal<string>('');
+  forgotResetToken = signal<string>('');
+
   openForgotPassword(event?: Event): void {
     if (event) event.preventDefault();
     this.forgotEmail.set(this.email() || '');
     this.forgotSuccess.set('');
     this.forgotError.set('');
+    this.forgotResetUrl.set('');
+    this.forgotResetToken.set('');
     this.showForgotModal.set(true);
   }
 
@@ -70,9 +75,9 @@ export class LoginComponent implements OnInit {
   }
 
   handleForgotPasswordSubmit(): void {
-    const email = this.forgotEmail().trim();
-    if (!email) {
-      this.forgotError.set('Please enter your registered email address.');
+    const identifier = this.forgotEmail().trim();
+    if (!identifier) {
+      this.forgotError.set('Please enter your registered mobile number or email address.');
       return;
     }
 
@@ -80,16 +85,22 @@ export class LoginComponent implements OnInit {
     this.forgotError.set('');
     this.forgotSuccess.set('');
 
-    this.authService.forgotPassword(email).subscribe({
+    this.authService.forgotPassword(identifier).subscribe({
       next: (res: any) => {
         this.forgotLoading.set(false);
-        const msg = res?.message || 'Password reset link and instructions have been sent to your email.';
+        const data = res?.data || res || {};
+        const msg = data.message || res?.message || 'Password reset OTP has been sent to your WhatsApp and email.';
         this.forgotSuccess.set(msg);
+        if (data.resetToken || data.otpCode) {
+          this.forgotResetToken.set(data.resetToken || data.otpCode);
+        }
+        if (data.resetUrl) {
+          this.forgotResetUrl.set(data.resetUrl);
+        }
       },
       error: (err: any) => {
         this.forgotLoading.set(false);
-        // Even if server returns 404/generic, show friendly guidance
-        const msg = err?.error?.message || 'Failed to send reset link. Please verify your email address.';
+        const msg = err?.error?.message || err?.error?.error || 'Failed to send WhatsApp OTP. Please verify your phone or email.';
         this.forgotError.set(msg);
       }
     });
