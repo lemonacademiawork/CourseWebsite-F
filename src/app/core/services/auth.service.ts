@@ -89,8 +89,112 @@ export class AuthService {
   }
 
   /** GET /api/v1/auth/google — redirect to Google OAuth */
-  loginWithGoogle(): void {
-    window.location.href = 'https://lemonwebsite-backend.onrender.com/api/v1/auth/google';
+  loginWithGoogle(returnUrl?: string): void {
+    if (typeof window !== 'undefined') {
+      const targetUrl = returnUrl || window.location.pathname;
+      if (targetUrl && !targetUrl.startsWith('/login') && !targetUrl.startsWith('/signup')) {
+        sessionStorage.setItem('oauth_return_url', targetUrl);
+        localStorage.setItem('oauth_return_url', targetUrl);
+      }
+    }
+    window.location.href = `${this.apiUrl}/auth/google`;
+  }
+
+  /** Decode JWT payload safely */
+  parseJwt(token: string): any {
+    if (!token) return null;
+    try {
+      const parts = token.split('.');
+      if (parts.length < 2) return null;
+      const base64Url = parts[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch {
+      return null;
+    }
+  }
+
+  /** Complete OAuth authentication from token and optional metadata */
+  handleOAuthSuccess(token: string, refreshToken?: string, explicitRole?: string, explicitName?: string, explicitEmail?: string): void {
+    if (!token) return;
+
+    let role = explicitRole ? this.normalizeRole(explicitRole) : '';
+    let name = explicitName || '';
+    let email = explicitEmail || '';
+
+    // If metadata wasn't passed in query params, extract from JWT payload
+    const decoded = this.parseJwt(token);
+    if (decoded) {
+      if (!role) {
+        role = this.normalizeRole(decoded.role || decoded.userRole || decoded.user?.role || 'student');
+      }
+      if (!name) {
+        name = decoded.name || decoded.fullName || decoded.userName || decoded.user?.name || decoded.user?.fullName || '';
+      }
+      if (!email) {
+        email = decoded.email || decoded.userEmail || decoded.user?.email || '';
+      }
+    }
+
+    if (!role) role = 'student';
+    if (!name && email) name = email.split('@')[0];
+    if (!name) name = 'User';
+
+    this.persistAuth(true, role, name, email, token);
+
+    if (refreshToken) {
+      this.storeRefreshToken(refreshToken);
+    }
+
+    // Refresh profile details in background
+    this.fetchUserProfile().subscribe({ error: () => {} });
+  }
+
+  /** Navigate user to the proper screen after authentication */
+  navigateAfterAuth(customReturnUrl?: string | null): void {
+    let returnUrl = customReturnUrl;
+
+    if (!returnUrl && typeof window !== 'undefined') {
+      returnUrl = sessionStorage.getItem('oauth_return_url') || localStorage.getItem('oauth_return_url');
+      sessionStorage.removeItem('oauth_return_url');
+      localStorage.removeItem('oauth_return_url');
+    }
+
+    const role = (this.userRole() || '').toLowerCase();
+
+    if (role === 'admin') {
+      if (returnUrl && returnUrl.startsWith('/admin')) {
+        this.router.navigateByUrl(returnUrl);
+      } else {
+        this.router.navigate(['/admin/dashboard']);
+      }
+    } else if (role === 'trainer') {
+      if (returnUrl && returnUrl.startsWith('/trainer')) {
+        this.router.navigateByUrl(returnUrl);
+      } else {
+        this.router.navigate(['/trainer/dashboard']);
+      }
+    } else {
+      if (
+        returnUrl &&
+        !returnUrl.startsWith('/admin') &&
+        !returnUrl.startsWith('/trainer') &&
+        !returnUrl.startsWith('/login') &&
+        !returnUrl.startsWith('/signup') &&
+        !returnUrl.startsWith('/auth') &&
+        !returnUrl.startsWith('/403')
+      ) {
+        this.router.navigateByUrl(returnUrl);
+      } else {
+        this.router.navigate(['/']);
+      }
+    }
   }
 
   /** GET /api/v1/auth/me */

@@ -35,6 +35,7 @@ import { NotFoundComponent } from './features/public/not-found/not-found.compone
 // New Public Features
 import { VerifyCertificateComponent } from './features/public/verify-certificate/verify-certificate.component';
 import { ResetPasswordComponent } from './features/public/reset-password/reset-password.component';
+import { AuthCallbackComponent } from './features/public/auth-callback/auth-callback.component';
 
 // Admin Features
 import { AdminDashboardComponent } from './features/admin/dashboard/admin-dashboard.component';
@@ -88,6 +89,10 @@ export const routes: Routes = [
       { path: 'gallery/share', component: GalleryUploadComponent },
       { path: 'login', component: LoginComponent },
       { path: 'signup', component: SignupComponent },
+      { path: 'auth/callback', component: AuthCallbackComponent },
+      { path: 'auth/google/callback', component: AuthCallbackComponent },
+      { path: 'oauth/callback', component: AuthCallbackComponent },
+      { path: 'login/callback', component: AuthCallbackComponent },
       { path: 'forgot-password', component: ResetPasswordComponent },
       { path: 'reset-password', component: ResetPasswordComponent },
       { path: 'verify-certificate', component: VerifyCertificateComponent },

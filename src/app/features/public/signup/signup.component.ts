@@ -1,5 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
@@ -11,9 +11,10 @@ import { AuthService } from '../../../core/services/auth.service';
   templateUrl: './signup.component.html',
   styleUrl: './signup.component.css'
 })
-export class SignupComponent {
+export class SignupComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   name = signal<string>('');
   email = signal<string>('');
@@ -21,6 +22,32 @@ export class SignupComponent {
   password = signal<string>('');
   loading = signal<boolean>(false);
   error = signal<string>('');
+  returnUrl = signal<string | null>(null);
+
+  ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      this.returnUrl.set(params['returnUrl'] || null);
+
+      const err = params['error'] || params['message'];
+      if (err) {
+        this.error.set(decodeURIComponent(err));
+      }
+
+      const token = params['token'] || params['accessToken'] || params['jwt'] || params['id_token'];
+      if (token) {
+        const refreshToken = params['refreshToken'] || params['refresh_token'];
+        const role = params['role'];
+        const name = params['name'] || params['userName'];
+        const email = params['email'];
+        this.authService.handleOAuthSuccess(token, refreshToken, role, name, email);
+        this.authService.navigateAfterAuth(this.returnUrl());
+      }
+    });
+  }
+
+  handleGoogleLogin(): void {
+    this.authService.loginWithGoogle(this.returnUrl() || undefined);
+  }
 
   handleSignup(): void {
     this.error.set('');
@@ -55,3 +82,4 @@ export class SignupComponent {
     });
   }
 }
+

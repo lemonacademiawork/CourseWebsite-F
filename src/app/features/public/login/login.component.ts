@@ -33,9 +33,26 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       this.returnUrl.set(params['returnUrl'] || null);
+
       const reg = params['registered'];
       if (reg === 'true') {
         this.info.set('Account created successfully! Please log in.');
+      }
+
+      const err = params['error'] || params['message'];
+      if (err) {
+        this.error.set(decodeURIComponent(err));
+      }
+
+      // Check for OAuth tokens returned in query params
+      const token = params['token'] || params['accessToken'] || params['jwt'] || params['id_token'];
+      if (token) {
+        const refreshToken = params['refreshToken'] || params['refresh_token'];
+        const role = params['role'];
+        const name = params['name'] || params['userName'];
+        const email = params['email'];
+        this.authService.handleOAuthSuccess(token, refreshToken, role, name, email);
+        this.authService.navigateAfterAuth(this.returnUrl());
       }
     });
   }
@@ -79,9 +96,8 @@ export class LoginComponent implements OnInit {
   }
 
   handleGoogleLogin(): void {
-    this.authService.loginWithGoogle();
+    this.authService.loginWithGoogle(this.returnUrl() || undefined);
   }
-
 
   handleLogin(): void {
     this.error.set('');
@@ -92,30 +108,9 @@ export class LoginComponent implements OnInit {
 
     this.loading.set(true);
     this.authService.login({ email: this.email(), password: this.password() }).subscribe({
-      next: (res) => {
+      next: () => {
         this.loading.set(false);
-        const role = (this.authService.userRole() || '').toLowerCase();
-        const returnUrl = this.returnUrl();
-
-        if (role === 'admin') {
-          if (returnUrl && returnUrl.startsWith('/admin')) {
-            this.router.navigateByUrl(returnUrl);
-          } else {
-            this.router.navigate(['/admin/dashboard']);
-          }
-        } else if (role === 'trainer') {
-          if (returnUrl && returnUrl.startsWith('/trainer')) {
-            this.router.navigateByUrl(returnUrl);
-          } else {
-            this.router.navigate(['/trainer/dashboard']);
-          }
-        } else {
-          if (returnUrl && !returnUrl.startsWith('/admin') && !returnUrl.startsWith('/trainer') && !returnUrl.startsWith('/403')) {
-            this.router.navigateByUrl(returnUrl);
-          } else {
-            this.router.navigate(['/']);
-          }
-        }
+        this.authService.navigateAfterAuth(this.returnUrl());
       },
       error: (err) => {
         this.loading.set(false);
