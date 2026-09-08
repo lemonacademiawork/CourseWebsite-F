@@ -56,14 +56,20 @@ export class BecomeTrainerComponent implements OnInit {
     const expNumber = parseInt(String(this.experience() || '').replace(/\D/g, ''), 10) || 1;
 
     const applicationData = {
+      name: this.name().trim(),
       fullName: this.name().trim(),
       email: this.email().trim(),
       phone: this.phone().trim() || '+910000000000',
+      course: this.course().trim(),
       expertise: this.course().trim(),
+      experience: String(this.experience() || expNumber),
       yearsOfExperience: expNumber,
+      runningDates: this.runningDates().trim() || 'Flexible Schedule',
       bio: this.bio().trim() || `Trainer application for ${this.course().trim()}.${this.runningDates() ? ' Proposed schedule: ' + this.runningDates().trim() : ''}`,
       portfolioUrl: this.portfolioUrl().trim() || undefined,
-      sampleVideoUrl: this.sampleVideoUrl().trim() || undefined
+      portfolio: this.portfolioUrl().trim() || undefined,
+      sampleVideoUrl: this.sampleVideoUrl().trim() || undefined,
+      videoUrl: this.sampleVideoUrl().trim() || undefined
     };
 
     this.trainerRequestService.submitApplication(applicationData).subscribe({
@@ -73,7 +79,8 @@ export class BecomeTrainerComponent implements OnInit {
       },
       error: (err) => {
         this.loading.set(false);
-        this.error.set(err?.error?.message || 'Failed to submit application. Please try again.');
+        const msg = err?.error?.message || err?.error?.error || (typeof err?.error === 'string' ? err.error : null) || 'Failed to submit application. Please try again.';
+        this.error.set(msg);
       }
     });
   }

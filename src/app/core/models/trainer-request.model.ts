@@ -3,18 +3,22 @@ export type TrainerRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'Pendin
 export interface TrainerRequest {
   id: string;
   userId?: string | null;
+  name: string;
   fullName: string;
-  name?: string;
   email: string;
   phone: string;
+  course: string;
   expertise: string;
-  course?: string;
   yearsOfExperience: number;
-  experience?: string | number;
+  experience: string | number;
+  runningDates?: string | null;
   bio: string;
   portfolioUrl?: string | null;
+  portfolio?: string | null;
   sampleVideoUrl?: string | null;
+  videoUrl?: string | null;
   resumeUrl?: string | null;
+  resume?: string | null;
   status: TrainerRequestStatus;
   feedbackNotes?: string | null;
   adminFeedback?: string | null;
@@ -32,18 +36,22 @@ export interface TrainerRequest {
 }
 
 export interface SubmitTrainerRequestPayload {
+  name: string;
   fullName: string;
-  name?: string;
   email: string;
   phone: string;
+  course: string;
   expertise: string;
-  course?: string;
+  experience: string | number;
   yearsOfExperience: number;
-  experience?: string | number;
+  runningDates?: string;
   bio: string;
   portfolioUrl?: string;
+  portfolio?: string;
   sampleVideoUrl?: string;
+  videoUrl?: string;
   resumeUrl?: string;
+  resume?: string;
 }
 
 export interface ReviewTrainerRequestPayload {

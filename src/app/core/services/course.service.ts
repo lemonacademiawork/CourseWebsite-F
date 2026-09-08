@@ -163,17 +163,25 @@ export class CourseService {
   }
 
   applyTrainer(data: any): Observable<any> {
+    const expNum = typeof data.yearsOfExperience === 'number' 
+      ? data.yearsOfExperience 
+      : (parseInt(String(data.experience || '').replace(/\D/g, '')) || 1);
+
     const payload = {
+      name: data.name || data.fullName,
       fullName: data.fullName || data.name,
       email: data.email,
       phone: data.phone || '+910000000000',
+      course: data.course || data.expertise || 'Artisan Craft',
       expertise: data.expertise || data.course || 'Artisan Craft',
-      yearsOfExperience: typeof data.yearsOfExperience === 'number' 
-        ? data.yearsOfExperience 
-        : (parseInt(String(data.experience || '').replace(/\D/g, '')) || 1),
+      experience: String(data.experience || expNum),
+      yearsOfExperience: expNum,
+      runningDates: data.runningDates || 'Flexible Schedule',
       bio: data.bio || `Trainer application for ${data.course || data.expertise || 'Craft'}. Proposed times: ${data.runningDates || 'Flexible'}`,
       portfolioUrl: data.portfolioUrl || null,
+      portfolio: data.portfolioUrl || null,
       sampleVideoUrl: data.sampleVideoUrl || null,
+      videoUrl: data.sampleVideoUrl || null,
       resumeUrl: data.resumeUrl || null
     };
     return this.http.post(`${this.apiUrl}/trainer-requests`, payload);
