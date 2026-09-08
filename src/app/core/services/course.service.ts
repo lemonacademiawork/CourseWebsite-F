@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, catchError, of } from 'rxjs';
+import { Observable, map, catchError, of, throwError } from 'rxjs';
 import { Course, CreateCoursePayload, UpdateCoursePayload } from '../models/course.model';
 import { CourseResource, CreateResourcePayload, UpdateResourcePayload, TrainerApplication } from '../models/common.model';
 import { environment } from '../../../environments/environment';
@@ -87,7 +87,13 @@ export class CourseService {
 
   /** DELETE /api/v1/courses/:id — Delete a course */
   deleteCourse(id: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/courses/${id}`);
+    return this.http.delete(`${this.apiUrl}/courses/${id}`).pipe(
+      catchError((err1) => {
+        return this.http.delete(`${this.apiUrl}/admin/courses/${id}`).pipe(
+          catchError(() => throwError(() => err1))
+        );
+      })
+    );
   }
 
   /** PATCH /api/v1/courses/:id/publish — Toggle publish status */

@@ -47,6 +47,7 @@ export class AdminCoursesComponent implements OnInit {
   // Delete course states
   courseToDelete = signal<AdminCourseItem | null>(null);
   isDeleting = signal<boolean>(false);
+  errorMessage = signal<string>('');
 
   ngOnInit(): void {
     this.fetchCourses();
@@ -97,6 +98,7 @@ export class AdminCoursesComponent implements OnInit {
   }
 
   openDeleteConfirm(course: AdminCourseItem): void {
+    this.errorMessage.set('');
     this.courseToDelete.set(course);
   }
 
@@ -105,6 +107,8 @@ export class AdminCoursesComponent implements OnInit {
     if (!course) return;
 
     this.isDeleting.set(true);
+    this.errorMessage.set('');
+
     this.courseService.deleteCourse(course.id).subscribe({
       next: () => {
         this.isDeleting.set(false);
@@ -116,11 +120,11 @@ export class AdminCoursesComponent implements OnInit {
       error: (err) => {
         this.isDeleting.set(false);
         console.error('Failed to delete course:', err);
-        // Optimistically remove from local list if backend succeeded or 404
-        this.courses.update(list => list.filter(c => c.id !== course.id));
-        this.courseToDelete.set(null);
-        this.saveSuccess.set(`Course "${course.title}" deleted.`);
-        setTimeout(() => this.saveSuccess.set(''), 3000);
+        const backendMsg = err?.error?.message || err?.error?.error || '';
+        const msg = backendMsg || (err?.status === 403 
+          ? 'Permission denied (403). Your account does not have admin permissions to delete this course on the server.' 
+          : 'Failed to delete course. Please try again.');
+        this.errorMessage.set(msg);
       }
     });
   }
