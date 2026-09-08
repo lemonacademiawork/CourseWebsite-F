@@ -43,6 +43,8 @@ Roles supported: `STUDENT`, `TRAINER`, `ADMIN`.
 18. [Referrals (`/referrals`)](#18-referrals-apireferrals)
 19. [Student & Trainer Dashboards (`/students`, `/trainers`)](#19-student--trainer-dashboards-apistudents-apitrainers)
 20. [Admin (`/admin`)](#20-admin-apiadmin)
+21. [Coupons & Discounts (`/coupons`)](#21-coupons--discounts-apicoupons)
+22. [Trainer Applications (`/trainer-requests`)](#22-trainer-applications-apitrainer-requests)
 
 ---
 
@@ -785,3 +787,27 @@ Requires `ADMIN` role.
 - `GET /api/v1/admin/orders` — Platform-wide orders and financial ledger
 - `GET /api/v1/admin/courses` — All courses with status
 - `PATCH /api/v1/admin/courses/:id/status` — Approve, reject, or archive courses
+
+---
+
+## 21. Coupons & Discounts (`/api/v1/coupons`)
+
+- `POST /api/v1/coupons/validate` — Validate coupon code, check order threshold, eligibility, and calculate discount (Public/Auth)
+- `GET /api/v1/coupons/public` — List active promotional coupons for banners/deals (Public)
+- `GET /api/v1/coupons` — List all coupons with search, status filters & pagination (Admin)
+- `POST /api/v1/coupons` — Create a new discount coupon (`PERCENTAGE` / `FLAT`) (Admin)
+- `GET /api/v1/coupons/:id` — View coupon details and redemption log (Admin)
+- `PATCH /api/v1/coupons/:id` — Update coupon details, limits, and status (Admin)
+- `DELETE /api/v1/coupons/:id` — Delete coupon (Admin)
+
+---
+
+## 22. Trainer Applications (`/api/v1/trainer-requests`)
+
+- `POST /api/v1/trainer-requests` — Submit "Become a Trainer" application form (Public / Auth)
+- `GET /api/v1/trainer-requests/me` — Check authenticated user's submitted application status (Auth)
+- `GET /api/v1/trainer-requests` — View all submitted applications with status filtering (Admin)
+- `GET /api/v1/trainer-requests/:id` — Get full applicant details, resume & sample video links (Admin)
+- `PATCH /api/v1/trainer-requests/:id/status` — Approve or reject application (approving auto-promotes applicant to `TRAINER` and provisions a `TrainerProfile`) (Admin)
+- `DELETE /api/v1/trainer-requests/:id` — Delete application record (Admin)
+
