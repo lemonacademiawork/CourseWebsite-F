@@ -25,10 +25,18 @@ export class LoginComponent implements OnInit {
 
   // Forgot Password modal state
   showForgotModal = signal<boolean>(false);
+  forgotStep = signal<1 | 2>(1);
   forgotEmail = signal<string>('');
+  forgotOtp = signal<string>('');
+  forgotNewPass = signal<string>('');
+  forgotConfirmPass = signal<string>('');
+  showForgotPass = signal<boolean>(false);
   forgotLoading = signal<boolean>(false);
   forgotSuccess = signal<string>('');
   forgotError = signal<string>('');
+  forgotResetToken = signal<string>('');
+  forgotResendCountdown = signal<number>(0);
+  private forgotTimerInterval: any = null;
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
@@ -57,24 +65,39 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  forgotResetUrl = signal<string>('');
-  forgotResetToken = signal<string>('');
-
   openForgotPassword(event?: Event): void {
     if (event) event.preventDefault();
     this.forgotEmail.set(this.email() || '');
+    this.forgotOtp.set('');
+    this.forgotNewPass.set('');
+    this.forgotConfirmPass.set('');
     this.forgotSuccess.set('');
     this.forgotError.set('');
-    this.forgotResetUrl.set('');
     this.forgotResetToken.set('');
+    this.forgotStep.set(1);
     this.showForgotModal.set(true);
   }
 
   closeForgotPassword(): void {
     this.showForgotModal.set(false);
+    if (this.forgotTimerInterval) {
+      clearInterval(this.forgotTimerInterval);
+    }
   }
 
-  handleForgotPasswordSubmit(): void {
+  startForgotResendTimer(): void {
+    this.forgotResendCountdown.set(45);
+    if (this.forgotTimerInterval) clearInterval(this.forgotTimerInterval);
+    this.forgotTimerInterval = setInterval(() => {
+      if (this.forgotResendCountdown() > 0) {
+        this.forgotResendCountdown.update(v => v - 1);
+      } else {
+        clearInterval(this.forgotTimerInterval);
+      }
+    }, 1000);
+  }
+
+  handleForgotPasswordSendOtp(): void {
     const identifier = this.forgotEmail().trim();
     if (!identifier) {
       this.forgotError.set('Please enter your registered mobile number or email address.');
@@ -89,18 +112,60 @@ export class LoginComponent implements OnInit {
       next: (res: any) => {
         this.forgotLoading.set(false);
         const data = res?.data || res || {};
-        const msg = data.message || res?.message || 'Password reset OTP has been sent to your WhatsApp and email.';
+        const msg = data.message || res?.message || 'A 6-digit WhatsApp OTP code has been sent!';
         this.forgotSuccess.set(msg);
         if (data.resetToken || data.otpCode) {
+          this.forgotOtp.set(data.resetToken || data.otpCode);
           this.forgotResetToken.set(data.resetToken || data.otpCode);
         }
-        if (data.resetUrl) {
-          this.forgotResetUrl.set(data.resetUrl);
-        }
+        this.forgotStep.set(2);
+        this.startForgotResendTimer();
       },
       error: (err: any) => {
         this.forgotLoading.set(false);
-        const msg = err?.error?.message || err?.error?.error || 'Failed to send WhatsApp OTP. Please verify your phone or email.';
+        const msg = err?.error?.message || err?.error?.error || 'User not found. Please verify your mobile number or email.';
+        this.forgotError.set(msg);
+      }
+    });
+  }
+
+  handleModalResetPassword(): void {
+    const code = this.forgotOtp().trim();
+    const phoneNum = this.forgotEmail().trim();
+    const pass = this.forgotNewPass();
+    const confirm = this.forgotConfirmPass();
+
+    if (!code) {
+      this.forgotError.set('Please enter the 6-digit OTP code.');
+      return;
+    }
+
+    if (!pass || pass.length < 6) {
+      this.forgotError.set('Password must be at least 6 characters long.');
+      return;
+    }
+
+    if (pass !== confirm) {
+      this.forgotError.set('Passwords do not match. Please re-enter.');
+      return;
+    }
+
+    this.forgotLoading.set(true);
+    this.forgotError.set('');
+
+    this.authService.resetPassword(code, pass, phoneNum || undefined).subscribe({
+      next: () => {
+        this.forgotLoading.set(false);
+        this.forgotSuccess.set('Password reset successfully! You can now log in.');
+        this.email.set(phoneNum);
+        this.password.set('');
+        setTimeout(() => {
+          this.closeForgotPassword();
+        }, 2000);
+      },
+      error: (err: any) => {
+        this.forgotLoading.set(false);
+        const msg = err?.error?.message || err?.error?.error || 'Invalid or expired OTP code. Please try again.';
         this.forgotError.set(msg);
       }
     });

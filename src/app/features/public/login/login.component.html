@@ -125,7 +125,7 @@
   <!-- Forgot Password Modal -->
   @if (showForgotModal()) {
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
-      <div class="bg-surface-container-lowest border border-outline-variant/40 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5 bg-[#FBF8F1] text-[#1C1A17]">
+      <div class="bg-surface-container-lowest border border-outline-variant/40 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4 bg-[#FBF8F1] text-[#1C1A17]">
         
         <div class="flex items-center justify-between border-b border-[#E7E1D3] pb-3">
           <div class="flex items-center gap-2">
@@ -140,84 +140,198 @@
           </button>
         </div>
 
-        @if (forgotSuccess()) {
-          <div class="p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 text-xs space-y-3">
-            <div class="flex items-start gap-2">
-              <span class="material-symbols-outlined text-green-600 text-base shrink-0">check_circle</span>
-              <p class="leading-relaxed">{{ forgotSuccess() }}</p>
-            </div>
-            <div class="pt-2 border-t border-green-200/60 flex items-center justify-between gap-2">
-              <a 
-                [routerLink]="['/reset-password']" 
-                [queryParams]="{ token: forgotResetToken() || null, phone: forgotEmail() || null }" 
-                (click)="closeForgotPassword()" 
-                class="text-[#6E5410] font-bold hover:underline flex items-center gap-1 text-xs">
-                <span>Enter OTP &amp; Reset Password</span>
-                <span class="material-symbols-outlined text-sm">arrow_forward</span>
-              </a>
-              <button 
-                type="button" 
-                (click)="closeForgotPassword()" 
-                class="px-3 py-1 rounded bg-green-700 text-white font-semibold text-xs">
-                Close
-              </button>
-            </div>
+        @if (forgotSuccess() && forgotStep() === 1) {
+          <div class="p-3 rounded-lg bg-green-50 border border-green-200 text-green-800 text-xs flex items-center gap-2">
+            <span class="material-symbols-outlined text-green-600 text-base shrink-0">check_circle</span>
+            <p>{{ forgotSuccess() }}</p>
+          </div>
+        }
+
+        @if (forgotSuccess() && forgotStep() === 2 && !forgotLoading()) {
+          <div class="p-4 rounded-xl bg-green-50 border border-green-200 text-green-800 text-xs space-y-2 text-center animate-fadeIn">
+            <span class="material-symbols-outlined text-green-600 text-3xl">task_alt</span>
+            <p class="font-bold text-sm text-green-900">{{ forgotSuccess() }}</p>
+            <p class="text-green-700 text-[11px]">Returning you to login...</p>
           </div>
         } @else {
-          <p class="text-xs text-[#5B5650] leading-relaxed flex items-center gap-1.5">
-            <span class="material-symbols-outlined text-[#25D366] text-base">chat</span>
-            <span>Enter your registered 10-digit mobile number or email to receive a 6-digit WhatsApp OTP verification code.</span>
-          </p>
 
           @if (forgotError()) {
             <div class="p-2.5 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
-              <span class="material-symbols-outlined text-sm">error</span>
+              <span class="material-symbols-outlined text-sm shrink-0">error</span>
               <span>{{ forgotError() }}</span>
             </div>
           }
 
-          <form (ngSubmit)="handleForgotPasswordSubmit()" class="space-y-4">
-            <div class="space-y-1">
-              <label class="block text-[11px] font-semibold uppercase tracking-wider text-[#5B5650]">
-                Mobile Number or Email
-              </label>
-              <input 
-                type="text" 
-                [(ngModel)]="forgotEmail" 
-                name="forgotEmail" 
-                required
-                placeholder="e.g. 9876543210 or you@example.com"
-                class="w-full py-2.5 px-3 bg-white border border-[#E7E1D3] rounded-lg text-xs text-[#1C1A17] focus:outline-none focus:border-[#6E5410]"
-              />
-            </div>
+          <!-- Modal STEP 1: Enter Number -->
+          @if (forgotStep() === 1) {
+            <p class="text-xs text-[#5B5650] leading-relaxed flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[#25D366] text-base">chat</span>
+              <span>Enter your registered mobile number or email to receive a 6-digit WhatsApp OTP code.</span>
+            </p>
 
-            <div class="flex items-center gap-3 pt-2">
-              <button 
-                type="submit" 
-                [disabled]="forgotLoading()"
-                class="flex-1 py-3 bg-[#6E5410] text-white font-bold text-xs rounded-lg hover:bg-[#5c4610] transition-colors flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm">
-                @if (forgotLoading()) {
-                  <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
-                  <span>Sending WhatsApp OTP...</span>
-                } @else {
-                  <span class="material-symbols-outlined text-sm">send</span>
-                  <span>Send WhatsApp OTP</span>
-                }
-              </button>
+            <form (ngSubmit)="handleForgotPasswordSendOtp()" class="space-y-4">
+              <div class="space-y-1">
+                <label class="block text-[11px] font-semibold uppercase tracking-wider text-[#5B5650]">
+                  Mobile Number or Email
+                </label>
+                <input 
+                  type="text" 
+                  [ngModel]="forgotEmail()" 
+                  (ngModelChange)="forgotEmail.set($event)"
+                  name="forgotEmail" 
+                  required
+                  placeholder="e.g. 9653011178 or you@example.com"
+                  class="w-full py-2.5 px-3 bg-white border border-[#E7E1D3] rounded-lg text-xs text-[#1C1A17] focus:outline-none focus:border-[#6E5410]"
+                />
+              </div>
+
+              <div class="flex items-center gap-3 pt-1">
+                <button 
+                  type="submit" 
+                  [disabled]="forgotLoading()"
+                  class="flex-1 py-3 bg-[#6E5410] text-white font-bold text-xs rounded-lg hover:bg-[#5c4610] transition-colors flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm">
+                  @if (forgotLoading()) {
+                    <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                    <span>Sending WhatsApp OTP...</span>
+                  } @else {
+                    <span class="material-symbols-outlined text-sm">send</span>
+                    <span>Send WhatsApp OTP</span>
+                  }
+                </button>
+                <button 
+                  type="button" 
+                  (click)="closeForgotPassword()" 
+                  class="px-4 py-3 bg-[#E7E1D3]/50 text-[#5B5650] font-semibold text-xs rounded-lg hover:bg-[#E7E1D3] transition-colors cursor-pointer">
+                  Cancel
+                </button>
+              </div>
+
+              <div class="text-center pt-1">
+                <button 
+                  type="button" 
+                  (click)="forgotStep.set(2)" 
+                  class="text-[11px] text-[#6E5410] hover:underline font-semibold bg-transparent border-none cursor-pointer">
+                  Already have an OTP code? Enter it here →
+                </button>
+              </div>
+            </form>
+          }
+
+          <!-- Modal STEP 2: Enter OTP + New Password -->
+          @if (forgotStep() === 2) {
+            <div class="bg-[#F6EFE2] border border-[#E7DECD] rounded-lg p-2.5 text-xs text-[#5B5650] flex items-center justify-between">
+              <div class="flex items-center gap-1.5 overflow-hidden">
+                <span class="material-symbols-outlined text-[#25D366] text-sm shrink-0">chat</span>
+                <span class="truncate">OTP for: <strong class="text-[#1C1A17]">{{ forgotEmail() || 'your number' }}</strong></span>
+              </div>
               <button 
                 type="button" 
-                (click)="closeForgotPassword()" 
-                class="px-4 py-3 bg-[#E7E1D3]/50 text-[#5B5650] font-semibold text-xs rounded-lg hover:bg-[#E7E1D3] transition-colors cursor-pointer">
-                Cancel
+                (click)="forgotStep.set(1)" 
+                class="text-[#6E5410] font-bold text-[11px] hover:underline bg-transparent border-none p-0 cursor-pointer shrink-0 ml-2">
+                Change
               </button>
             </div>
 
-            <div class="text-center pt-1">
-              <a [routerLink]="['/reset-password']" (click)="closeForgotPassword()" class="text-[11px] text-[#6E5410] hover:underline font-semibold">
-                Already have a 6-digit OTP code? Click here
-              </a>
-            </div>
-          </form>
+            <form (ngSubmit)="handleModalResetPassword()" class="space-y-3">
+              <div class="space-y-1">
+                <div class="flex items-center justify-between">
+                  <label class="block text-[11px] font-semibold uppercase tracking-wider text-[#5B5650]">
+                    6-Digit WhatsApp OTP
+                  </label>
+                  @if (forgotResendCountdown() > 0) {
+                    <span class="text-[#8C827A] text-[10px]">Resend in {{ forgotResendCountdown() }}s</span>
+                  } @else {
+                    <button 
+                      type="button" 
+                      (click)="handleForgotPasswordSendOtp()" 
+                      [disabled]="forgotLoading()"
+                      class="text-[#6E5410] font-semibold text-[10px] hover:underline bg-transparent border-none p-0 cursor-pointer">
+                      Resend OTP
+                    </button>
+                  }
+                </div>
+                <input 
+                  type="text" 
+                  maxlength="6"
+                  placeholder="e.g. 212272"
+                  [ngModel]="forgotOtp()" 
+                  (ngModelChange)="forgotOtp.set($event)"
+                  name="forgotOtp" 
+                  required
+                  class="w-full py-2 px-3 bg-white border border-[#E7E1D3] rounded-lg font-mono tracking-[3px] text-sm font-bold text-[#1C1A17] focus:outline-none focus:border-[#6E5410]"
+                />
+              </div>
+
+              <div class="space-y-1">
+                <label class="block text-[11px] font-semibold uppercase tracking-wider text-[#5B5650]">
+                  New Password
+                </label>
+                <div class="relative">
+                  <input 
+                    [type]="showForgotPass() ? 'text' : 'password'"
+                    placeholder="Minimum 6 characters"
+                    [ngModel]="forgotNewPass()" 
+                    (ngModelChange)="forgotNewPass.set($event)"
+                    name="forgotNewPass" 
+                    required
+                    class="w-full py-2 px-3 bg-white border border-[#E7E1D3] rounded-lg text-xs text-[#1C1A17] focus:outline-none focus:border-[#6E5410] pr-8"
+                  />
+                  <button 
+                    type="button" 
+                    (click)="showForgotPass.update(v => !v)" 
+                    class="absolute right-2 top-1/2 -translate-y-1/2 text-[#5B5650] hover:text-[#1C1A17] bg-transparent border-none p-1 cursor-pointer">
+                    <span class="material-symbols-outlined text-sm">{{ showForgotPass() ? 'visibility_off' : 'visibility' }}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="space-y-1">
+                <label class="block text-[11px] font-semibold uppercase tracking-wider text-[#5B5650]">
+                  Confirm New Password
+                </label>
+                <input 
+                  [type]="showForgotPass() ? 'text' : 'password'"
+                  placeholder="Re-enter new password"
+                  [ngModel]="forgotConfirmPass()" 
+                  (ngModelChange)="forgotConfirmPass.set($event)"
+                  name="forgotConfirmPass" 
+                  required
+                  class="w-full py-2 px-3 bg-white border border-[#E7E1D3] rounded-lg text-xs text-[#1C1A17] focus:outline-none focus:border-[#6E5410]"
+                />
+              </div>
+
+              <div class="flex items-center gap-3 pt-2">
+                <button 
+                  type="submit" 
+                  [disabled]="forgotLoading()"
+                  class="flex-1 py-3 bg-[#6E5410] text-white font-bold text-xs rounded-lg hover:bg-[#5c4610] transition-colors flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm">
+                  @if (forgotLoading()) {
+                    <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                    <span>Saving New Password...</span>
+                  } @else {
+                    <span class="material-symbols-outlined text-sm">lock_reset</span>
+                    <span>Reset &amp; Save Password</span>
+                  }
+                </button>
+                <button 
+                  type="button" 
+                  (click)="closeForgotPassword()" 
+                  class="px-4 py-3 bg-[#E7E1D3]/50 text-[#5B5650] font-semibold text-xs rounded-lg hover:bg-[#E7E1D3] transition-colors cursor-pointer">
+                  Cancel
+                </button>
+              </div>
+
+              <div class="text-center pt-1">
+                <button 
+                  type="button" 
+                  (click)="forgotStep.set(1)" 
+                  class="text-[11px] text-[#5B5650] hover:text-[#1C1A17] hover:underline bg-transparent border-none cursor-pointer">
+                  ← Back to change number
+                </button>
+              </div>
+            </form>
+          }
+
         }
 
       </div>
