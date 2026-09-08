@@ -87,13 +87,7 @@ export class CourseService {
 
   /** DELETE /api/v1/courses/:id — Delete a course */
   deleteCourse(id: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/courses/${id}`).pipe(
-      catchError((err1) => {
-        return this.http.delete(`${this.apiUrl}/admin/courses/${id}`).pipe(
-          catchError(() => throwError(() => err1))
-        );
-      })
-    );
+    return this.http.delete(`${this.apiUrl}/courses/${id}`);
   }
 
   /** PATCH /api/v1/courses/:id/publish — Toggle publish status */
