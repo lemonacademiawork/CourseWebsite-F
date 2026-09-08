@@ -206,11 +206,20 @@ import { Course } from '../../../core/models/course.model';
               <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/35 shadow-sm space-y-5">
                 <div class="flex items-center justify-between border-b border-outline-variant/20 pb-4">
                   <div class="space-y-0.5">
-                    <span class="text-[10px] font-bold text-primary uppercase tracking-widest">Course Enrollment</span>
+                    <span class="text-[10px] font-bold text-primary uppercase tracking-widest">
+                      {{ enrolled() ? 'Access Granted' : 'Course Enrollment' }}
+                    </span>
                     <div class="flex items-baseline gap-2">
-                      <span class="text-2xl font-bold text-primary">Rs. {{ course().price }}</span>
-                      <span class="text-xs text-outline line-through">Rs. {{ course().price * 3 }}</span>
-                      <span class="text-[10px] font-semibold text-secondary bg-secondary-fixed/50 px-1.5 py-0.5 rounded">66% OFF</span>
+                      @if (enrolled()) {
+                        <span class="text-xl font-bold text-green-700 flex items-center gap-1.5">
+                          <span class="material-symbols-outlined text-lg">check_circle</span>
+                          Enrolled
+                        </span>
+                      } @else {
+                        <span class="text-2xl font-bold text-primary">Rs. {{ course().price }}</span>
+                        <span class="text-xs text-outline line-through">Rs. {{ course().price * 3 }}</span>
+                        <span class="text-[10px] font-semibold text-secondary bg-secondary-fixed/50 px-1.5 py-0.5 rounded">66% OFF</span>
+                      }
                     </div>
                   </div>
                   <span class="text-[10px] font-semibold text-tertiary bg-tertiary-fixed/60 px-2.5 py-1 rounded-full border border-tertiary/20">
@@ -222,13 +231,19 @@ import { Course } from '../../../core/models/course.model';
                   <button 
                     (click)="handleEnrollClick()"
                     class="w-full bg-primary text-on-primary font-semibold py-3.5 rounded-xl hover:opacity-95 transition-opacity shadow-sm text-xs cursor-pointer flex items-center justify-center gap-2">
-                    <span class="material-symbols-outlined text-sm">{{ enrolled() ? 'arrow_forward' : 'lock_open' }}</span>
-                    <span>{{ enrolled() ? 'Go to My Courses' : 'Enroll Now' }}</span>
+                    <span class="material-symbols-outlined text-sm">{{ enrolled() ? 'play_circle' : 'lock_open' }}</span>
+                    <span>{{ enrolled() ? 'Start Learning' : 'Enroll Now' }}</span>
                   </button>
 
-                  <button (click)="openCheckoutModal()" class="w-full border border-outline-variant/60 text-on-surface font-semibold py-3 rounded-xl hover:bg-surface-container-low transition-colors text-xs cursor-pointer">
-                    Gift this Course
-                  </button>
+                  @if (!enrolled()) {
+                    <button (click)="openCheckoutModal()" class="w-full border border-outline-variant/60 text-on-surface font-semibold py-3 rounded-xl hover:bg-surface-container-low transition-colors text-xs cursor-pointer">
+                      Gift this Course
+                    </button>
+                  } @else {
+                    <a routerLink="/my-courses" class="w-full border border-outline-variant/60 text-on-surface font-semibold py-3 rounded-xl hover:bg-surface-container-low transition-colors text-xs cursor-pointer text-center block">
+                      View in My Courses
+                    </a>
+                  }
                 </div>
 
                 <div class="pt-4 border-t border-outline-variant/20 space-y-2.5 text-[11px] text-on-surface-variant">
@@ -531,19 +546,76 @@ export class CourseLippanComponent implements OnInit {
       this.courseService.getCourse(courseId).subscribe(found => {
         if (found) {
           this.course.set(found);
-          // Check enrollment status via API
-          if (this.authService.isLoggedIn()) {
-            this.enrollmentService.getEnrollments().subscribe({
-              next: (enrollments) => {
-                const isEnrolled = enrollments.some(e => e.courseId === found.id || e.course?.id === found.id || e.id === found.id);
-                this.enrolled.set(isEnrolled);
-              },
-              error: () => this.enrolled.set(false)
-            });
-          }
+          this.checkEnrollmentStatus(found);
         }
       });
     });
+  }
+
+  private checkEnrollmentStatus(found: Course): void {
+    // 1. Check local storage cache
+    if (typeof window !== 'undefined') {
+      const purchased = localStorage.getItem('purchased_courses');
+      if (purchased) {
+        try {
+          const list = JSON.parse(purchased);
+          if (Array.isArray(list)) {
+            const isPurchasedLocally = list.some(item => {
+              const id = typeof item === 'string' ? item : (item?.id || item?.courseId || item?.slug);
+              return id === found.id || id === found.slug || (found.id === 'lippan-art' && id === 'lippan-art');
+            });
+            if (isPurchasedLocally) {
+              this.enrolled.set(true);
+            }
+          }
+        } catch {}
+      }
+    }
+
+    // 2. Check live backend enrollment status
+    if (this.authService.isLoggedIn()) {
+      this.enrollmentService.getEnrollments().subscribe({
+        next: (enrollments) => {
+          const isEnrolled = enrollments.some(e =>
+            e.courseId === found.id ||
+            e.course?.id === found.id ||
+            e.course?.slug === found.slug ||
+            (found.slug && e.course?.slug === found.slug) ||
+            e.id === found.id
+          );
+          if (isEnrolled) {
+            this.enrolled.set(true);
+            this.syncPurchasedStorage(found.id);
+          }
+        },
+        error: () => {}
+      });
+
+      if (found.id) {
+        this.enrollmentService.checkEnrollment(found.id).subscribe({
+          next: (res) => {
+            if (res && res.isEnrolled) {
+              this.enrolled.set(true);
+              this.syncPurchasedStorage(found.id);
+            }
+          },
+          error: () => {}
+        });
+      }
+    }
+  }
+
+  private syncPurchasedStorage(courseId: string): void {
+    if (typeof window === 'undefined' || !courseId) return;
+    try {
+      const current = localStorage.getItem('purchased_courses');
+      const list: string[] = current ? JSON.parse(current) : [];
+      if (!list.includes(courseId)) {
+        list.push(courseId);
+        localStorage.setItem('purchased_courses', JSON.stringify(list));
+        window.dispatchEvent(new Event('courses_updated'));
+      }
+    } catch {}
   }
 
   getInstructorImage(instructor: string): string {
@@ -686,6 +758,7 @@ export class CourseLippanComponent implements OnInit {
     }).subscribe({
       next: () => {
         this.enrolled.set(true);
+        this.syncPurchasedStorage(courseId);
         this.enrolling.set(false);
         this.showCheckoutModal.set(false);
         this.lastOrderRef.set(orderNumber);
@@ -697,6 +770,7 @@ export class CourseLippanComponent implements OnInit {
         const errMsg = err?.error?.message || err?.message || 'Failed to complete enrollment.';
         if (errMsg.toLowerCase().includes('already enrolled') || err?.status === 409) {
           this.enrolled.set(true);
+          this.syncPurchasedStorage(courseId);
           this.showCheckoutModal.set(false);
           this.lastOrderRef.set(orderNumber);
           this.lastPaymentRef.set(paymentRef);
