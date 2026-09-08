@@ -124,7 +124,7 @@
                 <input 
                   type="text" 
                   class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:ring-1 focus:ring-primary focus:outline-none" 
-                  placeholder="e.g. 5 years"
+                  placeholder="e.g. 5"
                   [ngModel]="experience()"
                   (ngModelChange)="experience.set($event)"
                   name="experience"
@@ -132,16 +132,40 @@
                 />
               </div>
               <div>
-                <label class="block font-semibold text-on-surface-variant mb-1">Portfolio Link / Website</label>
+                <label class="block font-semibold text-on-surface-variant mb-1">Phone Number</label>
                 <input 
-                  type="url" 
+                  type="tel" 
                   class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:ring-1 focus:ring-primary focus:outline-none" 
-                  placeholder="e.g. https://myportfolio.com"
-                  [ngModel]="portfolioUrl()"
-                  (ngModelChange)="portfolioUrl.set($event)"
-                  name="portfolioUrl"
+                  placeholder="e.g. +91 98765 43210"
+                  [ngModel]="phone()"
+                  (ngModelChange)="phone.set($event)"
+                  name="phone"
                 />
               </div>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-on-surface-variant mb-1">Portfolio Link / Website</label>
+              <input 
+                type="url" 
+                class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:ring-1 focus:ring-primary focus:outline-none" 
+                placeholder="e.g. https://myportfolio.com"
+                [ngModel]="portfolioUrl()"
+                (ngModelChange)="portfolioUrl.set($event)"
+                name="portfolioUrl"
+              />
+            </div>
+
+            <div>
+              <label class="block font-semibold text-on-surface-variant mb-1">Sample Teaching / Craft Video Link (Optional)</label>
+              <input 
+                type="url" 
+                class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 focus:ring-1 focus:ring-primary focus:outline-none" 
+                placeholder="e.g. YouTube / Drive / Vimeo video URL"
+                [ngModel]="sampleVideoUrl()"
+                (ngModelChange)="sampleVideoUrl.set($event)"
+                name="sampleVideoUrl"
+              />
             </div>
 
             <button 

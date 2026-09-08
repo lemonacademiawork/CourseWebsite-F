@@ -121,6 +121,7 @@ export const routes: Routes = [
       { path: 'content/upload', component: AdminContentUploadComponent },
       { path: 'applications', component: AdminApplicationsComponent },
       { path: 'applications/review', component: AdminApplicationsReviewComponent },
+      { path: 'applications/review/:id', component: AdminApplicationsReviewComponent },
       { path: 'coupons', component: AdminCouponsComponent },
       { path: 'coupons/create', component: AdminCouponsCreateComponent },
       { path: 'blogs', component: AdminBlogsComponent },

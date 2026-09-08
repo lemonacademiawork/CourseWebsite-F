@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { CourseService } from '../../../core/services/course.service';
+import { TrainerRequestService } from '../../../core/services/trainer-request.service';
 
 @Component({
   selector: 'app-become-trainer',
@@ -13,7 +13,7 @@ import { CourseService } from '../../../core/services/course.service';
 })
 export class BecomeTrainerComponent implements OnInit {
   private authService = inject(AuthService);
-  private courseService = inject(CourseService);
+  private trainerRequestService = inject(TrainerRequestService);
   private router = inject(Router);
 
   submitted = signal<boolean>(false);
@@ -22,15 +22,18 @@ export class BecomeTrainerComponent implements OnInit {
 
   name = signal<string>('');
   email = signal<string>('');
+  phone = signal<string>('');
   course = signal<string>('');
   runningDates = signal<string>('');
   experience = signal<string>('');
+  bio = signal<string>('');
   portfolioUrl = signal<string>('');
+  sampleVideoUrl = signal<string>('');
 
   ngOnInit(): void {
     if (this.authService.isLoggedIn()) {
-      this.name.set(this.authService.userName());
-      this.email.set(this.authService.userEmail());
+      this.name.set(this.authService.userName() || '');
+      this.email.set(this.authService.userEmail() || '');
     }
   }
 
@@ -42,20 +45,28 @@ export class BecomeTrainerComponent implements OnInit {
   }
 
   handleApply(): void {
+    if (!this.name().trim() || !this.email().trim() || !this.course().trim()) {
+      this.error.set('Please fill in all required fields.');
+      return;
+    }
+
     this.loading.set(true);
     this.error.set('');
 
+    const expNumber = parseInt(String(this.experience() || '').replace(/\D/g, ''), 10) || 1;
+
     const applicationData = {
-      name: this.name(),
-      email: this.email(),
-      course: this.course(),
-      runningDates: this.runningDates() || 'Awaiting Schedule',
-      experience: this.experience(),
-      portfolioUrl: this.portfolioUrl(),
-      status: 'Pending Approval' as const
+      fullName: this.name().trim(),
+      email: this.email().trim(),
+      phone: this.phone().trim() || '+910000000000',
+      expertise: this.course().trim(),
+      yearsOfExperience: expNumber,
+      bio: this.bio().trim() || `Trainer application for ${this.course().trim()}.${this.runningDates() ? ' Proposed schedule: ' + this.runningDates().trim() : ''}`,
+      portfolioUrl: this.portfolioUrl().trim() || undefined,
+      sampleVideoUrl: this.sampleVideoUrl().trim() || undefined
     };
 
-    this.courseService.applyTrainer(applicationData).subscribe({
+    this.trainerRequestService.submitApplication(applicationData).subscribe({
       next: () => {
         this.loading.set(false);
         this.submitted.set(true);

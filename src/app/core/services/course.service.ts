@@ -162,7 +162,20 @@ export class CourseService {
     return this.http.delete(`${this.apiUrl}/courses/${courseId}/resources/${resourceId}`);
   }
 
-  applyTrainer(data: TrainerApplication): Observable<any> {
-    return this.http.post(`${this.apiUrl}/trainers/apply`, data);
+  applyTrainer(data: any): Observable<any> {
+    const payload = {
+      fullName: data.fullName || data.name,
+      email: data.email,
+      phone: data.phone || '+910000000000',
+      expertise: data.expertise || data.course || 'Artisan Craft',
+      yearsOfExperience: typeof data.yearsOfExperience === 'number' 
+        ? data.yearsOfExperience 
+        : (parseInt(String(data.experience || '').replace(/\D/g, '')) || 1),
+      bio: data.bio || `Trainer application for ${data.course || data.expertise || 'Craft'}. Proposed times: ${data.runningDates || 'Flexible'}`,
+      portfolioUrl: data.portfolioUrl || null,
+      sampleVideoUrl: data.sampleVideoUrl || null,
+      resumeUrl: data.resumeUrl || null
+    };
+    return this.http.post(`${this.apiUrl}/trainer-requests`, payload);
   }
 }
