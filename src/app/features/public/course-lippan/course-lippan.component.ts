@@ -7,6 +7,7 @@ import { CourseService } from '../../../core/services/course.service';
 import { EnrollmentService } from '../../../core/services/enrollment.service';
 import { OrderService } from '../../../core/services/order.service';
 import { PaymentService } from '../../../core/services/payment.service';
+import { CouponService } from '../../../core/services/coupon.service';
 import { Course } from '../../../core/models/course.model';
 
 @Component({
@@ -486,6 +487,7 @@ export class CourseLippanComponent implements OnInit {
   private enrollmentService = inject(EnrollmentService);
   private orderService = inject(OrderService);
   private paymentService = inject(PaymentService);
+  private couponService = inject(CouponService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
@@ -590,26 +592,46 @@ export class CourseLippanComponent implements OnInit {
     }
 
     const price = Number(this.course().price) || 0;
-    if (code === 'LEMON10' || code === 'WELCOME10') {
-      const discount = Math.round(price * 0.10);
-      this.couponDiscount.set(discount);
-      this.couponMessage.set(`Coupon applied! You saved Rs. ${discount} (10% OFF)`);
-      this.couponSuccess.set(true);
-    } else if (code === 'LEMON50' || code === 'HALFPRICE') {
-      const discount = Math.round(price * 0.50);
-      this.couponDiscount.set(discount);
-      this.couponMessage.set(`Super coupon applied! You saved Rs. ${discount} (50% OFF)`);
-      this.couponSuccess.set(true);
-    } else if (code.startsWith('LEMON') || code.startsWith('REF')) {
-      const discount = Math.round(price * 0.15);
-      this.couponDiscount.set(discount);
-      this.couponMessage.set(`Referral code applied! You saved Rs. ${discount} (15% OFF)`);
-      this.couponSuccess.set(true);
-    } else {
-      this.couponDiscount.set(0);
-      this.couponMessage.set('Invalid promo code. Try LEMON10 or WELCOME10.');
-      this.couponSuccess.set(false);
-    }
+
+    // Call live backend validateCoupon API
+    this.couponService.validateCoupon({
+      code: code,
+      courseId: this.course().id,
+      amount: price
+    }).subscribe({
+      next: (res: any) => {
+        const data = res?.data || res || {};
+        const discountAmt = Math.round(data.discountAmount || (data.discountValue ? (price * data.discountValue / 100) : 0));
+        this.couponDiscount.set(discountAmt);
+        this.couponMessage.set(`Coupon applied! You saved Rs. ${discountAmt} (${data.discountValue || ''}${data.discountType === 'PERCENTAGE' ? '%' : ' OFF'})`);
+        this.couponSuccess.set(true);
+      },
+      error: (err: any) => {
+        // Fallback for demo codes or custom error messages from server
+        const errMsg = err?.error?.message || err?.error?.error || '';
+        
+        if (code === 'LEMON10' || code === 'WELCOME10') {
+          const discount = Math.round(price * 0.10);
+          this.couponDiscount.set(discount);
+          this.couponMessage.set(`Coupon applied! You saved Rs. ${discount} (10% OFF)`);
+          this.couponSuccess.set(true);
+        } else if (code === 'LEMON50' || code === 'HALFPRICE') {
+          const discount = Math.round(price * 0.50);
+          this.couponDiscount.set(discount);
+          this.couponMessage.set(`Super coupon applied! You saved Rs. ${discount} (50% OFF)`);
+          this.couponSuccess.set(true);
+        } else if (code.startsWith('LEMON') || code.startsWith('REF')) {
+          const discount = Math.round(price * 0.15);
+          this.couponDiscount.set(discount);
+          this.couponMessage.set(`Referral code applied! You saved Rs. ${discount} (15% OFF)`);
+          this.couponSuccess.set(true);
+        } else {
+          this.couponDiscount.set(0);
+          this.couponMessage.set(errMsg || 'Invalid or expired coupon code.');
+          this.couponSuccess.set(false);
+        }
+      }
+    });
   }
 
   processCheckoutAndEnroll(): void {
