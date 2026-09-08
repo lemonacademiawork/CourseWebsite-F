@@ -45,14 +45,25 @@ export class AuthService {
   }
 
   /** POST /api/v1/auth/login */
-  login(credentials: { email: string; password: string }): Observable<any> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, credentials).pipe(
+  login(credentials: { email?: string; phone?: string; phoneNumber?: string; password: string } | any): Observable<any> {
+    const rawIdentifier = String(credentials.email || credentials.phone || credentials.phoneNumber || credentials.identifier || '').trim();
+    const payload = {
+      email: rawIdentifier,
+      phone: credentials.phone || credentials.phoneNumber || rawIdentifier,
+      phoneNumber: credentials.phoneNumber || credentials.phone || rawIdentifier,
+      identifier: rawIdentifier,
+      phoneOrEmail: rawIdentifier,
+      username: rawIdentifier,
+      password: credentials.password
+    };
+
+    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, payload).pipe(
       tap((res) => {
         const data = (res as any).data || res;
         const user = data.user || data;
         const role = this.normalizeRole(user.role || data.role || 'student');
-        const name = user.name || data.name || credentials.email.split('@')[0];
-        const email = user.email || data.email || credentials.email;
+        const name = user.name || user.fullName || data.name || rawIdentifier.split('@')[0];
+        const email = user.email || data.email || rawIdentifier;
         const token = data.token || data.accessToken || res.token || '';
         const refreshToken = data.refreshToken || res.refreshToken || '';
 
@@ -65,8 +76,16 @@ export class AuthService {
   }
 
   /** POST /api/v1/auth/register */
-  register(userData: { name: string; email: string; password: string }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/auth/register`, userData);
+  register(userData: { name: string; email: string; password: string; phone?: string }): Observable<any> {
+    const payload = {
+      name: userData.name,
+      fullName: userData.name,
+      email: userData.email,
+      phone: userData.phone || '+910000000000',
+      phoneNumber: userData.phone || '+910000000000',
+      password: userData.password
+    };
+    return this.http.post(`${this.apiUrl}/auth/register`, payload);
   }
 
   /** GET /api/v1/auth/google — redirect to Google OAuth */

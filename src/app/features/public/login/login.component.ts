@@ -119,8 +119,9 @@ export class LoginComponent implements OnInit {
       },
       error: (err) => {
         this.loading.set(false);
-        const errData = err.error || {};
-        this.error.set(errData.message || 'Invalid email or password.');
+        const errData = err?.error || {};
+        const msg = errData.message || errData.error || (typeof err?.error === 'string' ? err.error : null) || 'Invalid login credentials. Please try again.';
+        this.error.set(msg);
       }
     });
   }

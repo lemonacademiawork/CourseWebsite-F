@@ -42,11 +42,11 @@
         <form (ngSubmit)="handleLogin()" class="space-y-5">
           <div class="space-y-[6px]">
             <label class="block text-[11.5px] font-semibold tracking-[0.6px] uppercase text-[#5B5650]">
-              Email address
+              Email or Phone Number
             </label>
             <input 
-              type="email" 
-              placeholder="you@example.com"
+              type="text" 
+              placeholder="you@example.com or phone number"
               class="w-full py-2 bg-transparent border-b-[1.5px] border-[#E7E1D3] font-body-md text-[15px] text-[#1C1A17] outline-none focus:border-[#8B6914] transition-all placeholder-[#C2BAA5]"
               [ngModel]="email()"
               (ngModelChange)="email.set($event)"
