@@ -5,6 +5,7 @@ import { BlogPost } from '../../../core/models/common.model';
 import { BlogService } from '../../../core/services/blog.service';
 import { BlogCategoryService } from '../../../core/services/blog-category.service';
 import { BlogCategory } from '../../../core/models/blog-category.model';
+import { UploadService } from '../../../core/services/upload.service';
 
 @Component({
   selector: 'app-admin-blogs',
@@ -80,16 +81,49 @@ import { BlogCategory } from '../../../core/models/blog-category.model';
                   }
                 </select>
               </div>
-              <div>
-                <label class="block font-semibold mb-1">Cover Image URL</label>
-                <input 
-                  type="url" 
-                  [ngModel]="featuredImageUrl()"
-                  (ngModelChange)="featuredImageUrl.set($event)"
-                  name="featuredImageUrl"
-                  placeholder="https://..."
-                  class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs"
-                />
+              <div class="space-y-1">
+                <label class="block font-semibold mb-1">Cover Image</label>
+                <div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                  <input 
+                    type="url" 
+                    [ngModel]="featuredImageUrl()"
+                    (ngModelChange)="featuredImageUrl.set($event)"
+                    name="featuredImageUrl"
+                    placeholder="https://images.unsplash.com/..."
+                    class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs font-mono"
+                  />
+                  <div class="shrink-0">
+                    <input 
+                      type="file" 
+                      #blogFileInput 
+                      (change)="onBlogImageSelected($event)" 
+                      accept="image/png,image/jpeg,image/webp,image/jpg" 
+                      class="hidden" 
+                    />
+                    <button 
+                      type="button" 
+                      (click)="blogFileInput.click()" 
+                      [disabled]="isUploadingImage()"
+                      class="px-3 py-2.5 bg-surface-container-high hover:bg-surface-dim text-on-surface rounded-lg font-semibold flex items-center gap-1.5 cursor-pointer text-xs border border-outline-variant/30 transition-all disabled:opacity-50">
+                      @if (isUploadingImage()) {
+                        <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                        <span>Uploading...</span>
+                      } @else {
+                        <span class="material-symbols-outlined text-sm text-primary">add_photo_alternate</span>
+                        <span>Upload</span>
+                      }
+                    </button>
+                  </div>
+                </div>
+                @if (featuredImageUrl()) {
+                  <div class="p-2 bg-surface-container-low rounded-lg flex items-center gap-2.5 border border-outline-variant/20 mt-2">
+                    <img [src]="featuredImageUrl()" alt="Cover preview" class="w-12 h-10 object-cover rounded-md border border-outline-variant/30 shrink-0" />
+                    <div class="truncate text-[11px] text-on-surface-variant">
+                      <span class="font-semibold text-on-surface">Cover Loaded</span>
+                      <p class="truncate text-[10px] font-mono text-on-surface-variant/80">{{ featuredImageUrl() }}</p>
+                    </div>
+                  </div>
+                }
               </div>
             </div>
             @if (publishError()) {
@@ -99,9 +133,15 @@ import { BlogCategory } from '../../../core/models/blog-category.model';
             }
             <button 
               type="submit" 
-              [disabled]="isPublishing()"
-              class="w-full py-2.5 bg-primary text-on-primary font-semibold rounded-lg hover:opacity-90 cursor-pointer disabled:opacity-50">
-              {{ isPublishing() ? 'Publishing...' : 'Publish Post to Blog' }}
+              [disabled]="isPublishing() || isUploadingImage()"
+              class="w-full py-2.5 bg-primary text-on-primary font-semibold rounded-lg hover:opacity-90 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2">
+              @if (isPublishing()) {
+                <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                <span>Publishing...</span>
+              } @else {
+                <span class="material-symbols-outlined text-sm">publish</span>
+                <span>Publish Post to Blog</span>
+              }
             </button>
           </form>
         </div>
@@ -183,6 +223,7 @@ export class AdminBlogsComponent implements OnInit {
   isLoading = signal<boolean>(true);
   isPublishing = signal<boolean>(false);
   publishError = signal<string>('');
+  isUploadingImage = signal<boolean>(false);
 
   title = signal<string>('');
   content = signal<string>('');
@@ -191,7 +232,36 @@ export class AdminBlogsComponent implements OnInit {
   selectedCategoryId = signal<string>('');
   categories = signal<BlogCategory[]>([]);
 
-  constructor(private blogService: BlogService, private blogCategoryService: BlogCategoryService) {}
+  constructor(
+    private blogService: BlogService, 
+    private blogCategoryService: BlogCategoryService,
+    private uploadService: UploadService
+  ) {}
+
+  onBlogImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      this.isUploadingImage.set(true);
+      this.uploadService.uploadImage(file, 'blogs').subscribe({
+        next: (res: any) => {
+          this.isUploadingImage.set(false);
+          const url = res.url || res.secure_url || res.data?.url;
+          if (url) this.featuredImageUrl.set(url);
+          input.value = '';
+        },
+        error: () => {
+          const reader = new FileReader();
+          reader.onload = (e: any) => {
+            this.isUploadingImage.set(false);
+            if (e.target?.result) this.featuredImageUrl.set(e.target.result as string);
+            input.value = '';
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+  }
 
   ngOnInit(): void {
     this.loadBlogs();

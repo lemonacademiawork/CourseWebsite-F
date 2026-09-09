@@ -6,6 +6,7 @@ import { CourseService } from '../../../core/services/course.service';
 import { SessionService } from '../../../core/services/session.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { TrainerService } from '../../../core/services/trainer.service';
+import { UploadService } from '../../../core/services/upload.service';
 import { Course, UpdateCoursePayload } from '../../../core/models/course.model';
 import { CourseSession, SessionStatus } from '../../../core/models/session.model';
 import { Category } from '../../../core/models/category.model';
@@ -41,6 +42,7 @@ export class AdminCoursesComponent implements OnInit {
   private sessionService = inject(SessionService);
   private categoryService = inject(CategoryService);
   private trainerService = inject(TrainerService);
+  private uploadService = inject(UploadService);
 
   courses = signal<AdminCourseItem[]>([]);
   categories = signal<Category[]>([]);
@@ -61,6 +63,7 @@ export class AdminCoursesComponent implements OnInit {
   liveScheduleText = signal<string>('');
   youtubePlaylistUrl = signal<string>('');
   description = signal<string>('');
+  isUploadingCreateImage = signal<boolean>(false);
 
   // Form states for editing course
   editCourseId = signal<string>('');
@@ -79,6 +82,7 @@ export class AdminCoursesComponent implements OnInit {
   editDescription = signal<string>('');
   editIsPublished = signal<boolean>(true);
   isSavingEdit = signal<boolean>(false);
+  isUploadingEditImage = signal<boolean>(false);
 
   // Course Details states
   selectedCourseDetails = signal<Course | null>(null);
@@ -91,6 +95,7 @@ export class AdminCoursesComponent implements OnInit {
   newCategoryDesc = signal<string>('');
   newCategoryImageUrl = signal<string>('');
   isSubmittingCategory = signal<boolean>(false);
+  isUploadingCatImage = signal<boolean>(false);
 
   // Session states
   selectedCourseId = signal<string | null>(null);
@@ -377,6 +382,81 @@ export class AdminCoursesComponent implements OnInit {
           this.categories.update(prev => prev.filter(c => c.id !== catId));
           this.saveSuccess.set(`Category "${catName}" removed.`);
           setTimeout(() => this.saveSuccess.set(''), 3000);
+        }
+      });
+    }
+  }
+
+  onCreateImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      this.isUploadingCreateImage.set(true);
+      this.uploadService.uploadImage(file, 'courses').subscribe({
+        next: (res: any) => {
+          this.isUploadingCreateImage.set(false);
+          const url = res.url || res.secure_url || res.data?.url;
+          if (url) this.imageUrl.set(url);
+          input.value = '';
+        },
+        error: () => {
+          const reader = new FileReader();
+          reader.onload = (e: any) => {
+            this.isUploadingCreateImage.set(false);
+            if (e.target?.result) this.imageUrl.set(e.target.result as string);
+            input.value = '';
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+  }
+
+  onEditImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      this.isUploadingEditImage.set(true);
+      this.uploadService.uploadImage(file, 'courses').subscribe({
+        next: (res: any) => {
+          this.isUploadingEditImage.set(false);
+          const url = res.url || res.secure_url || res.data?.url;
+          if (url) this.editImageUrl.set(url);
+          input.value = '';
+        },
+        error: () => {
+          const reader = new FileReader();
+          reader.onload = (e: any) => {
+            this.isUploadingEditImage.set(false);
+            if (e.target?.result) this.editImageUrl.set(e.target.result as string);
+            input.value = '';
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+  }
+
+  onCategoryFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      this.isUploadingCatImage.set(true);
+      this.uploadService.uploadImage(file, 'categories').subscribe({
+        next: (res: any) => {
+          this.isUploadingCatImage.set(false);
+          const url = res.url || res.secure_url || res.data?.url;
+          if (url) this.newCategoryImageUrl.set(url);
+          input.value = '';
+        },
+        error: () => {
+          const reader = new FileReader();
+          reader.onload = (e: any) => {
+            this.isUploadingCatImage.set(false);
+            if (e.target?.result) this.newCategoryImageUrl.set(e.target.result as string);
+            input.value = '';
+          };
+          reader.readAsDataURL(file);
         }
       });
     }

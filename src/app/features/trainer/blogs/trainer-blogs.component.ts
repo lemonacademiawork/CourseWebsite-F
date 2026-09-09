@@ -7,6 +7,7 @@ import { BlogCategoryService } from '../../../core/services/blog-category.servic
 import { BlogCategory } from '../../../core/models/blog-category.model';
 import { BlogPost } from '../../../core/models/common.model';
 import { AuthService } from '../../../core/services/auth.service';
+import { UploadService } from '../../../core/services/upload.service';
 
 @Component({
   selector: 'app-trainer-blogs',
@@ -97,25 +98,49 @@ import { AuthService } from '../../../core/services/auth.service';
                   }
                 </select>
               </div>
-              <div>
-                <label class="block font-semibold mb-1 text-on-surface">Cover Image URL</label>
-                <input 
-                  type="url" 
-                  [ngModel]="featuredImageUrl()"
-                  (ngModelChange)="featuredImageUrl.set($event)"
-                  name="featuredImageUrl"
-                  placeholder="https://images.unsplash.com/..."
-                  class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:outline-none focus:border-primary"
-                />
+              <div class="space-y-1">
+                <label class="block font-semibold mb-1 text-on-surface">Cover Image</label>
+                <div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                  <input 
+                    type="url" 
+                    [ngModel]="featuredImageUrl()"
+                    (ngModelChange)="featuredImageUrl.set($event)"
+                    name="featuredImageUrl"
+                    placeholder="https://images.unsplash.com/..."
+                    class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:outline-none focus:border-primary font-mono"
+                  />
+                  <div class="shrink-0">
+                    <input 
+                      type="file" 
+                      #trainerBlogFileInput 
+                      (change)="onBlogImageSelected($event)" 
+                      accept="image/png,image/jpeg,image/webp,image/jpg" 
+                      class="hidden" 
+                    />
+                    <button 
+                      type="button" 
+                      (click)="trainerBlogFileInput.click()" 
+                      [disabled]="isUploadingImage()"
+                      class="px-3 py-2.5 bg-surface-container-high hover:bg-surface-dim text-on-surface rounded-lg font-semibold flex items-center gap-1.5 cursor-pointer text-xs border border-outline-variant/30 transition-all disabled:opacity-50">
+                      @if (isUploadingImage()) {
+                        <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                        <span>Uploading...</span>
+                      } @else {
+                        <span class="material-symbols-outlined text-sm text-primary">add_photo_alternate</span>
+                        <span>Upload</span>
+                      }
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
             <!-- Image Preview if available -->
             @if (featuredImageUrl()) {
               <div class="p-3 bg-surface-container-low rounded-xl flex items-center gap-3 border border-outline-variant/20">
-                <img [src]="featuredImageUrl()" alt="Preview" class="w-16 h-12 object-cover rounded-lg" (error)="imageLoadError = true" />
-                <div class="text-[11px] text-on-surface-variant">
-                  <span class="font-semibold text-on-surface">Cover Preview</span>: Ensure image is accessible and high resolution.
+                <img [src]="featuredImageUrl()" alt="Preview" class="w-16 h-12 object-cover rounded-lg border border-outline-variant/30 shrink-0" (error)="imageLoadError = true" />
+                <div class="truncate text-[11px] text-on-surface-variant">
+                  <span class="font-semibold text-on-surface">Cover Preview</span>: <span class="font-mono text-[10px] text-on-surface-variant/80">{{ featuredImageUrl() }}</span>
                 </div>
               </div>
             }
@@ -332,6 +357,7 @@ import { AuthService } from '../../../core/services/auth.service';
 export class TrainerBlogsComponent implements OnInit {
   private blogService = inject(BlogService);
   private blogCategoryService = inject(BlogCategoryService);
+  private uploadService = inject(UploadService);
   public authService = inject(AuthService);
 
   posts = signal<BlogPost[]>([]);
@@ -339,6 +365,7 @@ export class TrainerBlogsComponent implements OnInit {
   isLoading = signal<boolean>(true);
   isWriting = signal<boolean>(false);
   isSaving = signal<boolean>(false);
+  isUploadingImage = signal<boolean>(false);
   errorMessage = signal<string>('');
   editingPostId = signal<string | null>(null);
 
@@ -350,6 +377,31 @@ export class TrainerBlogsComponent implements OnInit {
   featuredImageUrl = signal<string>('');
   selectedCategoryId = signal<string>('');
   tagsInput = signal<string>('');
+
+  onBlogImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      this.isUploadingImage.set(true);
+      this.uploadService.uploadImage(file, 'blogs').subscribe({
+        next: (res: any) => {
+          this.isUploadingImage.set(false);
+          const url = res.url || res.secure_url || res.data?.url;
+          if (url) this.featuredImageUrl.set(url);
+          input.value = '';
+        },
+        error: () => {
+          const reader = new FileReader();
+          reader.onload = (e: any) => {
+            this.isUploadingImage.set(false);
+            if (e.target?.result) this.featuredImageUrl.set(e.target.result as string);
+            input.value = '';
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+  }
 
   imageLoadError = false;
   searchQuery = signal<string>('');

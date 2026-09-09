@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GalleryService } from '../../../core/services/gallery.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { UploadService } from '../../../core/services/upload.service';
 import { TrainerGallerySubmission } from '../../../core/models/trainer.model';
 
 @Component({
@@ -113,24 +114,48 @@ import { TrainerGallerySubmission } from '../../../core/models/trainer.model';
               </div>
             </div>
 
-            <div>
-              <label class="block font-semibold mb-1 text-on-surface">High-Resolution Image URL <span class="text-red-500">*</span></label>
-              <input 
-                type="url" 
-                placeholder="https://images.unsplash.com/..."
-                [ngModel]="imageUrl()"
-                (ngModelChange)="imageUrl.set($event)"
-                name="imageUrl"
-                required
-                class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:outline-none focus:border-primary"
-              />
+            <div class="space-y-1">
+              <label class="block font-semibold mb-1 text-on-surface">Artwork Image <span class="text-red-500">*</span></label>
+              <div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                <input 
+                  type="url" 
+                  placeholder="https://images.unsplash.com/..."
+                  [ngModel]="imageUrl()"
+                  (ngModelChange)="imageUrl.set($event)"
+                  name="imageUrl"
+                  required
+                  class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:outline-none focus:border-primary font-mono"
+                />
+                <div class="shrink-0">
+                  <input 
+                    type="file" 
+                    #artworkFileInput 
+                    (change)="onArtworkImageSelected($event)" 
+                    accept="image/png,image/jpeg,image/webp,image/jpg" 
+                    class="hidden" 
+                  />
+                  <button 
+                    type="button" 
+                    (click)="artworkFileInput.click()" 
+                    [disabled]="isUploadingArtworkImage()"
+                    class="px-3 py-2.5 bg-surface-container-high hover:bg-surface-dim text-on-surface rounded-lg font-semibold flex items-center gap-1.5 cursor-pointer text-xs border border-outline-variant/30 transition-all disabled:opacity-50">
+                    @if (isUploadingArtworkImage()) {
+                      <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                      <span>Uploading...</span>
+                    } @else {
+                      <span class="material-symbols-outlined text-sm text-primary">add_photo_alternate</span>
+                      <span>Upload Image</span>
+                    }
+                  </button>
+                </div>
+              </div>
             </div>
 
             @if (imageUrl()) {
               <div class="p-3 bg-surface-container-low rounded-xl flex items-center gap-3 border border-outline-variant/20">
-                <img [src]="imageUrl()" alt="Preview" class="w-16 h-16 object-cover rounded-lg" />
-                <div class="text-[11px] text-on-surface-variant">
-                  <span class="font-semibold text-on-surface">Preview</span>: Artwork will be presented in high definition in the community gallery.
+                <img [src]="imageUrl()" alt="Preview" class="w-16 h-16 object-cover rounded-lg border border-outline-variant/30 shrink-0" />
+                <div class="truncate text-[11px] text-on-surface-variant">
+                  <span class="font-semibold text-on-surface">Artwork Loaded</span>: <span class="font-mono text-[10px] text-on-surface-variant/80">{{ imageUrl() }}</span>
                 </div>
               </div>
             }
@@ -298,11 +323,13 @@ import { TrainerGallerySubmission } from '../../../core/models/trainer.model';
 })
 export class TrainerGalleryComponent implements OnInit {
   private galleryService = inject(GalleryService);
+  private uploadService = inject(UploadService);
   public authService = inject(AuthService);
 
   activeTab = signal<'my-creations' | 'student-reviews'>('my-creations');
   isUploading = signal<boolean>(false);
   isSubmitting = signal<boolean>(false);
+  isUploadingArtworkImage = signal<boolean>(false);
   formError = signal<string>('');
   formSuccess = signal<string>('');
 
@@ -313,6 +340,31 @@ export class TrainerGalleryComponent implements OnInit {
   artistName = signal<string>('');
   imageUrl = signal<string>('');
   description = signal<string>('');
+
+  onArtworkImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      this.isUploadingArtworkImage.set(true);
+      this.uploadService.uploadImage(file, 'gallery').subscribe({
+        next: (res: any) => {
+          this.isUploadingArtworkImage.set(false);
+          const url = res.url || res.secure_url || res.data?.url;
+          if (url) this.imageUrl.set(url);
+          input.value = '';
+        },
+        error: () => {
+          const reader = new FileReader();
+          reader.onload = (e: any) => {
+            this.isUploadingArtworkImage.set(false);
+            if (e.target?.result) this.imageUrl.set(e.target.result as string);
+            input.value = '';
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+  }
 
   // Submissions lists
   mySubmissions = signal<TrainerGallerySubmission[]>([]);

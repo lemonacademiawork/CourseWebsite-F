@@ -415,16 +415,50 @@
             </div>
           </div>
 
-          <!-- Thumbnail Image URL -->
-          <div>
-            <label class="block font-semibold mb-1 text-on-surface-variant">Course Banner / Thumbnail Image URL</label>
-            <input 
-              type="url" 
-              [ngModel]="editImageUrl()"
-              (ngModelChange)="editImageUrl.set($event)"
-              placeholder="https://images.unsplash.com/photo-..."
-              class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
-            />
+          <!-- Thumbnail Image URL & File Picker -->
+          <div class="space-y-2">
+            <label class="block font-semibold text-on-surface-variant">Course Banner / Thumbnail Image</label>
+            <div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+              <input 
+                type="url" 
+                [ngModel]="editImageUrl()"
+                (ngModelChange)="editImageUrl.set($event)"
+                placeholder="https://images.unsplash.com/photo-..."
+                class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none font-mono"
+              />
+              <div class="shrink-0 flex items-center gap-2">
+                <input 
+                  type="file" 
+                  #editFileInput 
+                  (change)="onEditImageSelected($event)" 
+                  accept="image/png,image/jpeg,image/webp,image/jpg" 
+                  class="hidden" 
+                />
+                <button 
+                  type="button" 
+                  (click)="editFileInput.click()" 
+                  [disabled]="isUploadingEditImage()"
+                  class="px-3 py-2.5 bg-surface-container-high hover:bg-surface-dim text-on-surface rounded-lg font-semibold flex items-center gap-1.5 cursor-pointer text-xs border border-outline-variant/30 transition-all disabled:opacity-50">
+                  @if (isUploadingEditImage()) {
+                    <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                    <span>Uploading...</span>
+                  } @else {
+                    <span class="material-symbols-outlined text-sm text-primary">add_photo_alternate</span>
+                    <span>Upload Image</span>
+                  }
+                </button>
+              </div>
+            </div>
+
+            @if (editImageUrl()) {
+              <div class="p-2.5 bg-surface-container-low rounded-xl flex items-center gap-3 border border-outline-variant/20">
+                <img [src]="editImageUrl()" alt="Thumbnail preview" class="w-16 h-12 object-cover rounded-lg border border-outline-variant/30 shrink-0" />
+                <div class="truncate text-[11px] text-on-surface-variant">
+                  <span class="font-semibold text-on-surface">Image Loaded</span>
+                  <p class="truncate text-[10px] font-mono text-on-surface-variant/80">{{ editImageUrl() }}</p>
+                </div>
+              </div>
+            }
           </div>
 
           <!-- Descriptions -->
@@ -532,15 +566,50 @@
             />
           </div>
 
-          <div>
-            <label class="block font-semibold mb-1 text-on-surface-variant">Image URL</label>
-            <input 
-              type="url" 
-              [ngModel]="newCategoryImageUrl()"
-              (ngModelChange)="newCategoryImageUrl.set($event)"
-              placeholder="https://images.unsplash.com/photo-..."
-              class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
-            />
+          <!-- Category Image URL & File Picker -->
+          <div class="space-y-1.5">
+            <label class="block font-semibold text-on-surface-variant">Category Cover Image</label>
+            <div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+              <input 
+                type="url" 
+                [ngModel]="newCategoryImageUrl()"
+                (ngModelChange)="newCategoryImageUrl.set($event)"
+                placeholder="https://images.unsplash.com/photo-..."
+                class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none font-mono"
+              />
+              <div class="shrink-0">
+                <input 
+                  type="file" 
+                  #catFileInput 
+                  (change)="onCategoryFileSelected($event)" 
+                  accept="image/png,image/jpeg,image/webp,image/jpg" 
+                  class="hidden" 
+                />
+                <button 
+                  type="button" 
+                  (click)="catFileInput.click()" 
+                  [disabled]="isUploadingCatImage()"
+                  class="px-3 py-2 bg-surface-container-high hover:bg-surface-dim text-on-surface rounded-lg font-semibold flex items-center gap-1.5 cursor-pointer text-xs border border-outline-variant/30 transition-all disabled:opacity-50">
+                  @if (isUploadingCatImage()) {
+                    <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                    <span>Uploading...</span>
+                  } @else {
+                    <span class="material-symbols-outlined text-sm text-primary">add_photo_alternate</span>
+                    <span>Upload</span>
+                  }
+                </button>
+              </div>
+            </div>
+
+            @if (newCategoryImageUrl()) {
+              <div class="p-2 bg-surface-container-lowest rounded-lg flex items-center gap-2.5 border border-outline-variant/20">
+                <img [src]="newCategoryImageUrl()" alt="Category preview" class="w-10 h-10 object-cover rounded-md border border-outline-variant/30 shrink-0" />
+                <div class="truncate text-[11px] text-on-surface-variant">
+                  <span class="font-semibold text-on-surface">Preview</span>
+                  <p class="truncate text-[10px] font-mono text-on-surface-variant/80">{{ newCategoryImageUrl() }}</p>
+                </div>
+              </div>
+            }
           </div>
 
           <div class="flex justify-end pt-1">
@@ -754,6 +823,52 @@
                 class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded p-1.5 text-xs font-mono"
               />
             </div>
+          </div>
+
+          <!-- Course Thumbnail / Banner Image -->
+          <div class="space-y-1.5">
+            <label class="block font-semibold text-on-surface-variant">Course Banner / Thumbnail Image</label>
+            <div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+              <input 
+                type="url" 
+                [ngModel]="imageUrl()"
+                (ngModelChange)="imageUrl.set($event)"
+                placeholder="https://images.unsplash.com/photo-..."
+                class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none font-mono"
+              />
+              <div class="shrink-0">
+                <input 
+                  type="file" 
+                  #createFileInput 
+                  (change)="onCreateImageSelected($event)" 
+                  accept="image/png,image/jpeg,image/webp,image/jpg" 
+                  class="hidden" 
+                />
+                <button 
+                  type="button" 
+                  (click)="createFileInput.click()" 
+                  [disabled]="isUploadingCreateImage()"
+                  class="px-3 py-2 bg-surface-container-high hover:bg-surface-dim text-on-surface rounded-lg font-semibold flex items-center gap-1.5 cursor-pointer text-xs border border-outline-variant/30 transition-all disabled:opacity-50">
+                  @if (isUploadingCreateImage()) {
+                    <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                    <span>Uploading...</span>
+                  } @else {
+                    <span class="material-symbols-outlined text-sm text-primary">add_photo_alternate</span>
+                    <span>Upload Image</span>
+                  }
+                </button>
+              </div>
+            </div>
+
+            @if (imageUrl()) {
+              <div class="p-2 bg-surface-container-low rounded-lg flex items-center gap-2.5 border border-outline-variant/20">
+                <img [src]="imageUrl()" alt="Course preview" class="w-14 h-10 object-cover rounded-md border border-outline-variant/30 shrink-0" />
+                <div class="truncate text-[11px] text-on-surface-variant">
+                  <span class="font-semibold text-on-surface">Preview Loaded</span>
+                  <p class="truncate text-[10px] font-mono text-on-surface-variant/80">{{ imageUrl() }}</p>
+                </div>
+              </div>
+            }
           </div>
         </div>
         <div class="flex justify-end gap-2 pt-2">
