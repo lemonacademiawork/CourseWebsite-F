@@ -20,18 +20,26 @@ import { UploadService } from '../../../core/services/upload.service';
         <div>
           <h1 class="text-xl font-bold text-on-surface flex items-center gap-2">
             <span class="material-symbols-outlined text-primary text-2xl">article</span>
-            Artisan Blog Contributions
+            Artisan Blog Contributions &amp; Categories
           </h1>
           <p class="text-xs text-on-surface-variant mt-0.5">
-            Create, manage, and publish crafting guides, tutorials, and studio stories for the Lemon Academia community.
+            Create, manage, and publish crafting guides, studio stories, and blog categories for the Lemon Academia community.
           </p>
         </div>
-        <button 
-          (click)="toggleWriteMode()"
-          class="bg-primary text-on-primary font-semibold px-4 py-2.5 rounded-lg hover:opacity-90 flex items-center justify-center gap-1.5 shadow-sm cursor-pointer transition-all">
-          <span class="material-symbols-outlined text-sm">{{ isWriting() ? 'close' : 'edit' }}</span>
-          {{ isWriting() ? (editingPostId() ? 'Cancel Edit' : 'Close Form') : 'Write New Article' }}
-        </button>
+        <div class="flex flex-wrap items-center gap-2">
+          <button 
+            (click)="showCategoryModal.set(true)"
+            class="bg-surface-container-high hover:bg-surface-variant text-on-surface font-semibold px-3.5 py-2.5 rounded-lg border border-outline-variant/30 flex items-center gap-1.5 shadow-2xs cursor-pointer transition-all">
+            <span class="material-symbols-outlined text-sm text-primary">category</span>
+            Manage Categories ({{ categories().length }})
+          </button>
+          <button 
+            (click)="toggleWriteMode()"
+            class="bg-primary text-on-primary font-semibold px-4 py-2.5 rounded-lg hover:opacity-90 flex items-center justify-center gap-1.5 shadow-sm cursor-pointer transition-all">
+            <span class="material-symbols-outlined text-sm">{{ isWriting() ? 'close' : 'edit' }}</span>
+            {{ isWriting() ? (editingPostId() ? 'Cancel Edit' : 'Close Form') : 'Write New Article' }}
+          </button>
+        </div>
       </div>
 
       <!-- Blog Editor Form (Create / Edit) -->
@@ -48,7 +56,7 @@ import { UploadService } from '../../../core/services/upload.service';
             </div>
             <button 
               (click)="cancelForm()"
-              class="text-on-surface-variant hover:text-on-surface p-1 rounded-md text-xs">
+              class="text-on-surface-variant hover:text-on-surface p-1 rounded-md text-xs cursor-pointer">
               <span class="material-symbols-outlined text-lg">close</span>
             </button>
           </div>
@@ -85,7 +93,16 @@ import { UploadService } from '../../../core/services/upload.service';
             <!-- Category & Image URL -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block font-semibold mb-1 text-on-surface">Category</label>
+                <div class="flex justify-between items-center mb-1">
+                  <label class="font-semibold text-on-surface">Blog Category</label>
+                  <button 
+                    type="button"
+                    (click)="showCategoryModal.set(true)"
+                    class="text-primary hover:underline font-bold text-[11px] flex items-center gap-0.5 cursor-pointer">
+                    <span class="material-symbols-outlined text-[13px]">add</span>
+                    + Add New Category
+                  </button>
+                </div>
                 <select
                   [ngModel]="selectedCategoryId()"
                   (ngModelChange)="selectedCategoryId.set($event)"
@@ -234,25 +251,38 @@ import { UploadService } from '../../../core/services/upload.service';
           />
         </div>
 
-        <div class="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-          <button 
-            (click)="selectedFilter.set('all')"
-            class="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-colors cursor-pointer"
-            [class]="selectedFilter() === 'all' ? 'bg-primary text-on-primary shadow-xs' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high'">
-            All ({{ posts().length }})
-          </button>
-          <button 
-            (click)="selectedFilter.set('published')"
-            class="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-colors cursor-pointer"
-            [class]="selectedFilter() === 'published' ? 'bg-primary text-on-primary shadow-xs' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high'">
-            Published ({{ publishedCount() }})
-          </button>
-          <button 
-            (click)="selectedFilter.set('draft')"
-            class="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-colors cursor-pointer"
-            [class]="selectedFilter() === 'draft' ? 'bg-primary text-on-primary shadow-xs' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high'">
-            Drafts ({{ draftCount() }})
-          </button>
+        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <!-- Category Filter Dropdown -->
+          <select 
+            [ngModel]="selectedCategoryFilter()" 
+            (ngModelChange)="selectedCategoryFilter.set($event)"
+            class="bg-surface-container-lowest border border-outline-variant/40 rounded-lg px-3 py-2 text-xs text-on-surface focus:outline-none focus:border-primary">
+            <option value="">All Categories</option>
+            @for (cat of categories(); track cat.id) {
+              <option [value]="cat.name">{{ cat.name }}</option>
+            }
+          </select>
+
+          <div class="flex items-center gap-1.5">
+            <button 
+              (click)="selectedFilter.set('all')"
+              class="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-colors cursor-pointer"
+              [class]="selectedFilter() === 'all' ? 'bg-primary text-on-primary shadow-xs' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high'">
+              All ({{ posts().length }})
+            </button>
+            <button 
+              (click)="selectedFilter.set('published')"
+              class="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-colors cursor-pointer"
+              [class]="selectedFilter() === 'published' ? 'bg-primary text-on-primary shadow-xs' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high'">
+              Published ({{ publishedCount() }})
+            </button>
+            <button 
+              (click)="selectedFilter.set('draft')"
+              class="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-colors cursor-pointer"
+              [class]="selectedFilter() === 'draft' ? 'bg-primary text-on-primary shadow-xs' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high'">
+              Drafts ({{ draftCount() }})
+            </button>
+          </div>
         </div>
       </div>
 
@@ -351,6 +381,137 @@ import { UploadService } from '../../../core/services/upload.service';
           }
         </div>
       }
+
+      <!-- Blog Category Management Modal -->
+      @if (showCategoryModal()) {
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div class="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+            <div class="flex items-center justify-between border-b border-outline-variant/20 pb-3">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-xl">category</span>
+                <div>
+                  <h3 class="text-base font-bold text-on-surface">Blog Categories</h3>
+                  <p class="text-[11px] text-on-surface-variant">Create and manage artisan blog categories</p>
+                </div>
+              </div>
+              <button 
+                (click)="showCategoryModal.set(false)"
+                class="w-7 h-7 rounded-full bg-surface-container hover:bg-surface-variant flex items-center justify-center text-on-surface cursor-pointer">
+                <span class="material-symbols-outlined text-sm">close</span>
+              </button>
+            </div>
+
+            <!-- Create New Category Form -->
+            <form (ngSubmit)="handleCreateCategory()" class="bg-surface-container-low border border-outline-variant/30 rounded-xl p-4 space-y-3">
+              <h4 class="font-bold text-xs text-on-surface flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm text-primary">add_circle</span>
+                Add New Blog Category
+              </h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[11px] font-semibold text-on-surface mb-1">Category Name *</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. Lippan Mirror Crafts"
+                    [ngModel]="newCategoryName()"
+                    (ngModelChange)="onNewCategoryNameChange($event)"
+                    name="newCategoryName"
+                    required
+                    class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg p-2 text-xs focus:outline-none focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold text-on-surface mb-1">Category Slug *</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. lippan-mirror-crafts"
+                    [ngModel]="newCategorySlug()"
+                    (ngModelChange)="newCategorySlug.set($event)"
+                    name="newCategorySlug"
+                    required
+                    class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg p-2 text-xs focus:outline-none focus:border-primary font-mono"
+                  />
+                </div>
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-on-surface mb-1">Description (Optional)</label>
+                <input 
+                  type="text" 
+                  placeholder="Short overview of articles under this topic..."
+                  [ngModel]="newCategoryDescription()"
+                  (ngModelChange)="newCategoryDescription.set($event)"
+                  name="newCategoryDescription"
+                  class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg p-2 text-xs focus:outline-none focus:border-primary"
+                />
+              </div>
+
+              @if (categoryError()) {
+                <p class="text-[11px] text-red-600 font-medium">{{ categoryError() }}</p>
+              }
+              @if (categorySuccess()) {
+                <p class="text-[11px] text-green-700 font-medium">{{ categorySuccess() }}</p>
+              }
+
+              <div class="flex justify-end">
+                <button 
+                  type="submit"
+                  [disabled]="isSavingCategory() || !newCategoryName().trim()"
+                  class="bg-primary text-on-primary font-bold px-4 py-2 rounded-lg text-xs hover:opacity-90 disabled:opacity-50 cursor-pointer flex items-center gap-1">
+                  @if (isSavingCategory()) {
+                    <span class="material-symbols-outlined text-xs animate-spin">progress_activity</span>
+                    <span>Saving...</span>
+                  } @else {
+                    <span class="material-symbols-outlined text-xs">add</span>
+                    <span>Create Category</span>
+                  }
+                </button>
+              </div>
+            </form>
+
+            <!-- Existing Categories List -->
+            <div class="space-y-2">
+              <h4 class="font-bold text-xs text-on-surface">Existing Categories ({{ categories().length }})</h4>
+              <div class="divide-y divide-outline-variant/15 border border-outline-variant/20 rounded-xl overflow-hidden bg-surface-container-lowest">
+                @for (cat of categories(); track cat.id) {
+                  <div class="p-3 flex items-center justify-between hover:bg-surface-container-low/40 transition-colors">
+                    <div>
+                      <div class="font-bold text-xs text-on-surface flex items-center gap-2">
+                        <span>{{ cat.name }}</span>
+                        <span class="font-mono text-[10px] text-on-surface-variant/70 font-normal">/{{ cat.slug }}</span>
+                      </div>
+                      @if (cat.description) {
+                        <p class="text-[11px] text-on-surface-variant line-clamp-1 mt-0.5">{{ cat.description }}</p>
+                      }
+                    </div>
+                    <button 
+                      type="button"
+                      (click)="deleteCategory(cat)"
+                      class="p-1 rounded text-red-500 hover:bg-red-50 transition cursor-pointer"
+                      title="Delete Category">
+                      <span class="material-symbols-outlined text-sm">delete</span>
+                    </button>
+                  </div>
+                }
+
+                @if (categories().length === 0) {
+                  <div class="p-4 text-center text-on-surface-variant text-xs">
+                    No categories created yet.
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="flex justify-end pt-2 border-t border-outline-variant/20">
+              <button 
+                type="button" 
+                (click)="showCategoryModal.set(false)"
+                class="px-4 py-2 bg-surface-container-high font-semibold text-on-surface rounded-lg hover:bg-surface-variant cursor-pointer text-xs">
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      }
     </main>
   `
 })
@@ -369,6 +530,15 @@ export class TrainerBlogsComponent implements OnInit {
   errorMessage = signal<string>('');
   editingPostId = signal<string | null>(null);
 
+  // Category management modal
+  showCategoryModal = signal<boolean>(false);
+  newCategoryName = signal<string>('');
+  newCategorySlug = signal<string>('');
+  newCategoryDescription = signal<string>('');
+  isSavingCategory = signal<boolean>(false);
+  categoryError = signal<string>('');
+  categorySuccess = signal<string>('');
+
   // Form fields
   title = signal<string>('');
   slug = signal<string>('');
@@ -377,6 +547,11 @@ export class TrainerBlogsComponent implements OnInit {
   featuredImageUrl = signal<string>('');
   selectedCategoryId = signal<string>('');
   tagsInput = signal<string>('');
+
+  imageLoadError = false;
+  searchQuery = signal<string>('');
+  selectedCategoryFilter = signal<string>('');
+  selectedFilter = signal<'all' | 'published' | 'draft'>('all');
 
   onBlogImageSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -403,10 +578,6 @@ export class TrainerBlogsComponent implements OnInit {
     }
   }
 
-  imageLoadError = false;
-  searchQuery = signal<string>('');
-  selectedFilter = signal<'all' | 'published' | 'draft'>('all');
-
   publishedCount = computed(() => this.posts().filter(p => p.isPublished).length);
   draftCount = computed(() => this.posts().filter(p => !p.isPublished).length);
 
@@ -414,11 +585,16 @@ export class TrainerBlogsComponent implements OnInit {
     let list = this.posts();
     const q = this.searchQuery().trim().toLowerCase();
     const filter = this.selectedFilter();
+    const catFilter = this.selectedCategoryFilter().trim().toLowerCase();
 
     if (filter === 'published') {
       list = list.filter(p => p.isPublished);
     } else if (filter === 'draft') {
       list = list.filter(p => !p.isPublished);
+    }
+
+    if (catFilter) {
+      list = list.filter(p => (p.category || '').toLowerCase() === catFilter);
     }
 
     if (q) {
@@ -461,6 +637,65 @@ export class TrainerBlogsComponent implements OnInit {
     });
   }
 
+  onNewCategoryNameChange(name: string): void {
+    this.newCategoryName.set(name);
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    this.newCategorySlug.set(slug);
+  }
+
+  handleCreateCategory(): void {
+    const name = this.newCategoryName().trim();
+    const slug = this.newCategorySlug().trim() || name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    if (!name) {
+      this.categoryError.set('Please provide a category name.');
+      return;
+    }
+
+    this.isSavingCategory.set(true);
+    this.categoryError.set('');
+    this.categorySuccess.set('');
+
+    const payload = {
+      name,
+      slug,
+      description: this.newCategoryDescription().trim() || undefined
+    };
+
+    this.blogCategoryService.createCategory(payload).subscribe({
+      next: (res: any) => {
+        this.isSavingCategory.set(false);
+        this.categorySuccess.set(`Category "${name}" created successfully!`);
+        this.newCategoryName.set('');
+        this.newCategorySlug.set('');
+        this.newCategoryDescription.set('');
+        this.loadCategories();
+        const createdId = res?.data?.id || res?.id;
+        if (createdId) {
+          this.selectedCategoryId.set(createdId);
+        }
+      },
+      error: (err: any) => {
+        this.isSavingCategory.set(false);
+        this.categoryError.set(err?.error?.message || 'Failed to create category.');
+      }
+    });
+  }
+
+  deleteCategory(cat: BlogCategory): void {
+    if (!confirm(`Are you sure you want to delete category "${cat.name}"?`)) return;
+    this.blogCategoryService.deleteCategory(cat.id).subscribe({
+      next: () => {
+        this.categories.update(list => list.filter(c => c.id !== cat.id));
+        if (this.selectedCategoryId() === cat.id) {
+          this.selectedCategoryId.set('');
+        }
+      },
+      error: (err) => {
+        alert(err?.error?.message || 'Failed to delete category');
+      }
+    });
+  }
+
   toggleWriteMode(): void {
     if (this.isWriting()) {
       this.cancelForm();
@@ -472,7 +707,6 @@ export class TrainerBlogsComponent implements OnInit {
 
   onTitleChange(newTitle: string): void {
     this.title.set(newTitle);
-    // Auto generate slug only when creating new article or if slug matches old auto pattern
     if (!this.editingPostId()) {
       const generatedSlug = newTitle
         .toLowerCase()
@@ -491,14 +725,12 @@ export class TrainerBlogsComponent implements OnInit {
     this.featuredImageUrl.set(post.image || post.imageUrl || '');
     this.tagsInput.set(post.tags ? post.tags.join(', ') : '');
 
-    // Match category
-    const foundCat = this.categories().find(c => c.name.toLowerCase() === post.category.toLowerCase() || c.id === post.category);
+    const foundCat = this.categories().find(c => c.name.toLowerCase() === (post.category || '').toLowerCase() || c.id === post.category);
     this.selectedCategoryId.set(foundCat ? foundCat.id : '');
 
     this.errorMessage.set('');
     this.isWriting.set(true);
 
-    // Scroll smoothly to top
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -553,7 +785,6 @@ export class TrainerBlogsComponent implements OnInit {
     };
 
     if (this.editingPostId()) {
-      // Update existing post
       this.blogService.updateBlog(this.editingPostId()!, payload).subscribe({
         next: () => {
           this.isSaving.set(false);
@@ -568,7 +799,6 @@ export class TrainerBlogsComponent implements OnInit {
         }
       });
     } else {
-      // Create new post
       this.blogService.createBlog(payload).subscribe({
         next: () => {
           this.isSaving.set(false);
