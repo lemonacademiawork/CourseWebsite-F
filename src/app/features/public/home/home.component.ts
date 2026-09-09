@@ -17,7 +17,8 @@ export const HERO_SLIDES: HeroSlide[] = [
     tagline: "Master the art of Lippan Mirror Work",
     description: "Explore mirror & clay magic. Discover traditional Indian craft techniques in our modern online studio classes.",
     imageUrl: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=1600&h=600",
-    route: "/courses"
+    route: "/courses",
+    queryParams: { category: "lippan-art" }
   },
   {
     title: "Soothe. Pour. Relax.",
@@ -42,6 +43,22 @@ export const HERO_SLIDES: HeroSlide[] = [
     imageUrl: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&q=80&w=1600&h=600",
     route: "/courses",
     queryParams: { category: "mosaic-art" }
+  },
+  {
+    title: "Shape. Mold. Sculpt.",
+    tagline: "Wheel & Hand Pottery Masterclass",
+    description: "Learn hand-building, wheel throwing, and organic terracotta sculpting methods to craft timeless vessels.",
+    imageUrl: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&q=80&w=1600&h=600",
+    route: "/courses",
+    queryParams: { category: "pottery" }
+  },
+  {
+    title: "Knit. Weave. Express.",
+    tagline: "Artisan Crochet & Fiber Crafts",
+    description: "Master intricate stitch patterns, amigurumi forms, and tactile macramé knots with step-by-step guidance.",
+    imageUrl: "https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&q=80&w=1600&h=600",
+    route: "/courses",
+    queryParams: { category: "crochet-fiber-arts" }
   }
 ];
 
