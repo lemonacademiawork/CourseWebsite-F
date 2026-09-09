@@ -494,12 +494,12 @@ export class AdminContentComponent implements OnInit {
   resetToDefaults(showNotification = true): void {
     const defaultSlides: AdminCarouselSlide[] = HERO_SLIDES.map((slide, index) => ({
       id: String(index + 1),
-      title: slide.title,
-      tagline: slide.tagline,
-      description: slide.description,
+      title: slide.title || 'Masterclass',
+      tagline: slide.tagline || '',
+      description: slide.description || '',
       imageUrl: slide.imageUrl,
-      route: slide.route,
-      category: slide.queryParams?.['category'] || '',
+      route: slide.route || '/courses',
+      category: slide.category || slide.queryParams?.['category'] || '',
       active: true
     }));
 

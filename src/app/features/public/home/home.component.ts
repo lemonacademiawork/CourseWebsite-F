@@ -4,22 +4,33 @@ import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 
-export interface HeroSlide {
+export interface CarouselSlide {
+  id?: string;
   title: string;
-  tagline: string;
-  description: string;
+  tagline?: string;
+  description?: string;
   imageUrl: string;
-  route: string;
+  route?: string;
+  category?: string;
+  order?: number;
+  active?: boolean;
+  isActive?: boolean;
   queryParams?: Record<string, string>;
 }
 
-export const HERO_SLIDES: HeroSlide[] = [
+export type HeroSlide = CarouselSlide;
+
+export const HERO_SLIDES: CarouselSlide[] = [
   {
     title: "Learn. Create. Inspire.",
     tagline: "Master the art of Lippan Mirror Work",
     description: "Explore mirror & clay magic. Discover traditional Indian craft techniques in our modern online studio classes.",
     imageUrl: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&q=80&w=1600&h=600",
     route: "/courses",
+    category: "lippan-art",
+    order: 1,
+    active: true,
+    isActive: true,
     queryParams: { category: "lippan-art" }
   },
   {
@@ -28,6 +39,10 @@ export const HERO_SLIDES: HeroSlide[] = [
     description: "Create premium organic botanical candles with rich, calming custom aroma profiles and clean burning wax.",
     imageUrl: "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=1600&h=600",
     route: "/courses",
+    category: "candle-making",
+    order: 2,
+    active: true,
+    isActive: true,
     queryParams: { category: "candle-making" }
   },
   {
@@ -36,6 +51,10 @@ export const HERO_SLIDES: HeroSlide[] = [
     description: "Create ultra-glossy ocean tables, trays, and coaster sets with multi-layer pigment swirls and cell lacing.",
     imageUrl: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&q=80&w=1600&h=600",
     route: "/courses",
+    category: "resin-art",
+    order: 3,
+    active: true,
+    isActive: true,
     queryParams: { category: "resin-art" }
   },
   {
@@ -44,6 +63,10 @@ export const HERO_SLIDES: HeroSlide[] = [
     description: "Assemble colorful ceramic and glass tiles into elegant designs under expert guidance.",
     imageUrl: "https://images.unsplash.com/photo-1569172122301-bc5007ba0977?auto=format&fit=crop&q=80&w=1600&h=600",
     route: "/courses",
+    category: "mosaic-art",
+    order: 4,
+    active: true,
+    isActive: true,
     queryParams: { category: "mosaic-art" }
   },
   {
@@ -52,6 +75,10 @@ export const HERO_SLIDES: HeroSlide[] = [
     description: "Learn hand-building, wheel throwing, and organic terracotta sculpting methods to craft timeless vessels.",
     imageUrl: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&q=80&w=1600&h=600",
     route: "/courses",
+    category: "pottery",
+    order: 5,
+    active: true,
+    isActive: true,
     queryParams: { category: "pottery" }
   },
   {
@@ -60,6 +87,10 @@ export const HERO_SLIDES: HeroSlide[] = [
     description: "Master intricate stitch patterns, amigurumi forms, and tactile macramé knots with step-by-step guidance.",
     imageUrl: "https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&q=80&w=1600&h=600",
     route: "/courses",
+    category: "crochet-fiber-arts",
+    order: 6,
+    active: true,
+    isActive: true,
     queryParams: { category: "crochet-fiber-arts" }
   }
 ];
@@ -75,8 +106,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
 
   heroSlides = HERO_SLIDES;
-  slides = signal<any[]>(HERO_SLIDES);
+  slides = signal<CarouselSlide[]>(HERO_SLIDES);
   currentSlide = signal<number>(0);
+  isLoadingCarousel = signal<boolean>(false);
   private timer: any;
 
   private reloadHandler = () => this.loadCarousel();
@@ -107,7 +139,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         try {
           const list = JSON.parse(stored);
           if (Array.isArray(list)) {
-            const activeList = list.filter((item: any) => item && item.active !== false);
+            const activeList = list.filter((item: any) => item && item.active !== false && item.isActive !== false);
             if (activeList.length > 0) {
               this.slides.set(activeList);
               this.startTimer();
@@ -117,89 +149,92 @@ export class HomeComponent implements OnInit, OnDestroy {
       }
     }
 
-    // 2. Fetch from backend with public endpoint fallbacks
-    const parseAndSetSlides = (res: any): boolean => {
-      if (!res) return false;
-      let rawList: any[] | null = null;
+    // 2. Helper to parse and store active slides sorted by order
+    const applySlidesData = (data: any[]): boolean => {
+      if (!Array.isArray(data) || data.length === 0) return false;
 
-      if (Array.isArray(res)) {
-        // Could be raw slides array or settings array
-        const isSettings = res.length > 0 && res[0] && ('settingKey' in res[0]);
-        if (isSettings) {
-          const setting = res.find((s: any) => s.settingKey === 'homepage_carousel');
-          if (setting && setting.settingValue) {
-            try { rawList = JSON.parse(setting.settingValue); } catch {}
-          }
-        } else {
-          rawList = res;
-        }
-      } else if (res.settingValue) {
-        try { rawList = JSON.parse(res.settingValue); } catch {}
-      } else if (res.data) {
-        if (Array.isArray(res.data)) {
-          const isSettings = res.data.length > 0 && res.data[0] && ('settingKey' in res.data[0]);
-          if (isSettings) {
-            const setting = res.data.find((s: any) => s.settingKey === 'homepage_carousel');
-            if (setting && setting.settingValue) {
-              try { rawList = JSON.parse(setting.settingValue); } catch {}
-            }
-          } else {
-            rawList = res.data;
-          }
-        } else if (res.data.settingValue) {
-          try { rawList = JSON.parse(res.data.settingValue); } catch {}
-        }
-      }
+      const activeList: CarouselSlide[] = data
+        .filter((item: any) => item && item.active !== false && item.isActive !== false)
+        .map((s: any, idx: number) => ({
+          id: s.id || String(idx + 1),
+          title: s.title || 'Masterclass Studio',
+          tagline: s.tagline || '',
+          description: s.description || '',
+          imageUrl: s.imageUrl || s.url || HERO_SLIDES[idx % HERO_SLIDES.length].imageUrl,
+          route: s.route || '/courses',
+          category: s.category || '',
+          order: s.order !== undefined ? Number(s.order) : idx + 1,
+          active: s.active !== false,
+          isActive: s.isActive !== false,
+          queryParams: s.category ? { category: s.category } : (s.queryParams || undefined)
+        }))
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
-      if (Array.isArray(rawList) && rawList.length > 0) {
-        const activeList = rawList.filter((item: any) => item && item.active !== false);
-        if (activeList.length > 0) {
-          this.slides.set(activeList);
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('homepage_carousel', JSON.stringify(rawList));
-          }
-          this.startTimer();
-          return true;
+      if (activeList.length > 0) {
+        this.slides.set(activeList);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('homepage_carousel', JSON.stringify(activeList));
         }
+        this.startTimer();
+        return true;
       }
       return false;
     };
 
-    // Try public settings/content first, then admin settings
+    // 3. Fetch from public backend endpoint GET /api/v1/content/carousel
+    this.isLoadingCarousel.set(true);
     this.http.get<any>(`${environment.apiUrl}/content/carousel`).subscribe({
       next: (res) => {
-        if (!parseAndSetSlides(res)) {
-          this.tryFallbackSettings(parseAndSetSlides);
+        this.isLoadingCarousel.set(false);
+        const data = Array.isArray(res) ? res : res?.data;
+        if (!applySlidesData(data)) {
+          this.tryFallbackEndpoints(applySlidesData);
         }
       },
       error: () => {
-        this.tryFallbackSettings(parseAndSetSlides);
+        this.tryFallbackEndpoints(applySlidesData);
       }
     });
   }
 
-  private tryFallbackSettings(parseFn: (res: any) => boolean): void {
-    this.http.get<any>(`${environment.apiUrl}/settings/public`).subscribe({
+  private tryFallbackEndpoints(applyFn: (data: any[]) => boolean): void {
+    // Fallback 1: GET /api/v1/carousel
+    this.http.get<any>(`${environment.apiUrl}/carousel`).subscribe({
       next: (res) => {
-        if (!parseFn(res)) {
-          this.tryAdminSettings(parseFn);
+        this.isLoadingCarousel.set(false);
+        const data = Array.isArray(res) ? res : res?.data;
+        if (!applyFn(data)) {
+          this.trySettingsFallback(applyFn);
         }
       },
       error: () => {
-        this.tryAdminSettings(parseFn);
+        this.trySettingsFallback(applyFn);
       }
     });
   }
 
-  private tryAdminSettings(parseFn: (res: any) => boolean): void {
+  private trySettingsFallback(applyFn: (data: any[]) => boolean): void {
+    // Fallback 2: GET /api/v1/admin/settings or local defaults
     this.http.get<any>(`${environment.apiUrl}/admin/settings`).subscribe({
       next: (res) => {
-        if (!parseFn(res) && this.slides().length === 0) {
+        this.isLoadingCarousel.set(false);
+        const settings = Array.isArray(res) ? res : res?.data || [];
+        if (Array.isArray(settings)) {
+          const setting = settings.find((s: any) => s.settingKey === 'homepage_carousel');
+          if (setting && setting.settingValue) {
+            try {
+              const list = JSON.parse(setting.settingValue);
+              if (applyFn(list)) return;
+            } catch {}
+          }
+        }
+        if (this.slides().length === 0) {
           this.slides.set(HERO_SLIDES);
           this.startTimer();
         }
       },
       error: () => {
+        this.isLoadingCarousel.set(false);
         if (this.slides().length === 0) {
           this.slides.set(HERO_SLIDES);
           this.startTimer();
@@ -227,17 +262,18 @@ export class HomeComponent implements OnInit, OnDestroy {
   getSlideRoute(slide: any, index: number): string {
     if (typeof slide === 'object' && slide?.route) return slide.route;
     if (typeof slide === 'object' && slide?.link) return slide.link;
-    return HERO_SLIDES[index % HERO_SLIDES.length].route;
+    return HERO_SLIDES[index % HERO_SLIDES.length].route || '/courses';
   }
 
   getSlideQueryParams(slide: any, index: number): Record<string, string> | null {
     if (typeof slide === 'object' && slide?.queryParams) return slide.queryParams;
+    if (typeof slide === 'object' && slide?.category) return { category: slide.category };
     return HERO_SLIDES[index % HERO_SLIDES.length].queryParams || null;
   }
 
   getSlideTagline(slide: any, index: number): string {
     if (typeof slide === 'object' && slide?.tagline) return slide.tagline;
-    return HERO_SLIDES[index % HERO_SLIDES.length].tagline;
+    return HERO_SLIDES[index % HERO_SLIDES.length].tagline || '';
   }
 
   getSlideTitle(slide: any, index: number): string {
@@ -247,7 +283,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   getSlideDescription(slide: any, index: number): string {
     if (typeof slide === 'object' && slide?.description) return slide.description;
-    return HERO_SLIDES[index % HERO_SLIDES.length].description;
+    return HERO_SLIDES[index % HERO_SLIDES.length].description || '';
   }
 
   startTimer(): void {
