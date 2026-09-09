@@ -391,22 +391,64 @@ export class MyCourseDetailComponent implements OnInit {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = '#1E170C';
-      ctx.font = 'bold 42px "Cinzel", "Playfair Display", Georgia, serif';
+      ctx.font = 'bold 44px "Cinzel", "Playfair Display", Georgia, serif';
       ctx.fillText(studentName, centerX, studentNameY);
 
-      // 3. Course Name directly inside the template's blank slot on line 4 (no overwriting text or background box)
-      const courseGapX = canvas.width * 0.575;
-      const courseNameY = canvas.height * 0.540;
-      const maxGapWidth = canvas.width * 0.38;
+      // 3. Dynamic Narrative with Course Name below the gold divider on the plain template
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
 
-      let fontSize = 23;
-      ctx.font = `bold ${fontSize}px "Cinzel", "Playfair Display", Georgia, serif`;
-      while (ctx.measureText(courseTitle).width > maxGapWidth && fontSize > 13) {
-        fontSize -= 1;
+      const line1Y = canvas.height * 0.548;
+      const prefixText = 'Has successfully completed the ';
+      ctx.font = '500 20px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      const prefixWidth = ctx.measureText(prefixText).width;
+
+      ctx.font = 'bold 22px "Cinzel", "Playfair Display", Georgia, serif';
+      const titleWidth = ctx.measureText(`"${courseTitle}"`).width;
+      const totalLine1Width = prefixWidth + titleWidth;
+
+      if (totalLine1Width < canvas.width * 0.68) {
+        const startX = centerX - (totalLine1Width / 2);
+
+        ctx.textAlign = 'left';
+        ctx.font = '500 20px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.fillStyle = '#2B2317';
+        ctx.fillText(prefixText, startX, line1Y);
+
+        ctx.font = 'bold 22px "Cinzel", "Playfair Display", Georgia, serif';
+        ctx.fillStyle = '#6E5410';
+        ctx.fillText(`"${courseTitle}"`, startX + prefixWidth, line1Y);
+
+        // Line 2
+        ctx.textAlign = 'center';
+        ctx.font = '500 20px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.fillStyle = '#2B2317';
+        ctx.fillText('and has demonstrated exceptional skills in class. We congratulate you on your', centerX, canvas.height * 0.585);
+
+        // Line 3
+        ctx.fillText('outstanding achievement and look forward to seeing their continued growth and success.', centerX, canvas.height * 0.620);
+      } else {
+        // Course title is long, put course title on its own featured line
+        ctx.textAlign = 'center';
+        ctx.font = '500 20px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.fillStyle = '#2B2317';
+        ctx.fillText('Has successfully completed the', centerX, canvas.height * 0.535);
+
+        let fontSize = 24;
         ctx.font = `bold ${fontSize}px "Cinzel", "Playfair Display", Georgia, serif`;
-      }
+        while (ctx.measureText(`"${courseTitle}"`).width > canvas.width * 0.70 && fontSize > 14) {
+          fontSize -= 1;
+          ctx.font = `bold ${fontSize}px "Cinzel", "Playfair Display", Georgia, serif`;
+        }
+        ctx.fillStyle = '#6E5410';
+        ctx.fillText(`"${courseTitle}"`, centerX, canvas.height * 0.570);
 
-      ctx.fillText(courseTitle, courseGapX, courseNameY);
+        ctx.font = '500 19px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.fillStyle = '#2B2317';
+        ctx.fillText('and has demonstrated exceptional skills in class. We congratulate you on your', centerX, canvas.height * 0.605);
+
+        ctx.fillText('outstanding achievement and look forward to seeing their continued growth and success.', centerX, canvas.height * 0.638);
+      }
 
       // Trigger download
       const link = document.createElement('a');
