@@ -52,13 +52,13 @@ export class AdminCoursesComponent implements OnInit {
 
   // Form states for creating course
   title = signal<string>('');
-  category = signal<string>('Lippan Art');
+  category = signal<string>('');
   trainer = signal<string>('');
-  price = signal<number>(149);
-  discountPrice = signal<number>(99);
+  price = signal<number>(0);
+  discountPrice = signal<number>(0);
   level = signal<string>('BEGINNER');
-  durationHours = signal<number>(10);
-  imageUrl = signal<string>('https://images.unsplash.com/photo-1513364776144-60967b0f800f');
+  durationHours = signal<number>(1);
+  imageUrl = signal<string>('');
   liveClassLink = signal<string>('');
   liveScheduleText = signal<string>('');
   youtubePlaylistUrl = signal<string>('');
@@ -68,10 +68,10 @@ export class AdminCoursesComponent implements OnInit {
   // Form states for editing course
   editCourseId = signal<string>('');
   editTitle = signal<string>('');
-  editCategory = signal<string>('Lippan Art');
+  editCategory = signal<string>('');
   editTrainer = signal<string>('');
-  editPrice = signal<number>(149);
-  editDiscountPrice = signal<number>(99);
+  editPrice = signal<number>(0);
+  editDiscountPrice = signal<number>(0);
   editLevel = signal<string>('BEGINNER');
   editDurationHours = signal<number>(10);
   editImageUrl = signal<string>('');
@@ -142,20 +142,14 @@ export class AdminCoursesComponent implements OnInit {
   fetchCategories(): void {
     this.categoryService.getCategories().subscribe({
       next: (cats) => {
-        if (cats && cats.length > 0) {
-          this.categories.set(cats);
-        } else {
-          this.categories.set([
-            { id: '1', name: 'Lippan Art', slug: 'lippan-art', description: 'Traditional Indian clay & mirror art', imageUrl: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f' },
-            { id: '2', name: 'Candle Making', slug: 'candle-making', description: 'Botanical and soy wax candle making', imageUrl: 'https://images.unsplash.com/photo-1603006905003-be475563bc59' },
-            { id: '3', name: 'Resin Art', slug: 'resin-art', description: 'Epoxy resin ocean wave and geode creations', imageUrl: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675' },
-            { id: '4', name: 'Mosaic Art', slug: 'mosaic-art', description: 'Ceramic and stained glass mosaic masterclasses', imageUrl: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119' },
-            { id: '5', name: 'Pottery', slug: 'pottery', description: 'Hand-building and wheel throwing pottery', imageUrl: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261' },
-            { id: '6', name: 'Crochet Basics', slug: 'crochet-basics', description: 'Foundational stitches and patterns for beginners', imageUrl: 'https://images.unsplash.com/photo-1584992236310-6edddc08acff' }
-          ]);
+        this.categories.set(cats || []);
+        if (!this.category() && cats && cats.length > 0) {
+          this.category.set(cats[0].name);
         }
       },
-      error: () => {}
+      error: () => {
+        this.categories.set([]);
+      }
     });
   }
 
@@ -174,28 +168,13 @@ export class AdminCoursesComponent implements OnInit {
             this.trainer.set(mapped[0].name);
           }
         } else {
-          this.setFallbackTrainers();
+          this.trainers.set([]);
         }
       },
       error: () => {
-        this.setFallbackTrainers();
+        this.trainers.set([]);
       }
     });
-  }
-
-  private setFallbackTrainers(): void {
-    const fallback: TrainerOption[] = [
-      { id: 't1', name: 'Aisha Sharma', expertise: 'Lippan Art Master' },
-      { id: 't2', name: 'Rohan Mehta', expertise: 'Botanical Candle Artisan' },
-      { id: 't3', name: 'Priya Nair', expertise: 'Ocean Resin & Fluid Art' },
-      { id: 't4', name: 'Vikram Patel', expertise: 'Ceramic & Mosaic Master' },
-      { id: 't5', name: 'Ananya Deshmukh', expertise: 'Clay Pottery & Sculpting' },
-      { id: 't6', name: 'Kavita Joshi', expertise: 'Crochet & Macramé Expert' }
-    ];
-    this.trainers.set(fallback);
-    if (!this.trainer()) {
-      this.trainer.set(fallback[0].name);
-    }
   }
 
   // Course Details Drawer / Modal

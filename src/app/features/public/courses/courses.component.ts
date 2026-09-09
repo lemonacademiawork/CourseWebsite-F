@@ -2,9 +2,11 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { CourseService } from '../../../core/services/course.service';
+import { CategoryService } from '../../../core/services/category.service';
 import { EnrollmentService } from '../../../core/services/enrollment.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Course } from '../../../core/models/course.model';
+import { Category } from '../../../core/models/category.model';
 
 @Component({
   selector: 'app-courses',
@@ -14,23 +16,16 @@ import { Course } from '../../../core/models/course.model';
 })
 export class CoursesComponent implements OnInit {
   private courseService = inject(CourseService);
+  private categoryService = inject(CategoryService);
   private enrollmentService = inject(EnrollmentService);
   authService = inject(AuthService);
   private route = inject(ActivatedRoute);
 
   courses = signal<Course[]>([]);
+  categories = signal<Category[]>([]);
   loading = signal<boolean>(true);
   selectedCategories = signal<string[]>([]);
   enrolledCourseIds = signal<Set<string>>(new Set());
-
-  categories = [
-    { name: 'Lippan Art', slug: 'lippan-art' },
-    { name: 'Candle Making', slug: 'candle-making' },
-    { name: 'Resin Art', slug: 'resin-art' },
-    { name: 'Mosaic Art', slug: 'mosaic-art' },
-    { name: 'Crochet & Fiber Arts', slug: 'crochet-fiber-arts' },
-    { name: 'Pottery', slug: 'pottery' }
-  ];
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
@@ -38,8 +33,20 @@ export class CoursesComponent implements OnInit {
         this.selectedCategories.set([params['category']]);
       }
     });
+    this.fetchCategories();
     this.fetchCourses();
     this.fetchEnrolledCourses();
+  }
+
+  fetchCategories(): void {
+    this.categoryService.getCategories().subscribe({
+      next: (cats) => {
+        this.categories.set(cats || []);
+      },
+      error: () => {
+        this.categories.set([]);
+      }
+    });
   }
 
   fetchCourses(): void {

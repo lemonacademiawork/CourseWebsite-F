@@ -6,7 +6,7 @@
         <div>
           <h3 class="font-label-md text-label-md text-on-surface uppercase tracking-widest mb-4 font-bold">Categories</h3>
           <div class="space-y-3">
-            @for (cat of categories; track cat.slug) {
+            @for (cat of categories(); track cat.id || cat.slug) {
               <label class="flex items-center gap-3 cursor-pointer group">
                 <input 
                   class="form-checkbox text-primary rounded border-outline-variant focus:ring-primary w-4 h-4 accent-primary" 

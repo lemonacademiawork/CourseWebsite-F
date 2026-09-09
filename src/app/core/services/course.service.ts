@@ -38,10 +38,7 @@ export class CourseService {
         const list = Array.isArray(raw) ? raw : (raw.courses || []);
         return list.map((c: any) => this.mapCourse(c));
       }),
-      catchError(() => {
-        // Fallback default courses if backend offline
-        return of(this.getDefaultCourses().map(c => this.mapCourse(c)));
-      })
+      catchError(() => of([]))
     );
   }
 
@@ -55,11 +52,7 @@ export class CourseService {
         }
         return null;
       }),
-      catchError(() => {
-        return this.getCourses().pipe(
-          map(courses => courses.find(c => c.id === id || c.slug === id || c.categorySlug === id) || null)
-        );
-      })
+      catchError(() => of(null))
     );
   }
 
@@ -307,58 +300,5 @@ export class CourseService {
       createdAt: merged.createdAt,
       updatedAt: merged.updatedAt
     };
-  }
-
-  private getDefaultCourses(): any[] {
-    return [
-      {
-        id: 'lippan-art',
-        title: 'The Art of Lippan: Traditional Mud & Mirror Work',
-        slug: 'the-art-of-lippan',
-        category: { name: 'Lippan Art', slug: 'lippan-art' },
-        instructor: 'Aisha Sharma',
-        description: 'Master the ancient Gujarati art form of Lippan Kaam. Create stunning, intricate murals with clay and mirror work.',
-        price: 2499,
-        discountPrice: 1499,
-        level: 'BEGINNER',
-        durationHours: 12,
-        thumbnailUrl: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f',
-        liveClassLink: 'https://zoom.us/j/lemon-lippan-live',
-        liveScheduleText: 'Live Interactive Studio Class: Saturdays at 5:00 PM IST',
-        youtubePlaylistUrl: 'https://www.youtube.com/playlist?list=PLlemon_lippan_art_masterclass'
-      },
-      {
-        id: 'candle-making',
-        title: 'Hand-Poured Botanical Soy Candle Making',
-        slug: 'soy-candle-making',
-        category: { name: 'Candle Making', slug: 'candle-making' },
-        instructor: 'Rohan Mehta',
-        description: 'Create clean-burning, organic soy candles infused with custom botanical fragrances and essential oils.',
-        price: 1999,
-        discountPrice: 1299,
-        level: 'BEGINNER',
-        durationHours: 8,
-        thumbnailUrl: 'https://images.unsplash.com/photo-1603006905003-be475563bc59',
-        liveClassLink: 'https://zoom.us/j/lemon-candle-live',
-        liveScheduleText: 'Live Pouring Workshop: Sundays at 4:00 PM IST',
-        youtubePlaylistUrl: 'https://www.youtube.com/playlist?list=PLlemon_candle_making_series'
-      },
-      {
-        id: 'resin-art',
-        title: 'Ocean Wave Resin Art & Liquid Glass Masterclass',
-        slug: 'ocean-resin-art',
-        category: { name: 'Resin Art', slug: 'resin-art' },
-        instructor: 'Priya Nair',
-        description: 'Learn cellular lacing, metallic pigment swirling, and heat-gun techniques for ocean coasters and table boards.',
-        price: 2999,
-        discountPrice: 1899,
-        level: 'INTERMEDIATE',
-        durationHours: 10,
-        thumbnailUrl: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675',
-        liveClassLink: 'https://zoom.us/j/lemon-resin-live',
-        liveScheduleText: 'Live Fluid Art Demo: Fridays at 6:00 PM IST',
-        youtubePlaylistUrl: 'https://www.youtube.com/playlist?list=PLlemon_resin_art_tutorials'
-      }
-    ];
   }
 }
