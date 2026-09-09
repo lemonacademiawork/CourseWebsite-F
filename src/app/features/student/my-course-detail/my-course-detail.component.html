@@ -281,38 +281,44 @@
 
     <!-- Tab 3: Certificate of Completion -->
     @if (activeTab() === 'certificate') {
-      <div class="text-center py-8 max-w-lg mx-auto space-y-6">
-        <div class="border-4 border-double border-primary/40 bg-surface-container-lowest p-8 rounded-2xl shadow-sm space-y-4">
-          <div class="text-primary font-bold tracking-widest uppercase text-xs">Certificate of Completion</div>
-          <h2 class="playfair text-2xl font-bold text-on-surface">{{ authService.userName() || 'Artisan Scholar' }}</h2>
-          <p class="text-xs text-on-surface-variant">
-            has successfully completed all modules and live workshops for
-          </p>
-          <div class="font-bold text-sm text-primary">{{ course()?.title || 'Masterclass Course' }}</div>
-          <p class="text-[10px] text-on-surface-variant">Instructor: {{ course()?.instructor || 'Instructor' }} • Lemon Academia</p>
-          @if (certificate()?.verificationCode) {
-            <div class="pt-2 text-[10px] text-on-surface-variant font-mono">
-              Verification Code: <strong class="text-primary">{{ certificate()?.verificationCode }}</strong>
-            </div>
-          }
+      <div class="text-center py-4 max-w-3xl mx-auto space-y-6">
+        <!-- Visual Certificate Card Preview with template -->
+        <div class="relative w-full aspect-[1414/1000] rounded-2xl overflow-hidden shadow-xl border border-outline-variant/40 bg-[#EDE6D6]">
+          <img 
+            src="/certificate-template.png" 
+            alt="Certificate of Completion" 
+            class="w-full h-full object-cover select-none" 
+          />
+          
+          <!-- Overlay Student Name -->
+          <div class="absolute inset-x-0 top-[40.5%] sm:top-[41.5%] md:top-[42.2%] flex items-center justify-center pointer-events-none px-6">
+            <span class="font-serif font-bold text-base sm:text-2xl md:text-3xl text-[#2D2006] tracking-wide drop-shadow-2xs">
+              {{ authService.userName() || 'Artisan Scholar' }}
+            </span>
+          </div>
+
+          <!-- Overlay Course Name (Line 1) -->
+          <div class="absolute left-[47%] sm:left-[47.5%] top-[51.8%] sm:top-[52.4%] md:top-[53%] max-w-[28%] truncate pointer-events-none text-left">
+            <span class="font-serif font-bold text-[8px] sm:text-[13px] md:text-[15px] text-[#6E5410]">
+              {{ course()?.title || 'Masterclass Workshop' }}
+            </span>
+          </div>
+
+          <!-- Overlay Course Name (Line 2) -->
+          <div class="absolute left-[51%] sm:left-[51.5%] top-[55.5%] sm:top-[56%] md:top-[56.6%] max-w-[24%] truncate pointer-events-none text-left">
+            <span class="font-serif font-bold text-[8px] sm:text-[13px] md:text-[15px] text-[#6E5410]">
+              {{ course()?.title || 'Masterclass Workshop' }}
+            </span>
+          </div>
         </div>
 
-        <div class="flex flex-wrap items-center justify-center gap-3">
+        <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
           <button 
             (click)="downloadCertificatePDF()" 
-            class="bg-primary text-on-primary px-6 py-2.5 rounded-lg font-semibold shadow-sm hover:opacity-90 cursor-pointer flex items-center gap-2 text-xs">
-            <span class="material-symbols-outlined text-sm">download</span>
-            Download Certificate (High-Res)
+            class="bg-primary text-on-primary px-7 py-3 rounded-xl font-bold shadow-md hover:opacity-95 hover:scale-[1.02] transition-all cursor-pointer flex items-center gap-2 text-xs">
+            <span class="material-symbols-outlined text-base">download</span>
+            Download Certificate (High-Res Image)
           </button>
-
-          @if (!certificate()) {
-            <button 
-              (click)="claimCertificate()" 
-              [disabled]="certificateClaiming()"
-              class="bg-surface-container-high border border-outline-variant text-on-surface px-5 py-2.5 rounded-lg font-semibold hover:bg-surface-container cursor-pointer disabled:opacity-50 text-xs">
-              {{ certificateClaiming() ? 'Registering...' : 'Register Official Code' }}
-            </button>
-          }
         </div>
       </div>
     }

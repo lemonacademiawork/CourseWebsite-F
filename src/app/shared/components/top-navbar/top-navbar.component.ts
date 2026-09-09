@@ -82,6 +82,11 @@ export class TopNavbarComponent implements OnInit, OnDestroy {
     }
   }
 
+  dismissNotification(notification: AppNotification, event?: Event): void {
+    if (event) event.stopPropagation();
+    this.notificationService.dismissNotification(notification.id);
+  }
+
   markAllRead(): void {
     this.notificationService.markAllAsRead();
   }

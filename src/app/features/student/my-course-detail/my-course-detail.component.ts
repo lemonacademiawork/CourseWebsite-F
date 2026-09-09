@@ -319,142 +319,94 @@ export class MyCourseDetailComponent implements OnInit {
   }
 
   downloadCertificatePDF(): void {
-    const cert = this.certificate();
     const studentName = this.authService.userName() || (typeof window !== 'undefined' ? localStorage.getItem('user_name') : '') || 'Artisan Scholar';
-    const courseTitle = this.course()?.title || cert?.courseTitle || 'Masterclass Art & Craft Workshop';
-    const instructor = this.course()?.instructor || 'Master Instructor';
-    const code = cert?.verificationCode || cert?.certificateNumber || `LA-CERT-${Date.now().toString().slice(-6)}`;
-    const dateStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    const courseTitle = this.course()?.title || this.certificate()?.courseTitle || 'Masterclass Art & Craft Workshop';
 
-    // Render Certificate to high-resolution Canvas and trigger download
-    const canvas = document.createElement('canvas');
-    canvas.width = 1600;
-    canvas.height = 1130;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = '/certificate-template.png';
 
-    // Background
-    ctx.fillStyle = '#FCF9F2';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth || 1414;
+      canvas.height = img.naturalHeight || 1000;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
 
-    // Outer Vintage Border
-    ctx.strokeStyle = '#6E5410';
-    ctx.lineWidth = 12;
-    ctx.strokeRect(40, 40, canvas.width - 80, canvas.height - 80);
+      // 1. Draw certificate background template
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-    // Inner Delicate Border
-    ctx.strokeStyle = '#D4AF37';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(60, 60, canvas.width - 120, canvas.height - 120);
+      // 2. Student Name in center blank space above the gold bar
+      const centerX = canvas.width * 0.518;
+      const studentNameY = canvas.height * 0.465;
 
-    // Corner Ornaments
-    ctx.fillStyle = '#6E5410';
-    const corners = [[75, 75], [canvas.width - 75, 75], [75, canvas.height - 75], [canvas.width - 75, canvas.height - 75]];
-    corners.forEach(([cx, cy]) => {
-      ctx.beginPath();
-      ctx.arc(cx, cy, 8, 0, Math.PI * 2);
-      ctx.fill();
-    });
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#2D2006';
+      ctx.font = 'bold 44px "Cinzel", "Playfair Display", Georgia, serif';
+      ctx.fillText(studentName, centerX, studentNameY);
 
-    // Academy Header
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#6E5410';
-    ctx.font = 'bold 36px "Cinzel", Georgia, serif';
-    ctx.fillText('LEMON ACADEMIA', canvas.width / 2, 160);
+      // 3. Course Name in the paragraph blank spaces
+      ctx.fillStyle = '#6E5410';
+      ctx.font = 'bold 20px "Cinzel", Georgia, serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
 
-    ctx.fillStyle = '#5B5650';
-    ctx.font = '500 18px sans-serif';
-    ctx.fillText('PREMIUM ARTISAN & CRAFT STUDIO', canvas.width / 2, 195);
+      // Blank 1: after "Has successfully completed the "
+      const blank1X = canvas.width * 0.485;
+      const line1Y = canvas.height * 0.542;
+      ctx.fillText(courseTitle, blank1X, line1Y);
 
-    // Certificate Title
-    ctx.fillStyle = '#1C1A17';
-    ctx.font = 'bold 54px Georgia, serif';
-    ctx.fillText('Certificate of Completion', canvas.width / 2, 290);
+      // Blank 2: after "demonstrated exceptional skills in "
+      const blank2X = canvas.width * 0.525;
+      const line2Y = canvas.height * 0.575;
+      ctx.fillText(courseTitle, blank2X, line2Y);
 
-    ctx.fillStyle = '#5B5650';
-    ctx.font = 'italic 24px Georgia, serif';
-    ctx.fillText('This certifies that', canvas.width / 2, 370);
+      // Trigger download
+      const link = document.createElement('a');
+      link.download = `Lemon-Academia-Certificate-${studentName.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    };
 
-    // Student Name
-    ctx.fillStyle = '#6E5410';
-    ctx.font = 'bold 64px Georgia, serif';
-    ctx.fillText(studentName, canvas.width / 2, 460);
+    img.onerror = () => {
+      // Fallback in case image asset cannot be loaded directly
+      const canvas = document.createElement('canvas');
+      canvas.width = 1414;
+      canvas.height = 1000;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
 
-    // Divider Line under student name
-    ctx.strokeStyle = '#D4AF37';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(canvas.width / 2 - 250, 490);
-    ctx.lineTo(canvas.width / 2 + 250, 490);
-    ctx.stroke();
+      ctx.fillStyle = '#EDE6D6';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Narrative
-    ctx.fillStyle = '#4A463F';
-    ctx.font = '22px sans-serif';
-    ctx.fillText('has successfully mastered all modules, studio techniques, and practical projects for', canvas.width / 2, 550);
+      ctx.strokeStyle = '#6E5410';
+      ctx.lineWidth = 8;
+      ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60);
 
-    // Course Title
-    ctx.fillStyle = '#1C1A17';
-    ctx.font = 'bold 38px Georgia, serif';
-    ctx.fillText(courseTitle, canvas.width / 2, 620);
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#2D2006';
+      ctx.font = 'bold 42px Georgia, serif';
+      ctx.fillText('CERTIFICATE OF COMPLETION', canvas.width / 2, 220);
 
-    // Signatures and Seal
-    const ySign = 880;
+      ctx.fillStyle = '#5B5650';
+      ctx.font = '20px sans-serif';
+      ctx.fillText('IT IS OUR PLEASURE TO CERTIFY THAT', canvas.width / 2, 320);
 
-    // Left: Instructor Signature
-    ctx.fillStyle = '#1C1A17';
-    ctx.font = 'bold 22px Georgia, serif';
-    ctx.fillText(instructor, 380, ySign);
-    ctx.strokeStyle = '#6E5410';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(250, ySign + 10);
-    ctx.lineTo(510, ySign + 10);
-    ctx.stroke();
-    ctx.fillStyle = '#7A756D';
-    ctx.font = '16px sans-serif';
-    ctx.fillText('Master Artisan Instructor', 380, ySign + 35);
+      ctx.fillStyle = '#6E5410';
+      ctx.font = 'bold 48px Georgia, serif';
+      ctx.fillText(studentName, canvas.width / 2, 460);
 
-    // Center: Official Seal Badge
-    const sealX = canvas.width / 2;
-    const sealY = ySign - 20;
-    ctx.beginPath();
-    ctx.arc(sealX, sealY, 60, 0, Math.PI * 2);
-    ctx.fillStyle = '#FAF0CA';
-    ctx.fill();
-    ctx.strokeStyle = '#6E5410';
-    ctx.lineWidth = 4;
-    ctx.stroke();
+      ctx.fillStyle = '#2D2006';
+      ctx.font = '22px sans-serif';
+      ctx.fillText(`Has successfully completed the ${courseTitle}`, canvas.width / 2, 560);
+      ctx.fillText(`and demonstrated exceptional skills in class.`, canvas.width / 2, 600);
 
-    ctx.fillStyle = '#6E5410';
-    ctx.font = 'bold 15px sans-serif';
-    ctx.fillText('OFFICIAL', sealX, sealY - 8);
-    ctx.fillText('SEAL', sealX, sealY + 12);
-
-    // Right: Director Signature
-    ctx.fillStyle = '#1C1A17';
-    ctx.font = 'bold 22px Georgia, serif';
-    ctx.fillText('Academic Director', canvas.width - 380, ySign);
-    ctx.strokeStyle = '#6E5410';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(canvas.width - 510, ySign + 10);
-    ctx.lineTo(canvas.width - 250, ySign + 10);
-    ctx.stroke();
-    ctx.fillStyle = '#7A756D';
-    ctx.font = '16px sans-serif';
-    ctx.fillText('Lemon Academia Board', canvas.width - 380, ySign + 35);
-
-    // Verification Code & Date footer
-    ctx.fillStyle = '#8C857B';
-    ctx.font = '15px "Courier New", monospace';
-    ctx.fillText(`Issued: ${dateStr}   •   Verification Code: ${code}   •   lemonacademia.com`, canvas.width / 2, 1040);
-
-    // Trigger download
-    const link = document.createElement('a');
-    link.download = `Lemon-Academia-Certificate-${studentName.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+      const link = document.createElement('a');
+      link.download = `Lemon-Academia-Certificate-${studentName.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    };
   }
 
   setTab(tab: 'lessons' | 'zoom' | 'certificate' | 'reviews'): void {

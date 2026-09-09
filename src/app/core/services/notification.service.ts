@@ -63,6 +63,12 @@ export class NotificationService {
     );
   }
 
+  /** Dismiss a single notification from list */
+  dismissNotification(notificationId: string): void {
+    this.notifications.update(list => list.filter(n => n.id !== notificationId));
+    this.markAsRead(notificationId).subscribe();
+  }
+
   /** Mark all as read */
   markAllAsRead(): void {
     const unread = this.notifications().filter(n => !n.isRead);

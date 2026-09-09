@@ -32,7 +32,6 @@ import { ForbiddenComponent } from './features/public/forbidden/forbidden.compon
 import { NotFoundComponent } from './features/public/not-found/not-found.component';
 
 // New Public Features
-import { VerifyCertificateComponent } from './features/public/verify-certificate/verify-certificate.component';
 import { ResetPasswordComponent } from './features/public/reset-password/reset-password.component';
 import { AuthCallbackComponent } from './features/public/auth-callback/auth-callback.component';
 
@@ -92,8 +91,6 @@ export const routes: Routes = [
       { path: 'login/callback', component: AuthCallbackComponent },
       { path: 'forgot-password', component: ResetPasswordComponent },
       { path: 'reset-password', component: ResetPasswordComponent },
-      { path: 'verify-certificate', component: VerifyCertificateComponent },
-      { path: 'certificates/verify/:code', component: VerifyCertificateComponent },
 
       { path: 'profile', component: ProfileComponent },
       { path: 'my-courses', component: MyCoursesComponent },
