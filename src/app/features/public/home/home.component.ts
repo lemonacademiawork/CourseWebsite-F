@@ -110,111 +110,132 @@ export class HomeComponent implements OnInit, OnDestroy {
   currentSlide = signal<number>(0);
   isLoadingCarousel = signal<boolean>(false);
   private timer: any;
+  private hasLoadedFromStorage = false;
 
-  private reloadHandler = () => this.loadCarousel();
+  /** When admin updates carousel, just read localStorage directly — no backend fetch */
+  private localReloadHandler = () => this.applyLocalStorageSlides();
 
   ngOnInit(): void {
     this.loadCarousel();
     if (typeof window !== 'undefined') {
-      window.addEventListener('carousel_updated', this.reloadHandler);
-      window.addEventListener('storage', this.reloadHandler);
-      window.addEventListener('focus', this.reloadHandler);
+      window.addEventListener('carousel_updated', this.localReloadHandler);
+      window.addEventListener('storage', this.localReloadHandler);
     }
   }
 
   ngOnDestroy(): void {
     if (this.timer) clearInterval(this.timer);
     if (typeof window !== 'undefined') {
-      window.removeEventListener('carousel_updated', this.reloadHandler);
-      window.removeEventListener('storage', this.reloadHandler);
-      window.removeEventListener('focus', this.reloadHandler);
+      window.removeEventListener('carousel_updated', this.localReloadHandler);
+      window.removeEventListener('storage', this.localReloadHandler);
     }
   }
 
+  /** Read localStorage and apply slides — no backend call, no race condition */
+  private applyLocalStorageSlides(): void {
+    if (typeof window === 'undefined') return;
+    const stored = localStorage.getItem('homepage_carousel');
+    if (!stored) return;
+    try {
+      const list = JSON.parse(stored);
+      if (Array.isArray(list) && list.length > 0) {
+        const activeList = this.parseSlides(list);
+        if (activeList.length > 0) {
+          this.slides.set(activeList);
+          this.startTimer();
+        }
+      }
+    } catch {}
+  }
+
+  /** Parse raw slide data into typed CarouselSlide array */
+  private parseSlides(data: any[]): CarouselSlide[] {
+    return data
+      .filter((item: any) => item && item.active !== false && item.isActive !== false)
+      .map((s: any, idx: number) => ({
+        id: s.id || String(idx + 1),
+        title: s.title || 'Masterclass Studio',
+        tagline: s.tagline || '',
+        description: s.description || '',
+        imageUrl: s.imageUrl || s.url || HERO_SLIDES[idx % HERO_SLIDES.length].imageUrl,
+        route: s.route || '/courses',
+        category: s.category || '',
+        order: s.order !== undefined ? Number(s.order) : idx + 1,
+        active: s.active !== false,
+        isActive: s.isActive !== false,
+        queryParams: s.category ? { category: s.category } : (s.queryParams || undefined)
+      }))
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  }
+
   loadCarousel(): void {
-    // 1. Check localStorage first for instant display
+    // 1. Check localStorage first — if present, use it and STOP. Don't let backend overwrite.
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('homepage_carousel');
       if (stored) {
         try {
           const list = JSON.parse(stored);
-          if (Array.isArray(list)) {
-            const activeList = list.filter((item: any) => item && item.active !== false && item.isActive !== false);
+          if (Array.isArray(list) && list.length > 0) {
+            const activeList = this.parseSlides(list);
             if (activeList.length > 0) {
               this.slides.set(activeList);
+              this.hasLoadedFromStorage = true;
               this.startTimer();
+              return; // ← KEY FIX: Don't fetch backend, localStorage is authoritative
             }
           }
         } catch {}
       }
     }
 
-    // 2. Helper to parse and store active slides sorted by order
-    const applySlidesData = (data: any[]): boolean => {
-      if (!Array.isArray(data) || data.length === 0) return false;
+    // 2. Only reach here if localStorage is empty — fetch from backend
+    this.fetchFromBackend();
+  }
 
-      const activeList: CarouselSlide[] = data
-        .filter((item: any) => item && item.active !== false && item.isActive !== false)
-        .map((s: any, idx: number) => ({
-          id: s.id || String(idx + 1),
-          title: s.title || 'Masterclass Studio',
-          tagline: s.tagline || '',
-          description: s.description || '',
-          imageUrl: s.imageUrl || s.url || HERO_SLIDES[idx % HERO_SLIDES.length].imageUrl,
-          route: s.route || '/courses',
-          category: s.category || '',
-          order: s.order !== undefined ? Number(s.order) : idx + 1,
-          active: s.active !== false,
-          isActive: s.isActive !== false,
-          queryParams: s.category ? { category: s.category } : (s.queryParams || undefined)
-        }))
-        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-
-      if (activeList.length > 0) {
-        this.slides.set(activeList);
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('homepage_carousel', JSON.stringify(activeList));
-        }
-        this.startTimer();
-        return true;
-      }
-      return false;
-    };
-
-    // 3. Fetch from public backend endpoint GET /api/v1/content/carousel
+  private fetchFromBackend(): void {
     this.isLoadingCarousel.set(true);
     this.http.get<any>(`${environment.apiUrl}/content/carousel`).subscribe({
       next: (res) => {
         this.isLoadingCarousel.set(false);
         const data = Array.isArray(res) ? res : res?.data;
-        if (!applySlidesData(data)) {
-          this.tryFallbackEndpoints(applySlidesData);
-        }
+        if (this.applyBackendData(data)) return;
+        this.tryFallbackEndpoints();
       },
       error: () => {
-        this.tryFallbackEndpoints(applySlidesData);
+        this.tryFallbackEndpoints();
       }
     });
   }
 
-  private tryFallbackEndpoints(applyFn: (data: any[]) => boolean): void {
-    // Fallback 1: GET /api/v1/carousel
+  private applyBackendData(data: any[]): boolean {
+    if (!Array.isArray(data) || data.length === 0) return false;
+    const activeList = this.parseSlides(data);
+    if (activeList.length > 0) {
+      this.slides.set(activeList);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('homepage_carousel', JSON.stringify(activeList));
+      }
+      this.startTimer();
+      return true;
+    }
+    return false;
+  }
+
+  private tryFallbackEndpoints(): void {
     this.http.get<any>(`${environment.apiUrl}/carousel`).subscribe({
       next: (res) => {
         this.isLoadingCarousel.set(false);
         const data = Array.isArray(res) ? res : res?.data;
-        if (!applyFn(data)) {
-          this.trySettingsFallback(applyFn);
-        }
+        if (this.applyBackendData(data)) return;
+        this.trySettingsFallback();
       },
       error: () => {
-        this.trySettingsFallback(applyFn);
+        this.trySettingsFallback();
       }
     });
   }
 
-  private trySettingsFallback(applyFn: (data: any[]) => boolean): void {
-    // Fallback 2: GET /api/v1/admin/settings or local defaults
+  private trySettingsFallback(): void {
     this.http.get<any>(`${environment.apiUrl}/admin/settings`).subscribe({
       next: (res) => {
         this.isLoadingCarousel.set(false);
@@ -224,7 +245,7 @@ export class HomeComponent implements OnInit, OnDestroy {
           if (setting && setting.settingValue) {
             try {
               const list = JSON.parse(setting.settingValue);
-              if (applyFn(list)) return;
+              if (this.applyBackendData(list)) return;
             } catch {}
           }
         }

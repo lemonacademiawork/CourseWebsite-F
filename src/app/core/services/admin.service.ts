@@ -19,10 +19,26 @@ export class AdminService {
 
   constructor(private http: HttpClient) {}
 
-  /** GET /api/v1/admin/dashboard */
+  /** GET /api/v1/admin/dashboard — normalizes any backend naming convention */
   getDashboard(): Observable<AdminDashboardMetrics | null> {
     return this.http.get<any>(`${this.apiUrl}/dashboard`).pipe(
-      map(res => res.data || res),
+      map(res => {
+        const d = res.data || res;
+        // Normalize field names from any backend convention
+        return {
+          totalRevenue: d.totalRevenue ?? d.total_revenue ?? d.revenue ?? 0,
+          totalStudents: d.totalStudents ?? d.total_students ?? d.studentsCount ?? d.students_count ?? d.students ?? 0,
+          totalCourses: d.totalCourses ?? d.total_courses ?? d.coursesCount ?? d.courses_count ?? d.courses ?? 0,
+          totalTrainers: d.totalTrainers ?? d.total_trainers ?? d.trainersCount ?? d.trainers_count ?? d.trainers ?? 0,
+          totalEnrollments: d.totalEnrollments ?? d.total_enrollments ?? d.enrollmentsCount ?? d.enrollments_count ?? d.activeEnrollments ?? d.active_enrollments ?? 0,
+          pendingApplications: d.pendingApplications ?? d.pending_applications ?? d.pendingTrainerRequests ?? d.pending_trainer_requests ?? 0,
+          activeEnrollments: d.activeEnrollments ?? d.active_enrollments ?? d.totalEnrollments ?? d.total_enrollments ?? 0,
+          totalOrders: d.totalOrders ?? d.total_orders ?? d.ordersCount ?? 0,
+          pendingReviews: d.pendingReviews ?? d.pending_reviews ?? d.pendingGallery ?? d.pending_gallery ?? 0,
+          recentOrders: d.recentOrders ?? d.recent_orders ?? [],
+          ...d  // preserve any extra fields
+        } as AdminDashboardMetrics;
+      }),
       catchError(() => of(null))
     );
   }

@@ -3,8 +3,11 @@ export interface AdminDashboardMetrics {
   totalStudents?: number;
   totalCourses?: number;
   totalTrainers?: number;
+  totalEnrollments?: number;
+  totalOrders?: number;
   recentOrders?: any[];
   pendingApplications?: number;
+  pendingReviews?: number;
   activeEnrollments?: number;
   [key: string]: any;
 }
