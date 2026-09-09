@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CourseService } from '../../../core/services/course.service';
+import { UploadService } from '../../../core/services/upload.service';
 import { Course } from '../../../core/models/course.model';
 import { HERO_SLIDES, HeroSlide } from '../../public/home/home.component';
 
@@ -23,22 +24,48 @@ export interface AdminCarouselSlide {
   imports: [CommonModule, RouterLink, FormsModule],
   template: `
     <main class="p-6 max-w-container-max mx-auto text-xs text-on-surface space-y-6">
+      <!-- Hidden file input for quick direct upload -->
+      <input 
+        #directFileInput 
+        type="file" 
+        (change)="onDirectFileSelected($event)" 
+        accept="image/png,image/jpeg,image/webp,image/jpg" 
+        class="hidden" 
+      />
+
       <!-- Header -->
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 class="text-xl font-bold text-on-surface">Creative Content Management</h1>
           <p class="text-xs text-on-surface-variant mt-0.5">
-            Manage the homepage hero carousel (6 craft slides), curriculum media, and studio assets.
+            Manage the homepage hero carousel (6 craft slides), upload banner images, curriculum media, and studio assets.
           </p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           @if (activeTab() === 'carousel') {
+            <!-- Quick Upload Image Button -->
+            <button 
+              (click)="directFileInput.click()" 
+              [disabled]="isUploadingImage()"
+              class="bg-surface-container-highest text-on-surface font-semibold px-3.5 py-2.5 rounded-lg hover:bg-surface-dim flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50">
+              @if (isUploadingImage()) {
+                <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                <span>Uploading Image...</span>
+              } @else {
+                <span class="material-symbols-outlined text-sm text-primary">upload_file</span>
+                <span>Upload Banner Image</span>
+              }
+            </button>
+
+            <!-- Add Slide with full modal -->
             <button 
               (click)="openAddSlideModal()" 
               class="bg-primary text-on-primary font-semibold px-4 py-2.5 rounded-lg hover:opacity-90 flex items-center gap-1.5 shadow-sm cursor-pointer">
               <span class="material-symbols-outlined text-sm">add_photo_alternate</span>
               Add Carousel Slide
             </button>
+
+            <!-- Reset defaults -->
             <button 
               (click)="resetToDefaults()" 
               class="bg-surface-container-high text-on-surface font-semibold px-3.5 py-2.5 rounded-lg hover:bg-surface-dim flex items-center gap-1.5 shadow-xs cursor-pointer"
@@ -95,7 +122,7 @@ export interface AdminCarouselSlide {
               <span class="material-symbols-outlined text-primary text-xl">auto_awesome</span>
               <div>
                 <h4 class="font-bold text-xs text-on-surface">Homepage Signature Craft Carousel</h4>
-                <p class="text-[11px] text-on-surface-variant">These banner slides rotate automatically every 5 seconds on the main landing page.</p>
+                <p class="text-[11px] text-on-surface-variant">Upload custom banner images or edit titles and descriptions. Slides rotate every 5 seconds on the homepage.</p>
               </div>
             </div>
             <a routerLink="/" target="_blank" class="text-primary font-bold hover:underline flex items-center gap-1 text-xs">
@@ -231,9 +258,60 @@ export interface AdminCarouselSlide {
               </button>
             </div>
 
+            <!-- Upload File or Image URL -->
             <div class="space-y-3">
+              <!-- Image Upload Zone -->
               <div>
-                <label class="block font-semibold mb-1 text-on-surface-variant">Main Title</label>
+                <label class="block font-semibold mb-1 text-on-surface-variant">Slide Banner Image</label>
+                
+                <input 
+                  #modalFileInput 
+                  type="file" 
+                  (change)="onModalFileSelected($event)" 
+                  accept="image/png,image/jpeg,image/webp,image/jpg" 
+                  class="hidden" 
+                />
+
+                <div class="flex gap-2 mb-2">
+                  <button 
+                    type="button" 
+                    (click)="modalFileInput.click()" 
+                    [disabled]="isModalUploading()"
+                    class="flex-1 py-2 px-3 bg-surface-container-high hover:bg-surface-dim text-on-surface rounded-lg font-semibold flex items-center justify-center gap-1.5 cursor-pointer text-xs border border-outline-variant/30">
+                    @if (isModalUploading()) {
+                      <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                      <span>Uploading Image...</span>
+                    } @else {
+                      <span class="material-symbols-outlined text-sm text-primary">cloud_upload</span>
+                      <span>Upload Image From Computer</span>
+                    }
+                  </button>
+                </div>
+
+                <div class="relative">
+                  <input 
+                    type="url" 
+                    [ngModel]="modalSlide().imageUrl"
+                    (ngModelChange)="updateModalField('imageUrl', $event)"
+                    placeholder="Or paste direct image URL (https://images.unsplash.com/...)"
+                    class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <!-- Live Preview -->
+              @if (modalSlide().imageUrl) {
+                <div class="rounded-xl overflow-hidden h-32 border border-outline-variant/30 bg-surface-container-low relative group">
+                  <img [src]="modalSlide().imageUrl" class="w-full h-full object-cover" alt="Preview" />
+                  <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button (click)="modalFileInput.click()" class="bg-white/90 text-black px-3 py-1 rounded-lg font-bold text-xs cursor-pointer">Change Image</button>
+                  </div>
+                  <span class="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded font-bold">Image Preview</span>
+                </div>
+              }
+
+              <div>
+                <label class="block font-semibold mb-1 text-on-surface-variant">Main Title *</label>
                 <input 
                   type="text" 
                   [ngModel]="modalSlide().title"
@@ -264,24 +342,6 @@ export interface AdminCarouselSlide {
                   class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none resize-none"
                 ></textarea>
               </div>
-
-              <div>
-                <label class="block font-semibold mb-1 text-on-surface-variant">Image URL (High-Res 1600x600 recommended)</label>
-                <input 
-                  type="url" 
-                  [ngModel]="modalSlide().imageUrl"
-                  (ngModelChange)="updateModalField('imageUrl', $event)"
-                  placeholder="https://images.unsplash.com/photo-..."
-                  class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
-                />
-              </div>
-
-              @if (modalSlide().imageUrl) {
-                <div class="rounded-xl overflow-hidden h-28 border border-outline-variant/30 bg-surface-container-low relative">
-                  <img [src]="modalSlide().imageUrl" class="w-full h-full object-cover" alt="Preview" />
-                  <span class="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded font-bold">Image Preview</span>
-                </div>
-              }
 
               <div class="grid grid-cols-2 gap-3">
                 <div>
@@ -328,7 +388,8 @@ export interface AdminCarouselSlide {
               </button>
               <button 
                 (click)="saveSlideModal()"
-                class="px-4 py-2 rounded-lg bg-primary text-on-primary font-semibold hover:opacity-90 cursor-pointer shadow-sm">
+                [disabled]="isModalUploading()"
+                class="px-4 py-2 rounded-lg bg-primary text-on-primary font-semibold hover:opacity-90 cursor-pointer shadow-sm disabled:opacity-50">
                 {{ editingSlideId() ? 'Save Changes' : 'Create Slide' }}
               </button>
             </div>
@@ -340,12 +401,15 @@ export interface AdminCarouselSlide {
 })
 export class AdminContentComponent implements OnInit {
   private courseService = inject(CourseService);
+  private uploadService = inject(UploadService);
 
   activeTab = signal<'carousel' | 'courses'>('carousel');
   slides = signal<AdminCarouselSlide[]>([]);
   courses = signal<Course[]>([]);
   isLoadingCourses = signal<boolean>(true);
   notificationMessage = signal<string>('');
+  isUploadingImage = signal<boolean>(false);
+  isModalUploading = signal<boolean>(false);
 
   // Modal states
   isSlideModalOpen = signal<boolean>(false);
@@ -389,7 +453,6 @@ export class AdminContentComponent implements OnInit {
       }
     }
 
-    // Default to the 6 Signature Craft slides
     this.resetToDefaults(false);
   }
 
@@ -427,7 +490,6 @@ export class AdminContentComponent implements OnInit {
   saveSlides(newSlides: AdminCarouselSlide[]): void {
     this.slides.set(newSlides);
     if (typeof window !== 'undefined') {
-      // Map back to format compatible with home component and carousel
       const payload = newSlides.map(s => ({
         id: s.id,
         title: s.title,
@@ -441,6 +503,93 @@ export class AdminContentComponent implements OnInit {
       }));
       localStorage.setItem('homepage_carousel', JSON.stringify(payload));
       window.dispatchEvent(new Event('carousel_updated'));
+    }
+  }
+
+  // Quick Direct Upload from Header
+  onDirectFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      this.isUploadingImage.set(true);
+
+      const titleFromFilename = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+      const cleanTitle = titleFromFilename.charAt(0).toUpperCase() + titleFromFilename.slice(1);
+
+      this.uploadService.uploadImage(file, 'carousel').subscribe({
+        next: (res: any) => {
+          this.isUploadingImage.set(false);
+          const uploadedUrl = res.url || res.secure_url || res.data?.url;
+          const newSlide: AdminCarouselSlide = {
+            id: Date.now().toString(),
+            title: cleanTitle,
+            tagline: 'Artisan Workshop',
+            description: 'Explore signature techniques in our craft masterclasses.',
+            imageUrl: uploadedUrl,
+            route: '/courses',
+            category: '',
+            active: true
+          };
+          this.saveSlides([...this.slides(), newSlide]);
+          this.showToast(`Image "${file.name}" uploaded and added as slide!`);
+          input.value = '';
+        },
+        error: () => {
+          // Fallback reading via FileReader for instant preview if server offline
+          const reader = new FileReader();
+          reader.onload = (e: any) => {
+            this.isUploadingImage.set(false);
+            const fallbackUrl = e.target.result;
+            const newSlide: AdminCarouselSlide = {
+              id: Date.now().toString(),
+              title: cleanTitle,
+              tagline: 'Artisan Workshop',
+              description: 'Explore signature techniques in our craft masterclasses.',
+              imageUrl: fallbackUrl,
+              route: '/courses',
+              category: '',
+              active: true
+            };
+            this.saveSlides([...this.slides(), newSlide]);
+            this.showToast(`Image "${file.name}" added as slide!`);
+            input.value = '';
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+  }
+
+  // Modal File Upload
+  onModalFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      this.isModalUploading.set(true);
+
+      if (!this.modalSlide().title.trim()) {
+        const titleFromFilename = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+        const cleanTitle = titleFromFilename.charAt(0).toUpperCase() + titleFromFilename.slice(1);
+        this.updateModalField('title', cleanTitle);
+      }
+
+      this.uploadService.uploadImage(file, 'carousel').subscribe({
+        next: (res: any) => {
+          this.isModalUploading.set(false);
+          const uploadedUrl = res.url || res.secure_url || res.data?.url;
+          this.updateModalField('imageUrl', uploadedUrl);
+          this.showToast('Image uploaded successfully!');
+        },
+        error: () => {
+          const reader = new FileReader();
+          reader.onload = (e: any) => {
+            this.isModalUploading.set(false);
+            this.updateModalField('imageUrl', e.target.result);
+            this.showToast('Image loaded!');
+          };
+          reader.readAsDataURL(file);
+        }
+      });
     }
   }
 
@@ -472,7 +621,7 @@ export class AdminContentComponent implements OnInit {
   saveSlideModal(): void {
     const current = this.modalSlide();
     if (!current.title.trim() || !current.imageUrl.trim()) {
-      alert('Please provide at least a title and an image URL.');
+      alert('Please provide at least a title and an image.');
       return;
     }
 
