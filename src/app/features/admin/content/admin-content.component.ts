@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CourseService } from '../../../core/services/course.service';
 import { UploadService } from '../../../core/services/upload.service';
+import { AdminService } from '../../../core/services/admin.service';
 import { Course } from '../../../core/models/course.model';
 import { HERO_SLIDES, HeroSlide } from '../../public/home/home.component';
 
@@ -402,6 +403,7 @@ export interface AdminCarouselSlide {
 export class AdminContentComponent implements OnInit {
   private courseService = inject(CourseService);
   private uploadService = inject(UploadService);
+  private adminService = inject(AdminService);
 
   activeTab = signal<'carousel' | 'courses'>('carousel');
   slides = signal<AdminCarouselSlide[]>([]);
@@ -447,13 +449,46 @@ export class AdminContentComponent implements OnInit {
               category: item.category || (item.queryParams ? item.queryParams['category'] : '') || '',
               active: item.active !== false
             })));
-            return;
           }
         } catch {}
       }
     }
 
-    this.resetToDefaults(false);
+    // Also sync from backend settings database
+    this.adminService.getSettings().subscribe({
+      next: (settings) => {
+        const carouselSetting = settings.find(s => s.settingKey === 'homepage_carousel');
+        if (carouselSetting && carouselSetting.settingValue) {
+          try {
+            const parsed = JSON.parse(carouselSetting.settingValue);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              this.slides.set(parsed.map((item: any, idx: number) => ({
+                id: item.id || String(idx + 1),
+                title: item.title || HERO_SLIDES[idx % HERO_SLIDES.length].title,
+                tagline: item.tagline || HERO_SLIDES[idx % HERO_SLIDES.length].tagline,
+                description: item.description || HERO_SLIDES[idx % HERO_SLIDES.length].description,
+                imageUrl: item.imageUrl || item.url || HERO_SLIDES[idx % HERO_SLIDES.length].imageUrl,
+                route: item.route || '/courses',
+                category: item.category || (item.queryParams ? item.queryParams['category'] : '') || '',
+                active: item.active !== false
+              })));
+              if (typeof window !== 'undefined') {
+                localStorage.setItem('homepage_carousel', carouselSetting.settingValue);
+              }
+              return;
+            }
+          } catch {}
+        }
+        if (this.slides().length === 0) {
+          this.resetToDefaults(false);
+        }
+      },
+      error: () => {
+        if (this.slides().length === 0) {
+          this.resetToDefaults(false);
+        }
+      }
+    });
   }
 
   resetToDefaults(showNotification = true): void {
@@ -489,26 +524,37 @@ export class AdminContentComponent implements OnInit {
 
   saveSlides(newSlides: AdminCarouselSlide[]): void {
     this.slides.set(newSlides);
+    const payload = newSlides.map(s => ({
+      id: s.id,
+      title: s.title,
+      tagline: s.tagline,
+      description: s.description,
+      imageUrl: s.imageUrl,
+      url: s.imageUrl,
+      route: s.route,
+      category: s.category,
+      queryParams: s.category ? { category: s.category } : undefined,
+      active: s.active
+    }));
+    const jsonStr = JSON.stringify(payload);
+
     if (typeof window !== 'undefined') {
-      const payload = newSlides.map(s => ({
-        id: s.id,
-        title: s.title,
-        tagline: s.tagline,
-        description: s.description,
-        imageUrl: s.imageUrl,
-        url: s.imageUrl,
-        route: s.route,
-        category: s.category,
-        queryParams: s.category ? { category: s.category } : undefined,
-        active: s.active
-      }));
-      const jsonStr = JSON.stringify(payload);
       localStorage.setItem('homepage_carousel', jsonStr);
       window.dispatchEvent(new Event('carousel_updated'));
       try {
         window.dispatchEvent(new StorageEvent('storage', { key: 'homepage_carousel', newValue: jsonStr }));
       } catch {}
     }
+
+    // Persist to backend system settings table
+    this.adminService.updateSetting({
+      settingKey: 'homepage_carousel',
+      settingValue: jsonStr,
+      description: 'Homepage Hero Carousel Slides'
+    }).subscribe({
+      next: () => {},
+      error: (err) => console.warn('Carousel backend setting save notice:', err)
+    });
   }
 
   // Quick Direct Upload from Header

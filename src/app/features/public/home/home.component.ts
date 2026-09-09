@@ -1,6 +1,8 @@
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 
 export interface HeroSlide {
   title: string;
@@ -16,7 +18,7 @@ export const HERO_SLIDES: HeroSlide[] = [
     title: "Learn. Create. Inspire.",
     tagline: "Master the art of Lippan Mirror Work",
     description: "Explore mirror & clay magic. Discover traditional Indian craft techniques in our modern online studio classes.",
-    imageUrl: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=1600&h=600",
+    imageUrl: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&q=80&w=1600&h=600",
     route: "/courses",
     queryParams: { category: "lippan-art" }
   },
@@ -32,7 +34,7 @@ export const HERO_SLIDES: HeroSlide[] = [
     title: "Pour. Swirl. Glow.",
     tagline: "Ocean Resin Art & Liquid Glass",
     description: "Create ultra-glossy ocean tables, trays, and coaster sets with multi-layer pigment swirls and cell lacing.",
-    imageUrl: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&q=80&w=1600&h=600",
+    imageUrl: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&q=80&w=1600&h=600",
     route: "/courses",
     queryParams: { category: "resin-art" }
   },
@@ -40,7 +42,7 @@ export const HERO_SLIDES: HeroSlide[] = [
     title: "Craft. Design. Innovate.",
     tagline: "Modern Mosaic Art Techniques",
     description: "Assemble colorful ceramic and glass tiles into elegant designs under expert guidance.",
-    imageUrl: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&q=80&w=1600&h=600",
+    imageUrl: "https://images.unsplash.com/photo-1569172122301-bc5007ba0977?auto=format&fit=crop&q=80&w=1600&h=600",
     route: "/courses",
     queryParams: { category: "mosaic-art" }
   },
@@ -70,9 +72,10 @@ export const HERO_SLIDES: HeroSlide[] = [
 })
 export class HomeComponent implements OnInit, OnDestroy {
   private router = inject(Router);
+  private http = inject(HttpClient);
 
   heroSlides = HERO_SLIDES;
-  slides = signal<any[]>([]);
+  slides = signal<any[]>(HERO_SLIDES);
   currentSlide = signal<number>(0);
   private timer: any;
 
@@ -97,24 +100,54 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   loadCarousel(): void {
-    if (typeof window === 'undefined') return;
-    const stored = localStorage.getItem('homepage_carousel');
-    if (stored) {
-      try {
-        const list = JSON.parse(stored);
-        if (Array.isArray(list)) {
-          const activeList = list.filter((item: any) => item && item.active !== false);
-          if (activeList.length > 0) {
-            this.slides.set(activeList);
-            this.startTimer();
-            return;
+    // 1. Check localStorage first for instant display
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('homepage_carousel');
+      if (stored) {
+        try {
+          const list = JSON.parse(stored);
+          if (Array.isArray(list)) {
+            const activeList = list.filter((item: any) => item && item.active !== false);
+            if (activeList.length > 0) {
+              this.slides.set(activeList);
+              this.startTimer();
+            }
           }
-        }
-      } catch {}
+        } catch {}
+      }
     }
 
-    this.slides.set(HERO_SLIDES);
-    this.startTimer();
+    // 2. Fetch from backend system settings to ensure cross-device synchronization
+    this.http.get<any>(`${environment.apiUrl}/admin/settings`).subscribe({
+      next: (res) => {
+        const settings = Array.isArray(res) ? res : res?.data || [];
+        if (Array.isArray(settings)) {
+          const carouselSetting = settings.find((s: any) => s.settingKey === 'homepage_carousel');
+          if (carouselSetting && carouselSetting.settingValue) {
+            try {
+              const list = JSON.parse(carouselSetting.settingValue);
+              if (Array.isArray(list)) {
+                const activeList = list.filter((item: any) => item && item.active !== false);
+                if (activeList.length > 0) {
+                  this.slides.set(activeList);
+                  if (typeof window !== 'undefined') {
+                    localStorage.setItem('homepage_carousel', carouselSetting.settingValue);
+                  }
+                  this.startTimer();
+                }
+              }
+            } catch {}
+          }
+        }
+      },
+      error: () => {
+        // Fallback to current slides if backend fails
+        if (this.slides().length === 0) {
+          this.slides.set(HERO_SLIDES);
+          this.startTimer();
+        }
+      }
+    });
   }
 
   navigateToSlide(slide: any, index: number): void {
