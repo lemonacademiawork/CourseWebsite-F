@@ -117,31 +117,89 @@ export class HomeComponent implements OnInit, OnDestroy {
       }
     }
 
-    // 2. Fetch from backend system settings to ensure cross-device synchronization
-    this.http.get<any>(`${environment.apiUrl}/admin/settings`).subscribe({
-      next: (res) => {
-        const settings = Array.isArray(res) ? res : res?.data || [];
-        if (Array.isArray(settings)) {
-          const carouselSetting = settings.find((s: any) => s.settingKey === 'homepage_carousel');
-          if (carouselSetting && carouselSetting.settingValue) {
-            try {
-              const list = JSON.parse(carouselSetting.settingValue);
-              if (Array.isArray(list)) {
-                const activeList = list.filter((item: any) => item && item.active !== false);
-                if (activeList.length > 0) {
-                  this.slides.set(activeList);
-                  if (typeof window !== 'undefined') {
-                    localStorage.setItem('homepage_carousel', carouselSetting.settingValue);
-                  }
-                  this.startTimer();
-                }
-              }
-            } catch {}
+    // 2. Fetch from backend with public endpoint fallbacks
+    const parseAndSetSlides = (res: any): boolean => {
+      if (!res) return false;
+      let rawList: any[] | null = null;
+
+      if (Array.isArray(res)) {
+        // Could be raw slides array or settings array
+        const isSettings = res.length > 0 && res[0] && ('settingKey' in res[0]);
+        if (isSettings) {
+          const setting = res.find((s: any) => s.settingKey === 'homepage_carousel');
+          if (setting && setting.settingValue) {
+            try { rawList = JSON.parse(setting.settingValue); } catch {}
           }
+        } else {
+          rawList = res;
+        }
+      } else if (res.settingValue) {
+        try { rawList = JSON.parse(res.settingValue); } catch {}
+      } else if (res.data) {
+        if (Array.isArray(res.data)) {
+          const isSettings = res.data.length > 0 && res.data[0] && ('settingKey' in res.data[0]);
+          if (isSettings) {
+            const setting = res.data.find((s: any) => s.settingKey === 'homepage_carousel');
+            if (setting && setting.settingValue) {
+              try { rawList = JSON.parse(setting.settingValue); } catch {}
+            }
+          } else {
+            rawList = res.data;
+          }
+        } else if (res.data.settingValue) {
+          try { rawList = JSON.parse(res.data.settingValue); } catch {}
+        }
+      }
+
+      if (Array.isArray(rawList) && rawList.length > 0) {
+        const activeList = rawList.filter((item: any) => item && item.active !== false);
+        if (activeList.length > 0) {
+          this.slides.set(activeList);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('homepage_carousel', JSON.stringify(rawList));
+          }
+          this.startTimer();
+          return true;
+        }
+      }
+      return false;
+    };
+
+    // Try public settings/content first, then admin settings
+    this.http.get<any>(`${environment.apiUrl}/content/carousel`).subscribe({
+      next: (res) => {
+        if (!parseAndSetSlides(res)) {
+          this.tryFallbackSettings(parseAndSetSlides);
         }
       },
       error: () => {
-        // Fallback to current slides if backend fails
+        this.tryFallbackSettings(parseAndSetSlides);
+      }
+    });
+  }
+
+  private tryFallbackSettings(parseFn: (res: any) => boolean): void {
+    this.http.get<any>(`${environment.apiUrl}/settings/public`).subscribe({
+      next: (res) => {
+        if (!parseFn(res)) {
+          this.tryAdminSettings(parseFn);
+        }
+      },
+      error: () => {
+        this.tryAdminSettings(parseFn);
+      }
+    });
+  }
+
+  private tryAdminSettings(parseFn: (res: any) => boolean): void {
+    this.http.get<any>(`${environment.apiUrl}/admin/settings`).subscribe({
+      next: (res) => {
+        if (!parseFn(res) && this.slides().length === 0) {
+          this.slides.set(HERO_SLIDES);
+          this.startTimer();
+        }
+      },
+      error: () => {
         if (this.slides().length === 0) {
           this.slides.set(HERO_SLIDES);
           this.startTimer();

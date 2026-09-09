@@ -1,6 +1,8 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AdminService } from '../../../core/services/admin.service';
+import { UploadService } from '../../../core/services/upload.service';
 import { HERO_SLIDES, HeroSlide } from '../../public/home/home.component';
 
 export interface AdminCarouselSlide {
@@ -109,6 +111,38 @@ export interface AdminCarouselSlide {
             </div>
 
             <div class="space-y-3">
+              <!-- File upload helper -->
+              <div>
+                <label class="block font-semibold mb-1 text-on-surface-variant">Slide Banner Image</label>
+                <input 
+                  #modalFileInput 
+                  type="file" 
+                  (change)="onModalFileSelected($event)" 
+                  accept="image/png,image/jpeg,image/webp,image/jpg" 
+                  class="hidden" 
+                />
+                <button 
+                  type="button" 
+                  (click)="modalFileInput.click()" 
+                  [disabled]="isModalUploading()"
+                  class="w-full mb-2 py-2 px-3 bg-surface-container-high hover:bg-surface-dim text-on-surface rounded-lg font-semibold flex items-center justify-center gap-1.5 cursor-pointer text-xs border border-outline-variant/30">
+                  @if (isModalUploading()) {
+                    <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                    <span>Uploading...</span>
+                  } @else {
+                    <span class="material-symbols-outlined text-sm text-primary">cloud_upload</span>
+                    <span>Upload Image from Device</span>
+                  }
+                </button>
+                <input type="url" [ngModel]="modalSlide().imageUrl" (ngModelChange)="updateModalField('imageUrl', $event)" placeholder="Or enter direct image URL" class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none" />
+              </div>
+
+              @if (modalSlide().imageUrl) {
+                <div class="rounded-xl overflow-hidden h-28 border border-outline-variant/30 bg-surface-container-low relative">
+                  <img [src]="modalSlide().imageUrl" class="w-full h-full object-cover" alt="Preview" />
+                </div>
+              }
+
               <div>
                 <label class="block font-semibold mb-1 text-on-surface-variant">Main Title</label>
                 <input type="text" [ngModel]="modalSlide().title" (ngModelChange)="updateModalField('title', $event)" placeholder="e.g. Learn. Create. Inspire." class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none" />
@@ -122,11 +156,6 @@ export interface AdminCarouselSlide {
               <div>
                 <label class="block font-semibold mb-1 text-on-surface-variant">Description</label>
                 <textarea rows="2" [ngModel]="modalSlide().description" (ngModelChange)="updateModalField('description', $event)" class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none resize-none"></textarea>
-              </div>
-
-              <div>
-                <label class="block font-semibold mb-1 text-on-surface-variant">Image URL</label>
-                <input type="url" [ngModel]="modalSlide().imageUrl" (ngModelChange)="updateModalField('imageUrl', $event)" class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none" />
               </div>
 
               <div class="grid grid-cols-2 gap-3">
@@ -148,7 +177,7 @@ export interface AdminCarouselSlide {
 
             <div class="flex justify-end gap-2 pt-3 border-t border-outline-variant/20">
               <button (click)="isSlideModalOpen.set(false)" class="px-4 py-2 rounded-lg bg-surface-container text-on-surface font-semibold hover:bg-surface-dim cursor-pointer">Cancel</button>
-              <button (click)="saveSlideModal()" class="px-4 py-2 rounded-lg bg-primary text-on-primary font-semibold hover:opacity-90 cursor-pointer shadow-sm">Save</button>
+              <button (click)="saveSlideModal()" [disabled]="isModalUploading()" class="px-4 py-2 rounded-lg bg-primary text-on-primary font-semibold hover:opacity-90 cursor-pointer shadow-sm disabled:opacity-50">Save</button>
             </div>
           </div>
         </div>
@@ -157,8 +186,12 @@ export interface AdminCarouselSlide {
   `
 })
 export class AdminCarouselComponent implements OnInit {
+  private adminService = inject(AdminService);
+  private uploadService = inject(UploadService);
+
   slides = signal<AdminCarouselSlide[]>([]);
   isSlideModalOpen = signal<boolean>(false);
+  isModalUploading = signal<boolean>(false);
   editingSlideId = signal<string | null>(null);
   modalSlide = signal<AdminCarouselSlide>({
     id: '',
@@ -192,13 +225,45 @@ export class AdminCarouselComponent implements OnInit {
               category: item.category || (item.queryParams ? item.queryParams['category'] : '') || '',
               active: item.active !== false
             })));
-            return;
           }
         } catch {}
       }
     }
 
-    this.resetToDefaults();
+    this.adminService.getSettings().subscribe({
+      next: (settings) => {
+        const carouselSetting = settings.find(s => s.settingKey === 'homepage_carousel');
+        if (carouselSetting && carouselSetting.settingValue) {
+          try {
+            const parsed = JSON.parse(carouselSetting.settingValue);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              this.slides.set(parsed.map((item: any, idx: number) => ({
+                id: item.id || String(idx + 1),
+                title: item.title || HERO_SLIDES[idx % HERO_SLIDES.length].title,
+                tagline: item.tagline || HERO_SLIDES[idx % HERO_SLIDES.length].tagline,
+                description: item.description || HERO_SLIDES[idx % HERO_SLIDES.length].description,
+                imageUrl: item.imageUrl || item.url || HERO_SLIDES[idx % HERO_SLIDES.length].imageUrl,
+                route: item.route || '/courses',
+                category: item.category || (item.queryParams ? item.queryParams['category'] : '') || '',
+                active: item.active !== false
+              })));
+              if (typeof window !== 'undefined') {
+                localStorage.setItem('homepage_carousel', carouselSetting.settingValue);
+              }
+              return;
+            }
+          } catch {}
+        }
+        if (this.slides().length === 0) {
+          this.resetToDefaults();
+        }
+      },
+      error: () => {
+        if (this.slides().length === 0) {
+          this.resetToDefaults();
+        }
+      }
+    });
   }
 
   resetToDefaults(): void {
@@ -217,20 +282,58 @@ export class AdminCarouselComponent implements OnInit {
 
   saveSlides(newSlides: AdminCarouselSlide[]): void {
     this.slides.set(newSlides);
+    const payload = newSlides.map(s => ({
+      id: s.id,
+      title: s.title,
+      tagline: s.tagline,
+      description: s.description,
+      imageUrl: s.imageUrl,
+      url: s.imageUrl,
+      route: s.route,
+      category: s.category,
+      queryParams: s.category ? { category: s.category } : undefined,
+      active: s.active
+    }));
+    const jsonStr = JSON.stringify(payload);
+
     if (typeof window !== 'undefined') {
-      const payload = newSlides.map(s => ({
-        id: s.id,
-        title: s.title,
-        tagline: s.tagline,
-        description: s.description,
-        imageUrl: s.imageUrl,
-        url: s.imageUrl,
-        route: s.route,
-        queryParams: s.category ? { category: s.category } : undefined,
-        active: s.active
-      }));
-      localStorage.setItem('homepage_carousel', JSON.stringify(payload));
+      localStorage.setItem('homepage_carousel', jsonStr);
       window.dispatchEvent(new Event('carousel_updated'));
+      try {
+        window.dispatchEvent(new StorageEvent('storage', { key: 'homepage_carousel', newValue: jsonStr }));
+      } catch {}
+    }
+
+    this.adminService.updateSetting({
+      settingKey: 'homepage_carousel',
+      settingValue: jsonStr,
+      description: 'Homepage Hero Carousel Slides'
+    }).subscribe({
+      error: (err) => console.warn('Setting save notice:', err)
+    });
+  }
+
+  onModalFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      this.isModalUploading.set(true);
+
+      this.uploadService.uploadImage(file, 'carousel').subscribe({
+        next: (res: any) => {
+          this.isModalUploading.set(false);
+          const uploadedUrl = res.url || res.secure_url || res.data?.url;
+          this.updateModalField('imageUrl', uploadedUrl);
+        },
+        error: () => {
+          const reader = new FileReader();
+          reader.onload = (e: any) => {
+            this.isModalUploading.set(false);
+            this.updateModalField('imageUrl', e.target.result);
+          };
+          reader.readAsDataURL(file);
+        }
+      });
     }
   }
 
