@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 export interface HeroSlide {
   title: string;
@@ -69,24 +69,30 @@ export const HERO_SLIDES: HeroSlide[] = [
   templateUrl: './home.component.html'
 })
 export class HomeComponent implements OnInit, OnDestroy {
+  private router = inject(Router);
+
   heroSlides = HERO_SLIDES;
   slides = signal<any[]>([]);
   currentSlide = signal<number>(0);
   private timer: any;
 
-  private carouselListener = () => this.loadCarousel();
+  private reloadHandler = () => this.loadCarousel();
 
   ngOnInit(): void {
     this.loadCarousel();
     if (typeof window !== 'undefined') {
-      window.addEventListener('carousel_updated', this.carouselListener);
+      window.addEventListener('carousel_updated', this.reloadHandler);
+      window.addEventListener('storage', this.reloadHandler);
+      window.addEventListener('focus', this.reloadHandler);
     }
   }
 
   ngOnDestroy(): void {
     if (this.timer) clearInterval(this.timer);
     if (typeof window !== 'undefined') {
-      window.removeEventListener('carousel_updated', this.carouselListener);
+      window.removeEventListener('carousel_updated', this.reloadHandler);
+      window.removeEventListener('storage', this.reloadHandler);
+      window.removeEventListener('focus', this.reloadHandler);
     }
   }
 
@@ -96,11 +102,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (stored) {
       try {
         const list = JSON.parse(stored);
-        const activeList = list.filter((item: any) => item.active !== false);
-        if (activeList.length > 0) {
-          this.slides.set(activeList);
-          this.startTimer();
-          return;
+        if (Array.isArray(list)) {
+          const activeList = list.filter((item: any) => item && item.active !== false);
+          if (activeList.length > 0) {
+            this.slides.set(activeList);
+            this.startTimer();
+            return;
+          }
         }
       } catch {}
     }
@@ -109,9 +117,20 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.startTimer();
   }
 
+  navigateToSlide(slide: any, index: number): void {
+    const route = this.getSlideRoute(slide, index);
+    const queryParams = this.getSlideQueryParams(slide, index);
+    if (queryParams) {
+      this.router.navigate([route], { queryParams });
+    } else {
+      this.router.navigate([route]);
+    }
+  }
+
   getSlideUrl(slide: any, index: number): string {
+    if (!slide) return HERO_SLIDES[index % HERO_SLIDES.length].imageUrl;
     if (typeof slide === 'string') return slide;
-    return slide?.imageUrl || slide?.url || HERO_SLIDES[index % HERO_SLIDES.length].imageUrl;
+    return slide.imageUrl || slide.url || HERO_SLIDES[index % HERO_SLIDES.length].imageUrl;
   }
 
   getSlideRoute(slide: any, index: number): string {

@@ -1,7 +1,7 @@
 <main class="bg-surface min-h-screen overflow-x-hidden w-full relative">
   <!-- Centered Inset Hero Stage -->
   <section class="relative w-full pt-8 pb-8 flex justify-center bg-[#FBF8F1]">
-    <div class="w-[92%] max-w-[1440px] h-[340px] sm:h-[420px] md:h-[480px] lg:h-[540px] rounded-2xl overflow-hidden relative shadow-md border border-outline-variant/15 bg-surface-container z-10">
+    <div class="w-[92%] max-w-[1440px] h-[360px] sm:h-[430px] md:h-[490px] lg:h-[550px] rounded-2xl overflow-hidden relative shadow-md border border-outline-variant/15 bg-surface-container z-10">
       @for (slide of slides(); track $index) {
         <div 
           class="absolute inset-0 transition-opacity duration-1000 ease-in-out"
@@ -10,14 +10,16 @@
           [class.opacity-0]="$index !== currentSlide()"
           [class.z-0]="$index !== currentSlide()"
         >
-          <a 
-            [routerLink]="getSlideRoute(slide, $index)" 
-            [queryParams]="getSlideQueryParams(slide, $index)" 
-            class="block w-full h-full cursor-pointer relative group"
-            [title]="'View ' + getSlideTitle(slide, $index) + ' course'"
-          >
+          <div class="relative w-full h-full group">
+            <!-- Background Image -->
+            <img 
+              [alt]="getSlideTitle(slide, $index)" 
+              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+              [src]="getSlideUrl(slide, $index)" 
+            />
+
             <!-- Soft dark gradient on the left side of slide to support white text readability -->
-            <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent z-10"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-transparent z-10"></div>
 
             <!-- Dynamic Text Content Overlay -->
             <div class="absolute inset-y-0 left-0 z-20 flex items-center px-8 sm:px-12 md:px-16 lg:px-20 w-full sm:w-3/4 md:w-3/5 lg:w-1/2">
@@ -31,20 +33,29 @@
                 <p class="text-xs sm:text-sm md:text-base text-white/95 leading-relaxed drop-shadow-sm max-w-md md:max-w-lg font-normal">
                   {{ getSlideDescription(slide, $index) }}
                 </p>
-                <div class="pt-2">
-                  <span class="inline-flex items-center gap-2 text-xs sm:text-sm md:text-base font-bold text-white bg-white/25 hover:bg-white/35 px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl backdrop-blur-md transition-all border border-white/30 group-hover:bg-primary group-hover:text-on-primary shadow-sm">
-                    Explore Course <span class="material-symbols-outlined text-sm sm:text-base">arrow_forward</span>
-                  </span>
+
+                <!-- Dual Action CTA Buttons -->
+                <div class="pt-2 sm:pt-3 flex flex-wrap items-center gap-3">
+                  <!-- Explore Slide Course Button -->
+                  <a 
+                    [routerLink]="getSlideRoute(slide, $index)" 
+                    [queryParams]="getSlideQueryParams(slide, $index)"
+                    class="inline-flex items-center gap-2 text-xs sm:text-sm md:text-base font-bold text-on-primary bg-primary hover:bg-primary/90 px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl transition-all shadow-md cursor-pointer hover:scale-[1.02]">
+                    <span>Explore Course</span>
+                    <span class="material-symbols-outlined text-sm sm:text-base">arrow_forward</span>
+                  </a>
+
+                  <!-- Explore All Courses Button -->
+                  <a 
+                    routerLink="/courses" 
+                    class="inline-flex items-center gap-2 text-xs sm:text-sm md:text-base font-bold text-white bg-white/20 hover:bg-white/30 px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl backdrop-blur-md transition-all border border-white/30 shadow-md cursor-pointer hover:scale-[1.02]">
+                    <span class="material-symbols-outlined text-sm sm:text-base text-primary-fixed">school</span>
+                    <span>Explore All Courses</span>
+                  </a>
                 </div>
               </div>
             </div>
-
-            <img 
-              [alt]="getSlideTitle(slide, $index)" 
-              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-              [src]="getSlideUrl(slide, $index)" 
-            />
-          </a>
+          </div>
         </div>
       }
 
@@ -79,12 +90,44 @@
     </div>
   </section>
 
+  <!-- Quick Explore Bar -->
+  <section class="bg-[#F3EDE2] border-y border-outline-variant/15 py-4 px-margin-mobile md:px-margin-desktop">
+    <div class="max-w-container-max mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3 text-center sm:text-left">
+        <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-xl">palette</span>
+        </div>
+        <div>
+          <h3 class="text-sm md:text-base font-bold text-on-surface">Ready to start creating?</h3>
+          <p class="text-xs text-on-surface-variant">Browse our full curriculum of expert-led artisan craft courses.</p>
+        </div>
+      </div>
+      <a 
+        routerLink="/courses" 
+        class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary text-on-primary font-bold text-xs md:text-sm rounded-xl hover:opacity-95 shadow-xs transition-all hover:scale-[1.02] shrink-0">
+        <span class="material-symbols-outlined text-base">explore</span>
+        <span>Explore All Courses</span>
+      </a>
+    </div>
+  </section>
+
   <!-- Master a Craft Section -->
   <section class="pt-12 pb-16 bg-surface-container-low px-margin-mobile md:px-margin-desktop">
     <div class="max-w-container-max mx-auto">
-      <h2 class="text-xl md:text-3xl font-bold text-on-surface mb-8 text-center tracking-tight playfair">Master a Craft</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+        <div>
+          <h2 class="text-xl md:text-3xl font-bold text-on-surface tracking-tight playfair">Master a Craft</h2>
+          <p class="text-xs md:text-sm text-on-surface-variant mt-1">Discover curated masterclasses across traditional and modern craft arts.</p>
+        </div>
+        <a 
+          routerLink="/courses" 
+          class="inline-flex items-center gap-1.5 text-xs md:text-sm font-bold text-primary hover:underline self-start md:self-auto">
+          <span>View All Categories</span>
+          <span class="material-symbols-outlined text-base">arrow_forward</span>
+        </a>
+      </div>
 
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div [routerLink]="['/courses']" [queryParams]="{ category: 'crochet-fiber-arts' }" class="group relative h-68 md:h-72 rounded-2xl overflow-hidden cursor-pointer shadow-sm border border-outline-variant/15">
           <img alt="Crochet" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPiWCQJI93PXDk9BOTIapmtikie4-YaxmLh1RRYduOa_TDE4AQZkdf8DEkTVGR5nS9OSCOgXvKuV_YYJl7XOPbMsOJ2NapTo5sBgHWGuqHmqZjabmFElFjDdYfpq8LsUXrV3nz9yX7Abr5E1fWw9PM_lVq-u8188AjgPz0txpaTpIy1QYYWuyXi3IwoSn_vw542oHbUWJhQ2iOxYf0kpLG7nJ1g6ftWcf9R78bsl9rLf2ndCoywsoF" />
           <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-5">
@@ -105,6 +148,17 @@
             <h3 class="text-base md:text-lg font-bold text-white group-hover:text-primary-fixed transition-colors">Botanical Candle Making</h3>
           </div>
         </div>
+      </div>
+
+      <!-- Explore All Courses Button at Bottom of Craft Section -->
+      <div class="mt-10 text-center">
+        <a 
+          routerLink="/courses" 
+          class="inline-flex items-center gap-2.5 px-7 py-3.5 bg-primary text-on-primary font-bold text-sm md:text-base rounded-xl hover:opacity-95 shadow-md transition-all hover:scale-[1.02] cursor-pointer">
+          <span class="material-symbols-outlined text-lg">school</span>
+          <span>Explore All Courses</span>
+          <span class="material-symbols-outlined text-lg">arrow_forward</span>
+        </a>
       </div>
     </div>
   </section>

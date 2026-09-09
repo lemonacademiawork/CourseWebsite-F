@@ -498,11 +498,16 @@ export class AdminContentComponent implements OnInit {
         imageUrl: s.imageUrl,
         url: s.imageUrl,
         route: s.route,
+        category: s.category,
         queryParams: s.category ? { category: s.category } : undefined,
         active: s.active
       }));
-      localStorage.setItem('homepage_carousel', JSON.stringify(payload));
+      const jsonStr = JSON.stringify(payload);
+      localStorage.setItem('homepage_carousel', jsonStr);
       window.dispatchEvent(new Event('carousel_updated'));
+      try {
+        window.dispatchEvent(new StorageEvent('storage', { key: 'homepage_carousel', newValue: jsonStr }));
+      } catch {}
     }
   }
 
