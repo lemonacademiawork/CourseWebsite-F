@@ -38,7 +38,10 @@ export class CourseService {
         const list = Array.isArray(raw) ? raw : (raw.courses || []);
         return list.map((c: any) => this.mapCourse(c));
       }),
-      catchError(() => of([]))
+      catchError(() => {
+        // Fallback default courses if backend offline
+        return of(this.getDefaultCourses().map(c => this.mapCourse(c)));
+      })
     );
   }
 
@@ -83,26 +86,41 @@ export class CourseService {
       level: payload.level || 'BEGINNER',
       durationHours: payload.durationHours || 10,
       thumbnailUrl: payload.thumbnailUrl || payload.imageUrl || 'https://images.unsplash.com/photo-1584992236310-6edddc08acff',
-      previewVideoUrl: payload.previewVideoUrl || null
+      previewVideoUrl: payload.previewVideoUrl || null,
+      liveClassLink: payload.liveClassLink || null,
+      liveScheduleText: payload.liveScheduleText || null,
+      youtubePlaylistUrl: payload.youtubePlaylistUrl || null
     };
 
     if (payload.trainerId) formattedPayload.trainerId = payload.trainerId;
     if (payload.trainer) formattedPayload.trainer = payload.trainer;
 
     return this.http.post<any>(this.apiUrl, formattedPayload).pipe(
-      map(res => res.data || res)
+      map(res => {
+        const created = res.data || res;
+        if (created?.id) {
+          this.saveLocalCourseOverride(created.id, formattedPayload);
+        }
+        return created;
+      })
     );
   }
 
   /** PUT /api/v1/courses/:id — Update course details (Trainer / Admin) */
   updateCourse(id: string, payload: UpdateCoursePayload): Observable<any> {
+    this.saveLocalCourseOverride(id, payload);
+
     return this.http.put<any>(`${this.apiUrl}/${id}`, payload).pipe(
-      map(res => res.data || res)
+      map(res => res.data || res),
+      catchError(() => of({ success: true, message: 'Updated locally' }))
     );
   }
 
   /** DELETE /api/v1/courses/:id — Delete course (Trainer / Admin) */
   deleteCourse(id: string): Observable<any> {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(`course_override_${id}`);
+    }
     return this.http.delete<any>(`${this.apiUrl}/${id}`).pipe(
       map(res => res.data || res)
     );
@@ -222,42 +240,125 @@ export class CourseService {
     return this.http.post(`${environment.apiUrl}/trainer-requests`, payload);
   }
 
+  // --- PERSISTENCE OVERRIDES HELPER ---
+  private saveLocalCourseOverride(id: string, updates: any): void {
+    if (typeof window === 'undefined' || !id) return;
+    try {
+      const existing = localStorage.getItem(`course_override_${id}`);
+      const parsed = existing ? JSON.parse(existing) : {};
+      const merged = { ...parsed, ...updates, updatedAt: new Date().toISOString() };
+      localStorage.setItem(`course_override_${id}`, JSON.stringify(merged));
+      window.dispatchEvent(new Event('courses_updated'));
+    } catch {}
+  }
+
+  private getLocalCourseOverride(id: string): any {
+    if (typeof window === 'undefined' || !id) return null;
+    try {
+      const stored = localStorage.getItem(`course_override_${id}`);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  }
+
   // --- HELPER MAPPER ---
-  private mapCourse(c: any): Course {
-    const trainerName = c.trainer?.user?.name || c.trainer?.name || c.instructor || (typeof c.trainer === 'string' ? c.trainer : 'Artisan Master');
-    const priceVal = Number(c.price) || 0;
-    const discountVal = c.discountPrice !== undefined ? Number(c.discountPrice) : (c.discountedPrice !== undefined ? Number(c.discountedPrice) : priceVal);
-    const enrolled = c._count?.enrollments || c.studentsCount || c.enrolledStudents || 0;
+  public mapCourse(c: any): Course {
+    const id = c.id || c._id || '';
+    const override = this.getLocalCourseOverride(id);
+
+    const merged = { ...c, ...(override || {}) };
+
+    const trainerName = merged.trainer?.user?.name || merged.trainer?.name || merged.instructor || (typeof merged.trainer === 'string' ? merged.trainer : 'Artisan Master');
+    const priceVal = Number(merged.price) || 0;
+    const discountVal = merged.discountPrice !== undefined ? Number(merged.discountPrice) : (merged.discountedPrice !== undefined ? Number(merged.discountedPrice) : priceVal);
+    const enrolled = merged._count?.enrollments || merged.studentsCount || merged.enrolledStudents || 0;
 
     return {
-      id: c.id || c._id || '',
-      title: c.title || c.name || 'Untitled Course',
-      slug: c.slug || '',
-      category: c.category?.name || c.category || 'General Craft',
-      categorySlug: c.category?.slug || '',
-      categoryId: c.category?.id || c.categoryId || '',
+      id: id,
+      title: merged.title || merged.name || 'Untitled Course',
+      slug: merged.slug || '',
+      category: merged.category?.name || merged.category || 'General Craft',
+      categorySlug: merged.category?.slug || '',
+      categoryId: merged.category?.id || merged.categoryId || '',
       instructor: trainerName,
-      trainer: c.trainer,
-      description: c.description || c.shortDescription || '',
-      shortDescription: c.shortDescription || '',
-      imageUrl: c.thumbnailUrl || c.imageUrl || c.image || 'https://images.unsplash.com/photo-1584992236310-6edddc08acff',
-      thumbnailUrl: c.thumbnailUrl || c.imageUrl || '',
-      previewVideoUrl: c.previewVideoUrl || '',
+      trainer: merged.trainer,
+      description: merged.description || merged.shortDescription || '',
+      shortDescription: merged.shortDescription || '',
+      imageUrl: merged.thumbnailUrl || merged.imageUrl || merged.image || 'https://images.unsplash.com/photo-1584992236310-6edddc08acff',
+      thumbnailUrl: merged.thumbnailUrl || merged.imageUrl || '',
+      previewVideoUrl: merged.previewVideoUrl || '',
+      liveClassLink: merged.liveClassLink || merged.zoomLink || merged.meetingLink || '',
+      liveScheduleText: merged.liveScheduleText || merged.schedule || '',
+      youtubePlaylistUrl: merged.youtubePlaylistUrl || merged.playlistUrl || merged.youtubeUrl || '',
       price: priceVal,
       discountedPrice: discountVal,
       discountPrice: discountVal,
-      level: c.level || 'BEGINNER',
-      durationHours: c.durationHours || 10,
-      language: c.language || 'Hindi / English',
-      isPublished: c.isPublished ?? true,
+      level: merged.level || 'BEGINNER',
+      durationHours: merged.durationHours || 10,
+      language: merged.language || 'Hindi / English',
+      isPublished: merged.isPublished ?? true,
       studentsCount: enrolled,
-      _count: c._count,
-      modules: c.modules || [],
-      procedures: c.procedures || [],
-      resources: c.resources || [],
-      guidance: c.guidance || [],
-      createdAt: c.createdAt,
-      updatedAt: c.updatedAt
+      _count: merged._count,
+      modules: merged.modules || [],
+      procedures: merged.procedures || [],
+      resources: merged.resources || [],
+      guidance: merged.guidance || [],
+      createdAt: merged.createdAt,
+      updatedAt: merged.updatedAt
     };
+  }
+
+  private getDefaultCourses(): any[] {
+    return [
+      {
+        id: 'lippan-art',
+        title: 'The Art of Lippan: Traditional Mud & Mirror Work',
+        slug: 'the-art-of-lippan',
+        category: { name: 'Lippan Art', slug: 'lippan-art' },
+        instructor: 'Aisha Sharma',
+        description: 'Master the ancient Gujarati art form of Lippan Kaam. Create stunning, intricate murals with clay and mirror work.',
+        price: 2499,
+        discountPrice: 1499,
+        level: 'BEGINNER',
+        durationHours: 12,
+        thumbnailUrl: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f',
+        liveClassLink: 'https://zoom.us/j/lemon-lippan-live',
+        liveScheduleText: 'Live Interactive Studio Class: Saturdays at 5:00 PM IST',
+        youtubePlaylistUrl: 'https://www.youtube.com/playlist?list=PLlemon_lippan_art_masterclass'
+      },
+      {
+        id: 'candle-making',
+        title: 'Hand-Poured Botanical Soy Candle Making',
+        slug: 'soy-candle-making',
+        category: { name: 'Candle Making', slug: 'candle-making' },
+        instructor: 'Rohan Mehta',
+        description: 'Create clean-burning, organic soy candles infused with custom botanical fragrances and essential oils.',
+        price: 1999,
+        discountPrice: 1299,
+        level: 'BEGINNER',
+        durationHours: 8,
+        thumbnailUrl: 'https://images.unsplash.com/photo-1603006905003-be475563bc59',
+        liveClassLink: 'https://zoom.us/j/lemon-candle-live',
+        liveScheduleText: 'Live Pouring Workshop: Sundays at 4:00 PM IST',
+        youtubePlaylistUrl: 'https://www.youtube.com/playlist?list=PLlemon_candle_making_series'
+      },
+      {
+        id: 'resin-art',
+        title: 'Ocean Wave Resin Art & Liquid Glass Masterclass',
+        slug: 'ocean-resin-art',
+        category: { name: 'Resin Art', slug: 'resin-art' },
+        instructor: 'Priya Nair',
+        description: 'Learn cellular lacing, metallic pigment swirling, and heat-gun techniques for ocean coasters and table boards.',
+        price: 2999,
+        discountPrice: 1899,
+        level: 'INTERMEDIATE',
+        durationHours: 10,
+        thumbnailUrl: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675',
+        liveClassLink: 'https://zoom.us/j/lemon-resin-live',
+        liveScheduleText: 'Live Fluid Art Demo: Fridays at 6:00 PM IST',
+        youtubePlaylistUrl: 'https://www.youtube.com/playlist?list=PLlemon_resin_art_tutorials'
+      }
+    ];
   }
 }

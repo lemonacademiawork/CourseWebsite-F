@@ -11,6 +11,9 @@ export interface Course {
   imageUrl: string;
   thumbnailUrl?: string;
   previewVideoUrl?: string;
+  liveClassLink?: string;
+  liveScheduleText?: string;
+  youtubePlaylistUrl?: string;
   price: number;
   discountedPrice?: number;
   discountPrice?: number;
@@ -57,6 +60,9 @@ export interface CreateCoursePayload {
   thumbnailUrl?: string;
   imageUrl?: string;
   previewVideoUrl?: string;
+  liveClassLink?: string;
+  liveScheduleText?: string;
+  youtubePlaylistUrl?: string;
   trainerId?: string;
   trainer?: string;
   instructor?: string;
@@ -77,7 +83,11 @@ export interface UpdateCoursePayload {
   thumbnailUrl?: string;
   imageUrl?: string;
   previewVideoUrl?: string;
+  liveClassLink?: string;
+  liveScheduleText?: string;
+  youtubePlaylistUrl?: string;
   trainerId?: string;
   trainer?: string;
   instructor?: string;
+  isPublished?: boolean;
 }

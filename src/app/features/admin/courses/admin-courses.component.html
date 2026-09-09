@@ -3,7 +3,7 @@
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
     <div>
       <h1 class="text-xl font-bold text-on-surface">Course Management</h1>
-      <p class="text-xs text-on-surface-variant mt-0.5">Manage masterclasses, view course details, categories, pricing, and live Zoom schedules.</p>
+      <p class="text-xs text-on-surface-variant mt-0.5">Manage masterclasses, edit course details, live links, YouTube playlists, categories, and pricing.</p>
     </div>
     <div class="flex items-center gap-2">
       <!-- Manage Categories Button -->
@@ -41,7 +41,7 @@
             <th class="py-3 px-4">Category</th>
             <th class="py-3 px-4">Trainer</th>
             <th class="py-3 px-4">Price</th>
-            <th class="py-3 px-4">Enrolled</th>
+            <th class="py-3 px-4">Live / Playlist Links</th>
             <th class="py-3 px-4">Status</th>
             <th class="py-3 px-4 text-right">Actions</th>
           </tr>
@@ -64,7 +64,23 @@
               </td>
               <td class="py-3 px-4 font-medium">{{ course.trainer }}</td>
               <td class="py-3 px-4 font-bold text-primary">Rs. {{ course.price }}</td>
-              <td class="py-3 px-4">{{ course.studentsCount }}</td>
+              <td class="py-3 px-4">
+                <div class="flex items-center gap-1.5 text-[11px]">
+                  @if (course.rawCourse?.liveClassLink) {
+                    <span class="inline-flex items-center gap-0.5 text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded text-[10px] font-semibold" title="Live Zoom/Meet Link configured">
+                      <span class="material-symbols-outlined text-xs">video_camera_front</span> Live
+                    </span>
+                  }
+                  @if (course.rawCourse?.youtubePlaylistUrl) {
+                    <span class="inline-flex items-center gap-0.5 text-red-600 bg-red-50 px-1.5 py-0.5 rounded text-[10px] font-semibold" title="YouTube Playlist configured">
+                      <span class="material-symbols-outlined text-xs">smart_display</span> YouTube
+                    </span>
+                  }
+                  @if (!course.rawCourse?.liveClassLink && !course.rawCourse?.youtubePlaylistUrl) {
+                    <span class="text-on-surface-variant text-[10px]">—</span>
+                  }
+                </div>
+              </td>
               <td class="py-3 px-4">
                 <span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold"
                   [class.bg-green-100]="course.status === 'Published'"
@@ -74,17 +90,31 @@
                   {{ course.status }}
                 </span>
               </td>
-              <td class="py-3 px-4 text-right space-x-2 whitespace-nowrap" (click)="$event.stopPropagation()">
+              <td class="py-3 px-4 text-right space-x-1.5 whitespace-nowrap" (click)="$event.stopPropagation()">
+                <!-- Edit Course Button -->
+                <button 
+                  (click)="openEditCourseModal(course, $event)"
+                  class="bg-primary/10 text-primary hover:bg-primary/20 font-bold px-2.5 py-1 rounded transition-colors cursor-pointer text-xs inline-flex items-center gap-1"
+                  title="Edit Course Details & Links">
+                  <span class="material-symbols-outlined text-xs">edit</span>
+                  <span>Edit</span>
+                </button>
+
+                <!-- View Details Button -->
                 <button 
                   (click)="openCourseDetails(course)"
-                  class="bg-surface-container text-on-surface hover:bg-surface-variant font-semibold px-2.5 py-1 rounded transition-colors cursor-pointer text-xs">
-                  View Details
+                  class="bg-surface-container text-on-surface hover:bg-surface-variant font-semibold px-2 py-1 rounded transition-colors cursor-pointer text-xs">
+                  Details
                 </button>
+
+                <!-- Schedule Sessions Button -->
                 <button 
                   (click)="openSessionManager(course.id, $event)"
-                  class="bg-primary/10 text-primary font-semibold px-2.5 py-1 rounded hover:bg-primary/20 transition-colors cursor-pointer text-xs">
+                  class="bg-surface-container-high text-on-surface-variant hover:text-on-surface font-semibold px-2 py-1 rounded transition-colors cursor-pointer text-xs">
                   Schedule
                 </button>
+
+                <!-- Delete Course Button -->
                 <button 
                   (click)="openDeleteConfirm(course, $event)"
                   class="bg-red-50 text-red-600 hover:bg-red-100 font-semibold px-2 py-1 rounded transition-colors cursor-pointer text-xs inline-flex items-center gap-1"
@@ -141,6 +171,45 @@
           />
         </div>
 
+        <!-- Live Links & YouTube Badge in Details -->
+        @if (selectedCourseDetails()?.liveClassLink || selectedCourseDetails()?.youtubePlaylistUrl) {
+          <div class="p-3.5 bg-surface-container-low rounded-xl border border-outline-variant/30 space-y-2">
+            <h4 class="font-bold text-xs text-on-surface flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-primary text-sm">link</span>
+              Connected Public Links
+            </h4>
+            <div class="space-y-1.5">
+              @if (selectedCourseDetails()?.liveClassLink) {
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-on-surface-variant flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-blue-600 text-sm">videocam</span>
+                    Live Class Link:
+                  </span>
+                  <a [href]="selectedCourseDetails()?.liveClassLink" target="_blank" class="font-semibold text-blue-600 hover:underline truncate max-w-[260px]">
+                    {{ selectedCourseDetails()?.liveClassLink }}
+                  </a>
+                </div>
+              }
+              @if (selectedCourseDetails()?.liveScheduleText) {
+                <p class="text-[11px] text-on-surface-variant italic pl-5">
+                  Schedule: {{ selectedCourseDetails()?.liveScheduleText }}
+                </p>
+              }
+              @if (selectedCourseDetails()?.youtubePlaylistUrl) {
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-on-surface-variant flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-red-600 text-sm">smart_display</span>
+                    YouTube Playlist:
+                  </span>
+                  <a [href]="selectedCourseDetails()?.youtubePlaylistUrl" target="_blank" class="font-semibold text-red-600 hover:underline truncate max-w-[260px]">
+                    {{ selectedCourseDetails()?.youtubePlaylistUrl }}
+                  </a>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
         <!-- Quick Spec Grid -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div class="p-3 bg-surface-container-low rounded-xl border border-outline-variant/20">
@@ -156,8 +225,8 @@
             <span class="font-bold text-xs text-on-surface">{{ selectedCourseDetails()?.studentsCount || 0 }} Enrolled</span>
           </div>
           <div class="p-3 bg-surface-container-low rounded-xl border border-outline-variant/20">
-            <span class="text-[10px] uppercase font-semibold text-on-surface-variant block">Course ID</span>
-            <span class="font-bold text-[10px] text-on-surface-variant truncate block" [title]="selectedCourseDetails()?.id">{{ selectedCourseDetails()?.id?.slice(0, 8) }}...</span>
+            <span class="text-[10px] uppercase font-semibold text-on-surface-variant block">Level</span>
+            <span class="font-bold text-xs text-on-surface">{{ selectedCourseDetails()?.level || 'BEGINNER' }}</span>
           </div>
         </div>
 
@@ -172,25 +241,236 @@
         <!-- Action Buttons -->
         <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-outline-variant/20">
           <div class="flex gap-2">
+            <!-- Edit Button in Details -->
+            <button 
+              (click)="openEditCourseModal(selectedCourseDetails()!)"
+              class="px-3.5 py-2 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 flex items-center gap-1.5 cursor-pointer text-xs shadow-sm">
+              <span class="material-symbols-outlined text-sm">edit</span>
+              Edit Course Details &amp; Links
+            </button>
             <a 
               [routerLink]="['/courses', selectedCourseDetails()?.id]" 
               target="_blank"
-              class="px-3 py-2 bg-primary/10 text-primary font-semibold rounded-lg hover:bg-primary/20 flex items-center gap-1.5 cursor-pointer text-xs">
+              class="px-3 py-2 bg-surface-container text-on-surface font-semibold rounded-lg hover:bg-surface-dim flex items-center gap-1.5 cursor-pointer text-xs">
               <span class="material-symbols-outlined text-sm">visibility</span>
               View Public Page
             </a>
-            <button 
-              (click)="openSessionManager(selectedCourseDetails()!.id)" 
-              class="px-3 py-2 bg-surface-container text-on-surface font-semibold rounded-lg hover:bg-surface-dim flex items-center gap-1.5 cursor-pointer text-xs">
-              <span class="material-symbols-outlined text-sm">calendar_month</span>
-              Manage Live Schedule
-            </button>
           </div>
 
           <button 
             (click)="closeCourseDetails()"
             class="px-4 py-2 bg-surface-container-highest text-on-surface font-semibold rounded-lg hover:bg-surface-dim cursor-pointer text-xs">
             Close
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL: EDIT COURSE DETAILS (Allows editing title, pricing, live links, youtube playlist) -->
+  @if (isEditing()) {
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fadeIn">
+      <div class="bg-surface-container-lowest rounded-2xl p-6 max-w-2xl w-full border border-outline-variant/30 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center border-b border-outline-variant/20 pb-3">
+          <div>
+            <h3 class="font-bold text-base text-on-surface flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">edit_note</span>
+              Edit Course &amp; Public Links
+            </h3>
+            <p class="text-[11px] text-on-surface-variant">Update course specifications, instructor, pricing, live Zoom/Meet links, and YouTube playlist.</p>
+          </div>
+          <button (click)="closeEditCourseModal()" class="text-on-surface-variant hover:text-on-surface cursor-pointer">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="space-y-4">
+          <!-- Title -->
+          <div>
+            <label class="block font-semibold mb-1 text-on-surface-variant">Course Title *</label>
+            <input 
+              type="text" 
+              [ngModel]="editTitle()"
+              (ngModelChange)="editTitle.set($event)"
+              placeholder="e.g. The Art of Lippan Mirror Work"
+              class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+            />
+          </div>
+
+          <!-- Category & Trainer -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold mb-1 text-on-surface-variant">Category *</label>
+              <select 
+                [ngModel]="editCategory()"
+                (ngModelChange)="editCategory.set($event)"
+                class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none">
+                @for (cat of categories(); track cat.id) {
+                  <option [value]="cat.name">{{ cat.name }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-on-surface-variant">Trainer / Instructor *</label>
+              <select 
+                [ngModel]="editTrainer()"
+                (ngModelChange)="editTrainer.set($event)"
+                class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none">
+                @for (t of trainers(); track t.id || t.name) {
+                  <option [value]="t.name">{{ t.name }} {{ t.expertise ? '— ' + t.expertise : '' }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <!-- Pricing & Level -->
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div>
+              <label class="block font-semibold mb-1 text-on-surface-variant">Price (Rs.) *</label>
+              <input 
+                type="number" 
+                [ngModel]="editPrice()"
+                (ngModelChange)="editPrice.set($event)"
+                class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+              />
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-on-surface-variant">Discount Price (Rs.)</label>
+              <input 
+                type="number" 
+                [ngModel]="editDiscountPrice()"
+                (ngModelChange)="editDiscountPrice.set($event)"
+                class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+              />
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-on-surface-variant">Difficulty Level</label>
+              <select 
+                [ngModel]="editLevel()"
+                (ngModelChange)="editLevel.set($event)"
+                class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none">
+                <option value="BEGINNER">Beginner</option>
+                <option value="INTERMEDIATE">Intermediate</option>
+                <option value="ADVANCED">Advanced</option>
+                <option value="ALL_LEVELS">All Levels</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-on-surface-variant">Duration (Hours)</label>
+              <input 
+                type="number" 
+                [ngModel]="editDurationHours()"
+                (ngModelChange)="editDurationHours.set($event)"
+                class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <!-- SPECIAL SECTION: LIVE LINKS & YOUTUBE PLAYLIST -->
+          <div class="p-4 bg-primary/5 border border-primary/20 rounded-xl space-y-3">
+            <h4 class="font-bold text-xs text-on-surface flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-primary text-sm">sensors</span>
+              Live Class Links &amp; YouTube Video Playlist (Visible to Everyone)
+            </h4>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold mb-1 text-on-surface-variant flex items-center gap-1">
+                  <span class="material-symbols-outlined text-blue-600 text-xs">videocam</span>
+                  Live Class Link (Zoom / Meet / Teams)
+                </label>
+                <input 
+                  type="url" 
+                  [ngModel]="editLiveClassLink()"
+                  (ngModelChange)="editLiveClassLink.set($event)"
+                  placeholder="https://zoom.us/j/... or https://meet.google.com/..."
+                  class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none font-mono"
+                />
+              </div>
+
+              <div>
+                <label class="block font-semibold mb-1 text-on-surface-variant flex items-center gap-1">
+                  <span class="material-symbols-outlined text-red-600 text-xs">smart_display</span>
+                  YouTube Playlist / Channel Link
+                </label>
+                <input 
+                  type="url" 
+                  [ngModel]="editYoutubePlaylistUrl()"
+                  (ngModelChange)="editYoutubePlaylistUrl.set($event)"
+                  placeholder="https://www.youtube.com/playlist?list=..."
+                  class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none font-mono"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-semibold mb-1 text-on-surface-variant">Live Schedule Timing Notice (Optional)</label>
+              <input 
+                type="text" 
+                [ngModel]="editLiveScheduleText()"
+                (ngModelChange)="editLiveScheduleText.set($event)"
+                placeholder="e.g. Live Interactive Studio Class Every Saturday & Sunday at 5:00 PM IST"
+                class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <!-- Thumbnail Image URL -->
+          <div>
+            <label class="block font-semibold mb-1 text-on-surface-variant">Course Banner / Thumbnail Image URL</label>
+            <input 
+              type="url" 
+              [ngModel]="editImageUrl()"
+              (ngModelChange)="editImageUrl.set($event)"
+              placeholder="https://images.unsplash.com/photo-..."
+              class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+            />
+          </div>
+
+          <!-- Descriptions -->
+          <div>
+            <label class="block font-semibold mb-1 text-on-surface-variant">Course Description</label>
+            <textarea 
+              rows="3"
+              [ngModel]="editDescription()"
+              (ngModelChange)="editDescription.set($event)"
+              placeholder="Complete overview of what students will learn in this craft course..."
+              class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none resize-none"
+            ></textarea>
+          </div>
+
+          <!-- Published state -->
+          <div class="flex items-center gap-2">
+            <input 
+              type="checkbox" 
+              id="editPublishedToggle"
+              [checked]="editIsPublished()"
+              (change)="editIsPublished.set($any($event.target).checked)"
+              class="rounded border-outline-variant text-primary focus:ring-primary h-4 w-4"
+            />
+            <label for="editPublishedToggle" class="font-semibold text-xs text-on-surface cursor-pointer">
+              Course is Published (Visible on website)
+            </label>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-outline-variant/20">
+          <button 
+            (click)="closeEditCourseModal()"
+            class="px-4 py-2 rounded-lg bg-surface-container text-on-surface font-semibold hover:bg-surface-dim cursor-pointer text-xs">
+            Cancel
+          </button>
+          <button 
+            (click)="handleSaveCourseEdit()"
+            [disabled]="isSavingEdit() || !editTitle().trim()"
+            class="px-5 py-2.5 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 cursor-pointer text-xs shadow-sm flex items-center gap-1.5 disabled:opacity-50">
+            @if (isSavingEdit()) {
+              <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+              <span>Saving Updates...</span>
+            } @else {
+              <span class="material-symbols-outlined text-sm">save</span>
+              <span>Save &amp; Update Course</span>
+            }
           </button>
         </div>
       </div>
@@ -377,7 +657,7 @@
   <!-- Create Course Modal -->
   @if (isCreating()) {
     <div class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-      <div class="bg-surface-container-lowest rounded-2xl p-6 max-w-md w-full border border-outline-variant/30 shadow-xl space-y-4">
+      <div class="bg-surface-container-lowest rounded-2xl p-6 max-w-lg w-full border border-outline-variant/30 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center border-b border-outline-variant/20 pb-2">
           <h3 class="font-bold text-base text-on-surface">Add New Craft Course</h3>
           <button (click)="isCreating.set(false)" class="text-on-surface-variant hover:text-on-surface cursor-pointer">
@@ -386,7 +666,7 @@
         </div>
         <div class="space-y-3">
           <div>
-            <label class="block font-semibold mb-1 text-on-surface-variant">Course Title</label>
+            <label class="block font-semibold mb-1 text-on-surface-variant">Course Title *</label>
             <input 
               type="text" 
               [ngModel]="title()"
@@ -411,6 +691,22 @@
               </select>
             </div>
             <div>
+              <label class="block font-semibold mb-1 text-on-surface-variant">Trainer / Instructor *</label>
+              <select 
+                [ngModel]="trainer()"
+                (ngModelChange)="trainer.set($event)"
+                class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2 focus:ring-1 focus:ring-primary focus:outline-none">
+                <option value="" disabled>Select a Trainer</option>
+                @for (t of trainers(); track t.id || t.name) {
+                  <option [value]="t.name">
+                    {{ t.name }} {{ t.expertise ? '— ' + t.expertise : '' }}
+                  </option>
+                }
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
               <label class="block font-semibold mb-1 text-on-surface-variant">Price (Rs.)</label>
               <input 
                 type="number" 
@@ -419,20 +715,45 @@
                 class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2 focus:ring-1 focus:ring-primary focus:outline-none"
               />
             </div>
+            <div>
+              <label class="block font-semibold mb-1 text-on-surface-variant">Discount Price (Rs.)</label>
+              <input 
+                type="number" 
+                [ngModel]="discountPrice()"
+                (ngModelChange)="discountPrice.set($event)"
+                class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2 focus:ring-1 focus:ring-primary focus:outline-none"
+              />
+            </div>
           </div>
-          <div>
-            <label class="block font-semibold mb-1 text-on-surface-variant">Trainer / Instructor *</label>
-            <select 
-              [ngModel]="trainer()"
-              (ngModelChange)="trainer.set($event)"
-              class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2 focus:ring-1 focus:ring-primary focus:outline-none">
-              <option value="" disabled>Select a Trainer</option>
-              @for (t of trainers(); track t.id || t.name) {
-                <option [value]="t.name">
-                  {{ t.name }} {{ t.expertise ? '— ' + t.expertise : '' }}
-                </option>
-              }
-            </select>
+
+          <!-- Live & YouTube Links on creation -->
+          <div class="p-3 bg-primary/5 border border-primary/20 rounded-xl space-y-2">
+            <div>
+              <label class="block font-semibold mb-1 text-on-surface-variant flex items-center gap-1">
+                <span class="material-symbols-outlined text-blue-600 text-xs">videocam</span>
+                Live Class Link (Zoom / Meet)
+              </label>
+              <input 
+                type="url" 
+                [ngModel]="liveClassLink()"
+                (ngModelChange)="liveClassLink.set($event)"
+                placeholder="https://zoom.us/j/..."
+                class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded p-1.5 text-xs font-mono"
+              />
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-on-surface-variant flex items-center gap-1">
+                <span class="material-symbols-outlined text-red-600 text-xs">smart_display</span>
+                YouTube Playlist Link
+              </label>
+              <input 
+                type="url" 
+                [ngModel]="youtubePlaylistUrl()"
+                (ngModelChange)="youtubePlaylistUrl.set($event)"
+                placeholder="https://www.youtube.com/playlist?list=..."
+                class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded p-1.5 text-xs font-mono"
+              />
+            </div>
           </div>
         </div>
         <div class="flex justify-end gap-2 pt-2">

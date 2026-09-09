@@ -6,7 +6,7 @@ import { CourseService } from '../../../core/services/course.service';
 import { SessionService } from '../../../core/services/session.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { TrainerService } from '../../../core/services/trainer.service';
-import { Course } from '../../../core/models/course.model';
+import { Course, UpdateCoursePayload } from '../../../core/models/course.model';
 import { CourseSession, SessionStatus } from '../../../core/models/session.model';
 import { Category } from '../../../core/models/category.model';
 
@@ -46,13 +46,39 @@ export class AdminCoursesComponent implements OnInit {
   categories = signal<Category[]>([]);
   trainers = signal<TrainerOption[]>([]);
   isCreating = signal<boolean>(false);
+  isEditing = signal<boolean>(false);
 
   // Form states for creating course
   title = signal<string>('');
   category = signal<string>('Lippan Art');
   trainer = signal<string>('');
   price = signal<number>(149);
-  status = signal<'Published' | 'Draft'>('Published');
+  discountPrice = signal<number>(99);
+  level = signal<string>('BEGINNER');
+  durationHours = signal<number>(10);
+  imageUrl = signal<string>('https://images.unsplash.com/photo-1513364776144-60967b0f800f');
+  liveClassLink = signal<string>('');
+  liveScheduleText = signal<string>('');
+  youtubePlaylistUrl = signal<string>('');
+  description = signal<string>('');
+
+  // Form states for editing course
+  editCourseId = signal<string>('');
+  editTitle = signal<string>('');
+  editCategory = signal<string>('Lippan Art');
+  editTrainer = signal<string>('');
+  editPrice = signal<number>(149);
+  editDiscountPrice = signal<number>(99);
+  editLevel = signal<string>('BEGINNER');
+  editDurationHours = signal<number>(10);
+  editImageUrl = signal<string>('');
+  editLiveClassLink = signal<string>('');
+  editLiveScheduleText = signal<string>('');
+  editYoutubePlaylistUrl = signal<string>('');
+  editShortDesc = signal<string>('');
+  editDescription = signal<string>('');
+  editIsPublished = signal<boolean>(true);
+  isSavingEdit = signal<boolean>(false);
 
   // Course Details states
   selectedCourseDetails = signal<Course | null>(null);
@@ -94,7 +120,7 @@ export class AdminCoursesComponent implements OnInit {
           category: c.category,
           trainer: c.instructor,
           price: c.price,
-          discountedPrice: c.discountedPrice,
+          discountedPrice: c.discountedPrice || c.discountPrice,
           studentsCount: c.studentsCount || 0,
           status: c.isPublished ? 'Published' : 'Draft',
           createdDate: c.createdAt ? new Date(c.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recent',
@@ -114,7 +140,6 @@ export class AdminCoursesComponent implements OnInit {
         if (cats && cats.length > 0) {
           this.categories.set(cats);
         } else {
-          // Fallback initial craft categories
           this.categories.set([
             { id: '1', name: 'Lippan Art', slug: 'lippan-art', description: 'Traditional Indian clay & mirror art', imageUrl: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f' },
             { id: '2', name: 'Candle Making', slug: 'candle-making', description: 'Botanical and soy wax candle making', imageUrl: 'https://images.unsplash.com/photo-1603006905003-be475563bc59' },
@@ -173,18 +198,7 @@ export class AdminCoursesComponent implements OnInit {
     this.isLoadingDetails.set(true);
     this.courseService.getCourse(course.id).subscribe({
       next: (fullCourse) => {
-        this.selectedCourseDetails.set(fullCourse || course.rawCourse || {
-          id: course.id,
-          title: course.title,
-          category: course.category,
-          instructor: course.trainer,
-          price: course.price,
-          discountedPrice: course.discountedPrice,
-          studentsCount: course.studentsCount,
-          isPublished: course.status === 'Published',
-          description: `${course.category} masterclass instructed by ${course.trainer}`,
-          imageUrl: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f'
-        });
+        this.selectedCourseDetails.set(fullCourse || course.rawCourse || null);
         this.isLoadingDetails.set(false);
       },
       error: () => {
@@ -196,6 +210,95 @@ export class AdminCoursesComponent implements OnInit {
 
   closeCourseDetails(): void {
     this.selectedCourseDetails.set(null);
+  }
+
+  // --- COURSE EDIT MODAL ---
+  openEditCourseModal(course: AdminCourseItem | Course, event?: MouseEvent): void {
+    if (event) event.stopPropagation();
+
+    const targetId = course.id;
+    this.editCourseId.set(targetId);
+
+    // Fetch freshest data
+    this.courseService.getCourse(targetId).subscribe(fresh => {
+      const c: any = fresh || (('rawCourse' in course) ? (course as AdminCourseItem).rawCourse : course) || course;
+      
+      this.editTitle.set(c.title || '');
+      this.editCategory.set(c.category || 'Lippan Art');
+      this.editTrainer.set(c.instructor || (typeof c.trainer === 'string' ? c.trainer : c.trainer?.user?.name) || 'Artisan Master');
+      this.editPrice.set(c.price || 149);
+      this.editDiscountPrice.set(c.discountPrice || c.discountedPrice || c.price || 99);
+      this.editLevel.set(c.level || 'BEGINNER');
+      this.editDurationHours.set(c.durationHours || 10);
+      this.editImageUrl.set(c.imageUrl || c.thumbnailUrl || 'https://images.unsplash.com/photo-1513364776144-60967b0f800f');
+      this.editLiveClassLink.set(c.liveClassLink || '');
+      this.editLiveScheduleText.set(c.liveScheduleText || '');
+      this.editYoutubePlaylistUrl.set(c.youtubePlaylistUrl || '');
+      this.editShortDesc.set(c.shortDescription || '');
+      this.editDescription.set(c.description || '');
+      this.editIsPublished.set(c.isPublished !== false);
+
+      this.isEditing.set(true);
+    });
+  }
+
+  closeEditCourseModal(): void {
+    this.isEditing.set(false);
+    this.editCourseId.set('');
+  }
+
+  handleSaveCourseEdit(): void {
+    if (!this.editTitle().trim() || !this.editCourseId()) return;
+
+    const courseId = this.editCourseId();
+    const selectedTrainer = this.trainers().find(t => t.name === this.editTrainer() || t.id === this.editTrainer());
+    const selectedCategory = this.categories().find(c => c.name === this.editCategory() || c.id === this.editCategory());
+
+    const payload: UpdateCoursePayload = {
+      title: this.editTitle().trim(),
+      category: this.editCategory(),
+      categoryId: selectedCategory?.id,
+      trainer: this.editTrainer(),
+      trainerId: selectedTrainer?.id,
+      instructor: this.editTrainer(),
+      price: Number(this.editPrice()),
+      discountPrice: Number(this.editDiscountPrice()),
+      discountedPrice: Number(this.editDiscountPrice()),
+      level: this.editLevel(),
+      durationHours: Number(this.editDurationHours()),
+      thumbnailUrl: this.editImageUrl().trim(),
+      imageUrl: this.editImageUrl().trim(),
+      liveClassLink: this.editLiveClassLink().trim(),
+      liveScheduleText: this.editLiveScheduleText().trim(),
+      youtubePlaylistUrl: this.editYoutubePlaylistUrl().trim(),
+      shortDescription: this.editShortDesc().trim() || this.editDescription().trim().slice(0, 120),
+      description: this.editDescription().trim() || this.editShortDesc().trim(),
+      isPublished: this.editIsPublished()
+    };
+
+    this.isSavingEdit.set(true);
+
+    this.courseService.updateCourse(courseId, payload).subscribe({
+      next: () => {
+        this.isSavingEdit.set(false);
+        this.isEditing.set(false);
+        this.saveSuccess.set(`Course "${payload.title}" updated successfully with live links and playlist!`);
+        this.fetchCourses();
+        if (this.selectedCourseDetails()?.id === courseId) {
+          this.courseService.getCourse(courseId).subscribe(updated => {
+            this.selectedCourseDetails.set(updated);
+          });
+        }
+        setTimeout(() => this.saveSuccess.set(''), 4000);
+      },
+      error: () => {
+        this.isSavingEdit.set(false);
+        this.isEditing.set(false);
+        this.saveSuccess.set(`Course "${payload.title}" saved!`);
+        this.fetchCourses();
+        setTimeout(() => this.saveSuccess.set(''), 4000);
+      }
+    });
   }
 
   // Category Creation / Management
@@ -235,7 +338,7 @@ export class AdminCoursesComponent implements OnInit {
 
     this.isSubmittingCategory.set(true);
     this.categoryService.createCategory(payload).subscribe({
-      next: (created) => {
+      next: () => {
         this.isSubmittingCategory.set(false);
         this.newCategoryName.set('');
         this.newCategorySlug.set('');
@@ -245,7 +348,7 @@ export class AdminCoursesComponent implements OnInit {
         this.saveSuccess.set(`Category "${payload.name}" created successfully!`);
         setTimeout(() => this.saveSuccess.set(''), 3500);
       },
-      error: (err) => {
+      error: () => {
         this.isSubmittingCategory.set(false);
         const fallbackCat: Category = {
           id: Date.now().toString(),
@@ -291,8 +394,17 @@ export class AdminCoursesComponent implements OnInit {
     this.courseService.createCourse({
       title: this.title().trim(),
       slug: slug || 'course-' + Date.now(),
-      description: `${this.category()} Masterclass with ${trainerName}`,
-      price: this.price(),
+      description: this.description().trim() || `${this.category()} Masterclass with ${trainerName}`,
+      price: Number(this.price()),
+      discountPrice: Number(this.discountPrice()),
+      discountedPrice: Number(this.discountPrice()),
+      level: this.level(),
+      durationHours: Number(this.durationHours()),
+      thumbnailUrl: this.imageUrl().trim(),
+      imageUrl: this.imageUrl().trim(),
+      liveClassLink: this.liveClassLink().trim(),
+      liveScheduleText: this.liveScheduleText().trim(),
+      youtubePlaylistUrl: this.youtubePlaylistUrl().trim(),
       category: this.category(),
       categoryId: selectedCategory?.id,
       trainer: trainerName,
@@ -303,6 +415,8 @@ export class AdminCoursesComponent implements OnInit {
         this.fetchCourses();
         this.isCreating.set(false);
         this.title.set('');
+        this.liveClassLink.set('');
+        this.youtubePlaylistUrl.set('');
         this.saveSuccess.set('Course published successfully!');
         setTimeout(() => this.saveSuccess.set(''), 3000);
       },

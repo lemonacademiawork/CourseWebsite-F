@@ -84,6 +84,78 @@ import { Course } from '../../../core/models/course.model';
               </div>
             </div>
 
+            <!-- Live Sessions & YouTube Video Tutorials (Visible to Everyone) -->
+            @if (course().liveClassLink || course().youtubePlaylistUrl) {
+              <section class="bg-surface-container-lowest rounded-2xl p-6 sm:p-8 border border-outline-variant/30 shadow-sm space-y-4 animate-fadeIn">
+                <h2 class="text-base sm:text-lg font-bold text-on-surface flex items-center gap-2">
+                  <span class="material-symbols-outlined text-primary text-xl">sensors</span>
+                  Live Studio Workshops &amp; Video Playlist
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <!-- Live Class Card -->
+                  @if (course().liveClassLink) {
+                    <div class="p-5 rounded-xl bg-blue-50/70 border border-blue-200/90 flex flex-col justify-between space-y-4">
+                      <div class="space-y-2">
+                        <div class="flex items-center gap-2">
+                          <span class="bg-blue-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                            LIVE SESSIONS
+                          </span>
+                          <span class="text-[11px] font-semibold text-blue-900">Interactive Studio</span>
+                        </div>
+                        <h3 class="font-bold text-sm text-blue-950">Join Live Masterclass with {{ course().instructor }}</h3>
+                        <p class="text-[11px] text-blue-900/80 leading-relaxed">
+                          {{ course().liveScheduleText || 'Live Zoom & Q&A sessions with real-time technique guidance and mentor critiques.' }}
+                        </p>
+                      </div>
+
+                      <div>
+                        <a 
+                          [href]="course().liveClassLink" 
+                          target="_blank" 
+                          class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors">
+                          <span class="material-symbols-outlined text-sm">videocam</span>
+                          <span>Join Live Class Room</span>
+                          <span class="material-symbols-outlined text-xs">open_in_new</span>
+                        </a>
+                      </div>
+                    </div>
+                  }
+
+                  <!-- YouTube Playlist Card -->
+                  @if (course().youtubePlaylistUrl) {
+                    <div class="p-5 rounded-xl bg-red-50/70 border border-red-200/90 flex flex-col justify-between space-y-4">
+                      <div class="space-y-2">
+                        <div class="flex items-center gap-2">
+                          <span class="bg-red-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <span class="material-symbols-outlined text-xs">smart_display</span>
+                            YOUTUBE PLAYLIST
+                          </span>
+                          <span class="text-[11px] font-semibold text-red-900">Recorded Masterclass</span>
+                        </div>
+                        <h3 class="font-bold text-sm text-red-950">Official Video Tutorial Playlist</h3>
+                        <p class="text-[11px] text-red-900/80 leading-relaxed">
+                          Stream complete step-by-step video tutorials, demonstrations, and recipes anytime on YouTube.
+                        </p>
+                      </div>
+
+                      <div>
+                        <a 
+                          [href]="course().youtubePlaylistUrl" 
+                          target="_blank" 
+                          class="inline-flex items-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors">
+                          <span class="material-symbols-outlined text-sm">play_arrow</span>
+                          <span>Watch Full YouTube Playlist</span>
+                          <span class="material-symbols-outlined text-xs">open_in_new</span>
+                        </a>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </section>
+            }
+
             <!-- What You'll Learn Grid -->
             <section class="bg-surface-container-lowest rounded-2xl p-6 sm:p-8 border border-outline-variant/30 shadow-sm space-y-5">
               <h2 class="text-base sm:text-lg font-bold text-on-surface flex items-center gap-2">
@@ -543,12 +615,23 @@ export class CourseLippanComponent implements OnInit {
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
       const courseId = params.get('id') || 'lippan-art';
-      this.courseService.getCourse(courseId).subscribe(found => {
-        if (found) {
-          this.course.set(found);
-          this.checkEnrollmentStatus(found);
-        }
+      this.loadCourse(courseId);
+    });
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('courses_updated', () => {
+        const id = this.course().id;
+        if (id) this.loadCourse(id);
       });
+    }
+  }
+
+  private loadCourse(courseId: string): void {
+    this.courseService.getCourse(courseId).subscribe(found => {
+      if (found) {
+        this.course.set(found);
+        this.checkEnrollmentStatus(found);
+      }
     });
   }
 
