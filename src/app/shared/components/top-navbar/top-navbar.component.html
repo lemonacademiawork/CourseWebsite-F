@@ -1,44 +1,44 @@
-<nav class="bg-surface shadow-sm top-0 sticky left-0 right-0 z-50">
-  <div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto text-xs">
+<nav class="bg-surface shadow-xs top-0 sticky left-0 right-0 z-50">
+  <div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto text-sm md:text-base">
     <!-- Logo -->
-    <a routerLink="/" class="flex items-center gap-2.5 group cursor-pointer">
-      <img src="/logo.png" alt="Lemon Academia Logo" class="w-8 h-8 rounded-full object-cover shadow-xs group-hover:scale-105 transition-transform" />
-      <span class="font-display-lg text-lg md:text-xl font-bold text-primary tracking-tight">
+    <a routerLink="/" class="flex items-center gap-3 group cursor-pointer">
+      <img src="/logo.png" alt="Lemon Academia Logo" class="w-9 h-9 md:w-10 md:h-10 rounded-full object-cover shadow-xs group-hover:scale-105 transition-transform" />
+      <span class="font-display-lg text-xl md:text-2xl font-bold text-primary tracking-tight">
         Lemon Academia
       </span>
     </a>
 
     <!-- Desktop Menu -->
-    <ul class="hidden md:flex gap-6 items-center font-medium">
+    <ul class="hidden md:flex gap-7 items-center font-medium text-[15px]">
       <li>
-        <a routerLink="/" [routerLinkActiveOptions]="{ exact: true }" routerLinkActive="text-primary border-b-2 border-primary pb-1 font-semibold" class="text-on-surface-variant hover:text-primary transition-colors duration-200">
+        <a routerLink="/" [routerLinkActiveOptions]="{ exact: true }" routerLinkActive="text-primary border-b-2 border-primary pb-1 font-bold" class="text-on-surface-variant hover:text-primary transition-colors duration-200">
           Home
         </a>
       </li>
       <li>
-        <a routerLink="/courses" routerLinkActive="text-primary border-b-2 border-primary pb-1 font-semibold" class="text-on-surface-variant hover:text-primary transition-colors duration-200">
+        <a routerLink="/courses" routerLinkActive="text-primary border-b-2 border-primary pb-1 font-bold" class="text-on-surface-variant hover:text-primary transition-colors duration-200">
           Courses
         </a>
       </li>
       <li>
-        <a routerLink="/blogs" routerLinkActive="text-primary border-b-2 border-primary pb-1 font-semibold" class="text-on-surface-variant hover:text-primary transition-colors duration-200">
+        <a routerLink="/blogs" routerLinkActive="text-primary border-b-2 border-primary pb-1 font-bold" class="text-on-surface-variant hover:text-primary transition-colors duration-200">
           Blogs
         </a>
       </li>
       <li>
-        <a routerLink="/gallery" routerLinkActive="text-primary border-b-2 border-primary pb-1 font-semibold" class="text-on-surface-variant hover:text-primary transition-colors duration-200">
+        <a routerLink="/gallery" routerLinkActive="text-primary border-b-2 border-primary pb-1 font-bold" class="text-on-surface-variant hover:text-primary transition-colors duration-200">
           Gallery
         </a>
       </li>
 
       @if (authService.isLoggedIn() && authService.userRole() !== 'admin' && authService.userRole() !== 'trainer') {
         <li>
-          <a routerLink="/my-courses" routerLinkActive="text-primary border-b-2 border-primary pb-1 font-semibold" class="text-on-surface-variant hover:text-primary transition-colors duration-200">
+          <a routerLink="/my-courses" routerLinkActive="text-primary border-b-2 border-primary pb-1 font-bold" class="text-on-surface-variant hover:text-primary transition-colors duration-200">
             My Courses
           </a>
         </li>
         <li>
-          <a routerLink="/become-a-trainer" routerLinkActive="text-primary border-b-2 border-primary pb-1 font-semibold" class="text-on-surface-variant hover:text-primary transition-colors duration-200">
+          <a routerLink="/become-a-trainer" routerLinkActive="text-primary border-b-2 border-primary pb-1 font-bold" class="text-on-surface-variant hover:text-primary transition-colors duration-200">
             Become a Trainer
           </a>
         </li>
@@ -46,33 +46,33 @@
     </ul>
 
     <!-- Right side controls -->
-    <div class="hidden md:flex items-center gap-3">
+    <div class="hidden md:flex items-center gap-3.5 text-[15px]">
       @if (authService.isLoggedIn()) {
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3.5">
           @if (authService.userRole() === 'admin') {
-            <a routerLink="/admin/dashboard" class="font-semibold hover:underline text-primary">
+            <a routerLink="/admin/dashboard" class="font-bold hover:underline text-primary">
               Admin Panel
             </a>
           }
           @if (authService.userRole() === 'trainer') {
-            <a routerLink="/trainer/dashboard" class="font-semibold hover:underline text-primary">
+            <a routerLink="/trainer/dashboard" class="font-bold hover:underline text-primary">
               Trainer Dashboard
             </a>
           }
-          <a routerLink="/profile" class="font-medium text-on-surface hover:text-primary">
+          <a routerLink="/profile" class="font-semibold text-on-surface hover:text-primary">
             Profile
           </a>
           <button 
             (click)="handleLogout()"
-            class="bg-surface-variant text-on-surface-variant hover:bg-surface-dim px-4 py-2 rounded-lg font-semibold transition-all">
+            class="bg-surface-variant text-on-surface-variant hover:bg-surface-dim px-4 py-2 rounded-lg font-semibold transition-all cursor-pointer">
             Logout
           </button>
         </div>
       } @else {
-        <a routerLink="/login" class="font-semibold px-3 py-2 transition-opacity text-primary hover:opacity-90">
+        <a routerLink="/login" class="font-bold px-3.5 py-2 transition-opacity text-primary hover:opacity-90 cursor-pointer">
           Login
         </a>
-        <a routerLink="/signup" class="font-semibold px-4 py-2.5 rounded-lg transition-opacity bg-primary text-on-primary hover:opacity-90">
+        <a routerLink="/signup" class="font-bold px-5 py-2.5 rounded-lg transition-opacity bg-primary text-on-primary hover:opacity-90 shadow-xs cursor-pointer">
           Sign Up
         </a>
       }
