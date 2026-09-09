@@ -386,42 +386,27 @@ export class MyCourseDetailComponent implements OnInit {
 
       // 2. Student Name in center blank space above the gold bar
       const centerX = canvas.width * 0.518;
-      const studentNameY = canvas.height * 0.465;
+      const studentNameY = canvas.height * 0.415;
 
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#2D2006';
-      ctx.font = 'bold 44px "Cinzel", "Playfair Display", Georgia, serif';
+      ctx.fillStyle = '#1E170C';
+      ctx.font = 'bold 42px "Cinzel", "Playfair Display", Georgia, serif';
       ctx.fillText(studentName, centerX, studentNameY);
 
-      // 3. Seamlessly cover the narrative placeholder with matching parchment color
-      const rectX = canvas.width * 0.155;
-      const rectY = canvas.height * 0.512;
-      const rectW = canvas.width * 0.725;
-      const rectH = canvas.height * 0.158;
-      ctx.fillStyle = '#ECE5D6';
-      ctx.fillRect(rectX, rectY, rectW, rectH);
+      // 3. Course Name directly inside the template's blank slot on line 4 (no overwriting text or background box)
+      const courseGapX = canvas.width * 0.575;
+      const courseNameY = canvas.height * 0.540;
+      const maxGapWidth = canvas.width * 0.38;
 
-      // 4. Render the clear and beautifully formatted narrative with Course Name
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
+      let fontSize = 23;
+      ctx.font = `bold ${fontSize}px "Cinzel", "Playfair Display", Georgia, serif`;
+      while (ctx.measureText(courseTitle).width > maxGapWidth && fontSize > 13) {
+        fontSize -= 1;
+        ctx.font = `bold ${fontSize}px "Cinzel", "Playfair Display", Georgia, serif`;
+      }
 
-      // Line 1: Has successfully completed the [Course Name]
-      ctx.font = '500 20px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-      ctx.fillStyle = '#2C261E';
-      
-      // Measure course title width to place inline or formatted
-      ctx.font = 'bold 22px "Cinzel", "Playfair Display", Georgia, serif';
-      ctx.fillStyle = '#6E5410';
-      ctx.fillText(`Has successfully completed the "${courseTitle}"`, centerX, canvas.height * 0.540);
-
-      // Line 2
-      ctx.font = '500 19px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-      ctx.fillStyle = '#2C261E';
-      ctx.fillText(`and has demonstrated exceptional skills in class. We congratulate you on your`, centerX, canvas.height * 0.575);
-
-      // Line 3
-      ctx.fillText(`outstanding achievement and look forward to seeing your continued growth and success.`, centerX, canvas.height * 0.608);
+      ctx.fillText(courseTitle, courseGapX, courseNameY);
 
       // Trigger download
       const link = document.createElement('a');
