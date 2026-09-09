@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { CourseService } from '../../../core/services/course.service';
@@ -14,7 +14,7 @@ import { Category } from '../../../core/models/category.model';
   imports: [CommonModule, RouterLink],
   templateUrl: './courses.component.html'
 })
-export class CoursesComponent implements OnInit {
+export class CoursesComponent implements OnInit, OnDestroy {
   private courseService = inject(CourseService);
   private categoryService = inject(CategoryService);
   private enrollmentService = inject(EnrollmentService);
@@ -27,6 +27,8 @@ export class CoursesComponent implements OnInit {
   selectedCategories = signal<string[]>([]);
   enrolledCourseIds = signal<Set<string>>(new Set());
 
+  private refreshHandler = () => this.fetchCourses();
+
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       if (params['category']) {
@@ -36,6 +38,20 @@ export class CoursesComponent implements OnInit {
     this.fetchCategories();
     this.fetchCourses();
     this.fetchEnrolledCourses();
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('courses_updated', this.refreshHandler);
+      window.addEventListener('storage', this.refreshHandler);
+      window.addEventListener('focus', this.refreshHandler);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('courses_updated', this.refreshHandler);
+      window.removeEventListener('storage', this.refreshHandler);
+      window.removeEventListener('focus', this.refreshHandler);
+    }
   }
 
   fetchCategories(): void {

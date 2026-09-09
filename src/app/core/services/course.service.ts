@@ -38,14 +38,23 @@ export class CourseService {
         const list = Array.isArray(raw) ? raw : (raw.courses || []);
         const mappedList = list.map((c: any) => this.mapCourse(c));
 
-        // Merge any locally created courses
+        // Merge any locally created/edited courses
         if (typeof window !== 'undefined') {
           try {
-            const localKeys = Object.keys(localStorage).filter(k => k.startsWith('course_override_course-'));
+            const localKeys = Object.keys(localStorage).filter(k => k.startsWith('course_override_'));
             localKeys.forEach(k => {
               const item = JSON.parse(localStorage.getItem(k) || '{}');
-              if (item && item.id && !mappedList.some((c: any) => c.id === item.id)) {
-                mappedList.unshift(this.mapCourse(item));
+              if (item && (item.id || item.title)) {
+                const existingIdx = mappedList.findIndex((c: any) => 
+                  (item.id && c.id === item.id) || 
+                  (item.slug && c.slug === item.slug) || 
+                  (item.title && c.title?.toLowerCase() === item.title?.toLowerCase())
+                );
+                if (existingIdx >= 0) {
+                  mappedList[existingIdx] = this.mapCourse({ ...mappedList[existingIdx], ...item });
+                } else {
+                  mappedList.unshift(this.mapCourse(item));
+                }
               }
             });
           } catch {}
@@ -57,10 +66,10 @@ export class CourseService {
         const fallbackList: Course[] = [];
         if (typeof window !== 'undefined') {
           try {
-            const localKeys = Object.keys(localStorage).filter(k => k.startsWith('course_override_course-'));
+            const localKeys = Object.keys(localStorage).filter(k => k.startsWith('course_override_'));
             localKeys.forEach(k => {
               const item = JSON.parse(localStorage.getItem(k) || '{}');
-              if (item && item.id) {
+              if (item && (item.id || item.title)) {
                 fallbackList.push(this.mapCourse(item));
               }
             });
@@ -73,26 +82,44 @@ export class CourseService {
 
   /** GET /api/v1/courses/:id — Get course details by ID */
   getCourse(id: string): Observable<Course | null> {
+    const local = this.getLocalCourseOverride(id);
     return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
       map(res => {
         const data = res.data || res;
         if (data && (data.id || data._id)) {
           return this.mapCourse(data);
         }
-        return null;
+        return local ? this.mapCourse(local) : null;
       }),
-      catchError(() => of(null))
+      catchError(() => of(local ? this.mapCourse(local) : null))
     );
   }
 
   /** GET /api/v1/courses/slug/:slug — Get course details by URL slug */
   getCourseBySlug(slug: string): Observable<Course | null> {
+    let localFound: any = null;
+    if (typeof window !== 'undefined') {
+      try {
+        const localKeys = Object.keys(localStorage).filter(k => k.startsWith('course_override_'));
+        for (const k of localKeys) {
+          const item = JSON.parse(localStorage.getItem(k) || '{}');
+          if (item.slug === slug || item.id === slug) {
+            localFound = item;
+            break;
+          }
+        }
+      } catch {}
+    }
+
     return this.http.get<any>(`${this.apiUrl}/slug/${slug}`).pipe(
       map(res => {
         const data = res.data || res;
-        return data && (data.id || data._id) ? this.mapCourse(data) : null;
+        if (data && (data.id || data._id)) {
+          return this.mapCourse(data);
+        }
+        return localFound ? this.mapCourse(localFound) : null;
       }),
-      catchError(() => of(null))
+      catchError(() => of(localFound ? this.mapCourse(localFound) : null))
     );
   }
 
@@ -105,6 +132,7 @@ export class CourseService {
       shortDescription: payload.shortDescription || payload.description?.slice(0, 120) || `${payload.title} masterclass`,
       price: Number(payload.price) || 99,
       discountPrice: payload.discountPrice !== undefined ? Number(payload.discountPrice) : Number(payload.discountedPrice || payload.price || 99),
+      discountedPrice: payload.discountPrice !== undefined ? Number(payload.discountPrice) : Number(payload.discountedPrice || payload.price || 99),
       level: payload.level || 'BEGINNER',
       durationHours: Number(payload.durationHours) || 10,
       thumbnailUrl: payload.thumbnailUrl || payload.imageUrl || 'https://images.unsplash.com/photo-1584992236310-6edddc08acff',
@@ -125,9 +153,8 @@ export class CourseService {
     return this.http.post<any>(this.apiUrl, formattedPayload).pipe(
       map(res => {
         const created = res.data || res;
-        if (created?.id) {
-          this.saveLocalCourseOverride(created.id, formattedPayload);
-        }
+        const id = created?.id || created?._id || 'course-' + Date.now();
+        this.saveLocalCourseOverride(id, { ...formattedPayload, id });
         return created;
       })
     );

@@ -1,8 +1,9 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TrainerService } from '../../../core/services/trainer.service';
 import { CourseService } from '../../../core/services/course.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Course } from '../../../core/models/course.model';
 
 @Component({
@@ -57,22 +58,53 @@ import { Course } from '../../../core/models/course.model';
     </main>
   `
 })
-export class TrainerCoursesComponent implements OnInit {
+export class TrainerCoursesComponent implements OnInit, OnDestroy {
   private trainerService = inject(TrainerService);
   private courseService = inject(CourseService);
+  private authService = inject(AuthService);
+
   courses = signal<Course[]>([]);
+  private refreshHandler = () => this.loadCourses();
 
   ngOnInit(): void {
+    this.loadCourses();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('courses_updated', this.refreshHandler);
+      window.addEventListener('storage', this.refreshHandler);
+      window.addEventListener('focus', this.refreshHandler);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('courses_updated', this.refreshHandler);
+      window.removeEventListener('storage', this.refreshHandler);
+      window.removeEventListener('focus', this.refreshHandler);
+    }
+  }
+
+  loadCourses(): void {
     this.trainerService.getTrainerCourses().subscribe({
       next: (list) => {
         if (list && list.length > 0) {
           this.courses.set(list);
         } else {
-          this.courses.set([]);
+          this.courseService.getCourses().subscribe(all => {
+            const currentName = (this.authService.userName() || (typeof window !== 'undefined' ? localStorage.getItem('user_name') : '') || '').trim().toLowerCase();
+            if (currentName && currentName !== 'user') {
+              const matched = all.filter(c => 
+                (c.instructor && c.instructor.toLowerCase().includes(currentName)) || 
+                (currentName && c.instructor && currentName.includes(c.instructor.toLowerCase()))
+              );
+              this.courses.set(matched.length > 0 ? matched : all);
+            } else {
+              this.courses.set(all);
+            }
+          });
         }
       },
       error: () => {
-        this.courses.set([]);
+        this.courseService.getCourses().subscribe(all => this.courses.set(all));
       }
     });
   }
