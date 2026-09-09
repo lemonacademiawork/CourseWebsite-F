@@ -7,6 +7,7 @@ export interface Lesson {
   videoUrl?: string;
   thumbnailUrl?: string;
   durationSeconds?: number;
+  duration?: number | string;
   fileSizeBytes?: number;
   orderIndex?: number;
   isPreview?: boolean;

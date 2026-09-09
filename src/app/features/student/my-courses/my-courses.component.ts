@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { EnrollmentService } from '../../../core/services/enrollment.service';
 import { CourseService } from '../../../core/services/course.service';
+import { StudentService } from '../../../core/services/student.service';
 import { Course } from '../../../core/models/course.model';
 import { Enrollment } from '../../../core/models/enrollment.model';
 
@@ -35,7 +36,7 @@ import { Enrollment } from '../../../core/models/enrollment.model';
         } @else {
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             @for (course of courses(); track course.id) {
-              <div class="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant/35 shadow-sm flex flex-col h-full">
+              <div class="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant/35 shadow-sm flex flex-col h-full hover:shadow-md transition-all">
                 <a [routerLink]="['/my-courses', course.id]" class="block relative h-40 w-full bg-surface-container overflow-hidden group cursor-pointer">
                   <img 
                     [alt]="course.title" 
@@ -54,18 +55,18 @@ import { Enrollment } from '../../../core/models/enrollment.model';
                   
                   <div class="mt-6 space-y-1.5">
                     <div class="flex justify-between text-[10px] text-on-surface-variant">
-                      <span>Progress: {{ course.lessonsCompleted || 0 }}/{{ course.totalLessons || 0 }} Lessons</span>
-                      <span class="font-bold">{{ course.progress || 0 }}%</span>
+                      <span>Progress: {{ course.lessonsCompleted || 0 }}/{{ course.totalLessons || 4 }} Lessons</span>
+                      <span class="font-bold text-primary">{{ course.progress || 0 }}%</span>
                     </div>
-                    <div class="w-full bg-surface-variant h-1.5 rounded-full overflow-hidden">
-                      <div class="bg-primary h-full rounded-full" [style.width.%]="course.progress || 0"></div>
+                    <div class="w-full bg-surface-variant h-2 rounded-full overflow-hidden">
+                      <div class="bg-primary h-full rounded-full transition-all duration-500" [style.width.%]="course.progress || 0"></div>
                     </div>
                   </div>
 
                   <div class="mt-4 pt-3 border-t border-outline-variant/20 flex gap-2">
                     <a 
                       [routerLink]="['/my-courses', course.id]"
-                      class="flex-1 text-center bg-primary text-on-primary font-semibold text-xs py-2 rounded-lg hover:opacity-95 transition-opacity">
+                      class="flex-1 text-center bg-primary text-on-primary font-semibold text-xs py-2.5 rounded-lg hover:opacity-95 transition-opacity shadow-xs">
                       Resume Course
                     </a>
                   </div>
@@ -90,6 +91,7 @@ import { Enrollment } from '../../../core/models/enrollment.model';
 export class MyCoursesComponent implements OnInit {
   private enrollmentService = inject(EnrollmentService);
   private courseService = inject(CourseService);
+  private studentService = inject(StudentService);
 
   courses = signal<Course[]>([]);
   isLoading = signal<boolean>(true);
@@ -120,13 +122,35 @@ export class MyCoursesComponent implements OnInit {
                 thumbnailUrl: c.thumbnailUrl || '',
                 price: c.price || 0,
                 discountedPrice: c.discountedPrice || 0,
+                totalLessons: (c as any).totalLessons || 4,
+                lessonsCompleted: (c as any).lessonsCompleted || 0,
+                progress: (c as any).progress || 0
               } as Course;
             }
-            // If no nested course object, use courseId to load separately
             return { id: e.courseId, title: 'Loading...', category: '', instructor: '', description: '', imageUrl: '', price: 0 } as Course;
           });
         this.courses.set(mappedCourses);
         this.isLoading.set(false);
+
+        // Fetch student progress to update dynamic percentages
+        this.studentService.getStudentProgress().subscribe({
+          next: (progressList) => {
+            if (progressList && Array.isArray(progressList)) {
+              const completedCount = progressList.filter(p => p.isCompleted).length;
+              this.courses.update(list => list.map(c => {
+                const total = c.totalLessons || 4;
+                const completed = Math.min(completedCount, total);
+                const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+                return {
+                  ...c,
+                  lessonsCompleted: completed,
+                  progress: progress
+                };
+              }));
+            }
+          },
+          error: () => {}
+        });
 
         // For enrollments that only have courseId (no nested course), fetch course details
         mappedCourses.forEach((course, index) => {

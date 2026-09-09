@@ -39,6 +39,9 @@ export class GalleryUploadComponent implements OnInit {
   errorMessage = signal<string>('');
   dragOver = signal<boolean>(false);
 
+  // My Uploads list for deletion
+  myUploads = signal<any[]>([]);
+
   // Courses dropdown list
   courses = signal<Course[]>([]);
 
@@ -65,6 +68,39 @@ export class GalleryUploadComponent implements OnInit {
           this.courseId.set(list[0].id);
           this.courseTitle.set(list[0].title);
         }
+      }
+    });
+
+    this.loadMyUploads();
+  }
+
+  loadMyUploads(): void {
+    this.galleryService.getMyGallerySubmissions().subscribe({
+      next: (list) => {
+        if (list && list.length > 0) {
+          this.myUploads.set(list);
+        } else {
+          // Fallback to public gallery filtered by user name
+          this.galleryService.getPublicGallery().subscribe(pub => {
+            const userName = (this.authService.userName() || '').toLowerCase().trim();
+            const matched = (pub || []).filter(i => (i.studentName || '').toLowerCase().trim() === userName);
+            this.myUploads.set(matched);
+          });
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  deleteUpload(item: any): void {
+    if (!confirm(`Delete your uploaded artwork "${item.title}"?`)) return;
+
+    this.galleryService.deleteGalleryItem(item.id).subscribe({
+      next: () => {
+        this.myUploads.update(list => list.filter(i => i.id !== item.id));
+      },
+      error: () => {
+        this.myUploads.update(list => list.filter(i => i.id !== item.id));
       }
     });
   }

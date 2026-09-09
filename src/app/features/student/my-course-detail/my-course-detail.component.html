@@ -20,11 +20,40 @@
         </p>
       </div>
       @if (course()) {
-        <a [routerLink]="['/courses', course()!.id]" class="bg-primary text-on-primary font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity text-center flex items-center justify-center gap-2">
+        <a [routerLink]="['/courses', course()!.id]" class="bg-primary text-on-primary font-semibold px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity text-center flex items-center justify-center gap-2 cursor-pointer shadow-xs">
           <span class="material-symbols-outlined text-sm">info</span>
           View Course Overview
         </a>
       }
+    </div>
+
+    <!-- Dynamic Course Progress Bar -->
+    <div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div class="space-y-1.5 w-full sm:w-2/3">
+        <div class="flex justify-between text-xs font-semibold">
+          <span class="text-on-surface flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-primary text-sm">trending_up</span>
+            Learning Progress
+          </span>
+          <span class="text-primary font-bold">{{ progressPercentage() }}% Completed ({{ completedCount() }}/{{ totalLessonsCount() }} Lessons)</span>
+        </div>
+        <div class="w-full bg-surface-container-high h-2.5 rounded-full overflow-hidden">
+          <div class="bg-primary h-full rounded-full transition-all duration-500" [style.width.%]="progressPercentage()"></div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        @if (progressPercentage() >= 100 || certificate()) {
+          <button (click)="setTab('certificate')" class="px-4 py-2 bg-green-700 hover:bg-green-800 text-white rounded-lg font-bold text-xs shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors">
+            <span class="material-symbols-outlined text-sm">workspace_premium</span>
+            View Certificate
+          </button>
+        } @else {
+          <span class="text-[11px] text-on-surface-variant font-medium flex items-center gap-1">
+            <span class="material-symbols-outlined text-xs text-primary">check_circle</span>
+            Check off lessons to advance progress
+          </span>
+        }
+      </div>
     </div>
 
     <!-- Navigation Tabs -->
@@ -53,7 +82,7 @@
         [class.border-primary]="activeTab() === 'resources'"
         [class.text-primary]="activeTab() === 'resources'"
         class="pb-3 text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
-        <span class="material-symbols-outlined text-sm">folder_open</span>
+        <span class="material-symbols-outlined text-sm">inventory_2</span>
         Materials &amp; Blueprints
       </button>
       <button 
@@ -71,66 +100,118 @@
         [class.border-primary]="activeTab() === 'reviews'"
         [class.text-primary]="activeTab() === 'reviews'"
         class="pb-3 text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
-        <span class="material-symbols-outlined text-sm">rate_review</span>
-        My Rating &amp; Review
+        <span class="material-symbols-outlined text-sm">reviews</span>
+        Course Reviews &amp; Ratings
       </button>
     </div>
 
-
-    <!-- Tab 1: Curriculum -->
+    <!-- Tab 1: Course Curriculum (Modules & Lessons) -->
     @if (activeTab() === 'lessons') {
-      <div class="space-y-6">
+      <div class="space-y-4">
         @if (modulesLoading()) {
-          <div class="text-center py-10 text-on-surface-variant">Loading course modules...</div>
-        } @else if (modules().length === 0) {
-          <div class="text-center py-12 text-on-surface-variant bg-surface-container-low rounded-xl">
-            <p>No modules created for this course yet.</p>
+          <div class="text-center py-8 text-on-surface-variant">
+            <span class="material-symbols-outlined animate-spin text-xl">progress_activity</span>
+            <p class="mt-2">Loading course curriculum...</p>
           </div>
-        } @else {
-          @for (mod of modules(); track mod.id) {
-            <div class="border border-outline-variant/30 rounded-xl overflow-hidden bg-surface-container-low">
-              <div class="p-4 bg-surface-container font-bold text-on-surface text-xs border-b border-outline-variant/20 flex justify-between items-center">
-                <span>{{ mod.title }}</span>
-                @if (mod.description) {
-                  <span class="text-[11px] font-normal text-on-surface-variant">{{ mod.description }}</span>
-                }
-              </div>
-              <div class="divide-y divide-outline-variant/15">
-                @if (mod.loadingLessons) {
-                  <div class="p-3.5 text-[11px] text-on-surface-variant">Loading lessons...</div>
-                } @else if (!mod.lessonsList || mod.lessonsList.length === 0) {
-                  <div class="p-3.5 text-[11px] text-on-surface-variant">No lessons in this module yet.</div>
-                } @else {
-                  @for (lesson of mod.lessonsList; track lesson.id) {
-                    <div class="p-3.5 flex items-center justify-between hover:bg-surface-container-lowest transition-colors">
-                      <div class="flex items-center gap-3">
-                        <input 
-                          type="checkbox" 
-                          [checked]="isLessonCompleted(lesson.id)"
-                          (change)="toggleLesson(lesson.id)"
-                          class="w-4 h-4 accent-primary rounded cursor-pointer"
-                        />
-                        <span [class.line-through]="isLessonCompleted(lesson.id)" [class.text-on-surface-variant]="isLessonCompleted(lesson.id)" class="font-medium text-xs">
-                          {{ lesson.title }}
-                        </span>
-                      </div>
-                      <div class="flex items-center gap-3">
-                        @if (lesson.durationSeconds) {
-                          <span class="text-[11px] text-on-surface-variant">{{ (lesson.durationSeconds / 60) | number:'1.0-0' }} mins</span>
-                        }
-                        @if (lesson.videoUrl) {
-                          <a [href]="lesson.videoUrl" target="_blank" class="text-primary font-semibold hover:underline flex items-center gap-1 text-[11px]">
-                            <span class="material-symbols-outlined text-[14px]">play_circle</span>
+        } @else if (modules().length === 0) {
+          <!-- Fallback if no modules attached yet -->
+          @if (courseContent()?.modules) {
+            <div class="space-y-4">
+              @for (mod of courseContent()?.modules; track mod.id) {
+                <div class="bg-surface-container-low border border-outline-variant/30 rounded-xl overflow-hidden">
+                  <div class="p-4 bg-surface-container font-bold text-xs flex justify-between items-center text-on-surface">
+                    <span>{{ mod.title }}</span>
+                    <span class="text-[10px] text-on-surface-variant">{{ mod.lessons?.length || 0 }} Lessons</span>
+                  </div>
+                  <div class="p-4 space-y-2">
+                    @for (les of mod.lessons; track les.id) {
+                      <div class="flex items-center justify-between p-2.5 rounded-lg hover:bg-surface-container-lowest transition-colors">
+                        <div class="flex items-center gap-3">
+                          <input 
+                            type="checkbox" 
+                            [checked]="isLessonCompleted(les.id)"
+                            (change)="toggleLesson(les.id)"
+                            class="w-4 h-4 rounded text-primary focus:ring-primary cursor-pointer"
+                          />
+                          <div>
+                            <span class="font-medium text-xs text-on-surface" [class.line-through]="isLessonCompleted(les.id)">{{ les.title }}</span>
+                            <span class="text-[10px] text-on-surface-variant block">{{ les.duration }} min</span>
+                          </div>
+                        </div>
+                        @if (les.videoUrl) {
+                          <a [href]="les.videoUrl" target="_blank" class="bg-primary/10 text-primary font-semibold px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors text-xs flex items-center gap-1">
+                            <span class="material-symbols-outlined text-xs">play_circle</span>
                             Watch
                           </a>
                         }
                       </div>
-                    </div>
-                  }
-                }
-              </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="text-center py-12 text-on-surface-variant bg-surface-container-low rounded-xl">
+              <span class="material-symbols-outlined text-3xl text-outline mb-2">menu_book</span>
+              <p>Curriculum is being prepared by the instructor. Please check back shortly!</p>
             </div>
           }
+        } @else {
+          <!-- Dynamic Modules & Lessons -->
+          <div class="space-y-4">
+            @for (mod of modules(); track mod.id) {
+              <div class="bg-surface-container-low border border-outline-variant/30 rounded-xl overflow-hidden shadow-2xs">
+                <div class="p-4 bg-surface-container font-bold text-xs flex justify-between items-center text-on-surface">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-base">folder</span>
+                    <span>{{ mod.title }}</span>
+                  </div>
+                  <span class="text-[11px] text-on-surface-variant font-normal">{{ mod.lessonsList?.length || 0 }} Lessons</span>
+                </div>
+                
+                <div class="p-3 space-y-2">
+                  @if (mod.loadingLessons) {
+                    <div class="text-center py-3 text-on-surface-variant text-xs">Loading lessons...</div>
+                  } @else if (!mod.lessonsList || mod.lessonsList.length === 0) {
+                    <div class="text-center py-3 text-on-surface-variant text-[11px]">No lessons added to this module yet.</div>
+                  } @else {
+                    @for (les of mod.lessonsList; track les.id) {
+                      <div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-lowest border border-outline-variant/20 hover:border-primary/40 transition-all">
+                        <div class="flex items-center gap-3">
+                          <input 
+                            type="checkbox" 
+                            [checked]="isLessonCompleted(les.id)"
+                            (change)="toggleLesson(les.id)"
+                            class="w-4 h-4 rounded text-primary focus:ring-primary cursor-pointer"
+                          />
+                          <div>
+                            <span class="font-semibold text-xs text-on-surface block" [class.line-through]="isLessonCompleted(les.id)">{{ les.title }}</span>
+                            <div class="flex items-center gap-2 text-[10px] text-on-surface-variant mt-0.5">
+                              <span>{{ les.duration ? les.duration + ' mins' : 'Video Lesson' }}</span>
+                              @if (les.isPreview) {
+                                <span class="px-1.5 py-0.2 bg-green-100 text-green-800 rounded font-bold text-[8px]">PREVIEW</span>
+                              }
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                          @if (les.videoUrl) {
+                            <a [href]="les.videoUrl" target="_blank" class="bg-primary text-on-primary font-semibold px-3 py-1.5 rounded-lg hover:opacity-90 transition-opacity text-xs flex items-center gap-1 shadow-xs">
+                              <span class="material-symbols-outlined text-xs">play_circle</span>
+                              Watch Lesson
+                            </a>
+                          } @else {
+                            <span class="text-[10px] text-on-surface-variant bg-surface-container px-2 py-1 rounded">Text Guide</span>
+                          }
+                        </div>
+                      </div>
+                    }
+                  }
+                </div>
+              </div>
+            }
+          </div>
         }
       </div>
     }
@@ -139,12 +220,12 @@
     @if (activeTab() === 'zoom') {
       <div class="space-y-4">
         @for (session of sessions(); track session.id) {
-          <div class="p-4 rounded-xl border border-outline-variant/30 bg-surface-container-low flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div class="p-4 bg-surface-container-low border border-outline-variant/30 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <div class="flex items-center gap-2">
-                <span class="font-bold text-sm text-on-surface">{{ session.title }}</span>
+                <h3 class="font-bold text-sm text-on-surface">{{ session.title }}</h3>
                 <span 
-                  class="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                  class="px-2 py-0.5 text-[10px] font-bold rounded-full"
                   [class.bg-green-100]="getStatus(session) === 'LIVE'"
                   [class.text-green-800]="getStatus(session) === 'LIVE'"
                   [class.bg-blue-100]="getStatus(session) === 'UPCOMING'"
@@ -182,42 +263,76 @@
       </div>
     }
 
-    <!-- Tab 3: Materials & Blueprints -->
+    <!-- Tab 3: Materials & Blueprints (Includes lemonhousecraft.in link) -->
     @if (activeTab() === 'resources') {
-      <div class="space-y-4">
-        @if (resourcesLoading()) {
-          <div class="text-center py-8 text-on-surface-variant">Loading course materials...</div>
-        } @else if (resources().length === 0) {
-          <div class="text-center py-12 text-on-surface-variant bg-surface-container-low rounded-xl">
-            <p>No downloadable materials currently attached to this course.</p>
+      <div class="space-y-6">
+        <!-- Lemon House Craft Official Raw Materials Banner -->
+        <div class="bg-gradient-to-r from-[#FBF8F1] via-[#F5EFE0] to-[#EFE9DC] border border-[#E7E1D3] rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl bg-[#6E5410] text-white flex items-center justify-center shrink-0 shadow-sm">
+              <span class="material-symbols-outlined text-2xl">shopping_bag</span>
+            </div>
+            <div class="space-y-1">
+              <h4 class="font-bold text-sm text-[#1C1A17] flex items-center gap-2">
+                Need Raw Materials &amp; Starter Craft Kits?
+                <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#6E5410] text-white">Official Store</span>
+              </h4>
+              <p class="text-xs text-[#5B5650] max-w-xl leading-relaxed">
+                Order authentic craft raw supplies, laser-cut MDF boards, premium mirrors, clay, moulds, and complete starter kits directly from our official store at <strong>Lemon House Craft</strong>.
+              </p>
+            </div>
           </div>
-        } @else {
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            @for (res of resources(); track res.id) {
-              <div class="p-4 bg-surface-container-low border border-outline-variant/30 rounded-xl flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <span class="material-symbols-outlined text-primary text-2xl">description</span>
-                  <div>
-                    <span class="font-bold text-xs text-on-surface">{{ res.title }}</span>
-                    <p class="text-[10px] text-on-surface-variant">{{ res.fileType || res.type || 'Resource' }}</p>
+          <a 
+            href="https://lemonhousecraft.in" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="px-5 py-2.5 bg-[#6E5410] hover:bg-[#5c4610] text-white font-bold text-xs rounded-xl transition shadow-xs flex items-center gap-2 whitespace-nowrap cursor-pointer">
+            <span>Visit lemonhousecraft.in</span>
+            <span class="material-symbols-outlined text-sm">open_in_new</span>
+          </a>
+        </div>
+
+        <!-- Downloadable Resources List -->
+        <div>
+          <h4 class="font-bold text-xs text-on-surface mb-3 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-primary text-base">download</span>
+            Downloadable PDFs, Stencils &amp; Guides
+          </h4>
+
+          @if (resourcesLoading()) {
+            <div class="text-center py-8 text-on-surface-variant">Loading course materials...</div>
+          } @else if (resources().length === 0) {
+            <div class="text-center py-12 text-on-surface-variant bg-surface-container-low rounded-xl">
+              <p>No downloadable PDF attachments currently attached to this course.</p>
+            </div>
+          } @else {
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              @for (res of resources(); track res.id) {
+                <div class="p-4 bg-surface-container-low border border-outline-variant/30 rounded-xl flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-primary text-2xl">description</span>
+                    <div>
+                      <span class="font-bold text-xs text-on-surface">{{ res.title }}</span>
+                      <p class="text-[10px] text-on-surface-variant">{{ res.fileType || res.type || 'Resource' }}</p>
+                    </div>
                   </div>
+                  <a [href]="res.fileUrl" target="_blank" class="bg-primary/10 text-primary font-semibold px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors text-xs">
+                    Download
+                  </a>
                 </div>
-                <a [href]="res.fileUrl" target="_blank" class="bg-primary/10 text-primary font-semibold px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors text-xs">
-                  Download
-                </a>
-              </div>
-            }
-          </div>
-        }
+              }
+            </div>
+          }
+        </div>
       </div>
     }
 
-    <!-- Tab 4: Certificate -->
+    <!-- Tab 4: Certificate of Completion -->
     @if (activeTab() === 'certificate') {
       <div class="text-center py-8 max-w-lg mx-auto space-y-6">
         <div class="border-4 border-double border-primary/40 bg-surface-container-lowest p-8 rounded-2xl shadow-sm space-y-4">
           <div class="text-primary font-bold tracking-widest uppercase text-xs">Certificate of Completion</div>
-          <h2 class="playfair text-2xl font-bold text-on-surface">{{ authService.userName() }}</h2>
+          <h2 class="playfair text-2xl font-bold text-on-surface">{{ authService.userName() || 'Artisan Scholar' }}</h2>
           <p class="text-xs text-on-surface-variant">
             has successfully completed all modules and live workshops for
           </p>
@@ -229,91 +344,151 @@
             </div>
           }
         </div>
-        @if (certificate()) {
-          <a [href]="certificate()?.certificateUrl || '#'" target="_blank" class="inline-block bg-primary text-on-primary px-6 py-2.5 rounded-lg font-semibold shadow-sm hover:opacity-90 cursor-pointer">
-            Download PDF Certificate
-          </a>
-        } @else {
+
+        <div class="flex flex-wrap items-center justify-center gap-3">
           <button 
-            (click)="claimCertificate()" 
-            [disabled]="certificateClaiming()"
-            class="bg-primary text-on-primary px-6 py-2.5 rounded-lg font-semibold shadow-sm hover:opacity-90 cursor-pointer disabled:opacity-50">
-            {{ certificateClaiming() ? 'Generating Certificate...' : 'Claim Certificate' }}
+            (click)="downloadCertificatePDF()" 
+            class="bg-primary text-on-primary px-6 py-2.5 rounded-lg font-semibold shadow-sm hover:opacity-90 cursor-pointer flex items-center gap-2 text-xs">
+            <span class="material-symbols-outlined text-sm">download</span>
+            Download Certificate (High-Res)
           </button>
-        }
-      </div>
-    }
 
-    <!-- Tab 5: Course Review & Rating -->
-    @if (activeTab() === 'reviews') {
-      <div class="max-w-xl mx-auto space-y-6 py-4">
-        <div class="bg-surface-container-low border border-outline-variant/30 rounded-2xl p-6 space-y-4">
-          <div class="border-b border-outline-variant/20 pb-3">
-            <h3 class="text-base font-bold text-on-surface">Share Your Workshop Experience</h3>
-            <p class="text-[11px] text-on-surface-variant">Your feedback helps fellow students and mentors at Lemon Academia.</p>
-          </div>
-
-          @if (reviewSuccessMessage()) {
-            <div class="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-xs flex items-center gap-2">
-              <span class="material-symbols-outlined text-sm">check_circle</span>
-              <span>{{ reviewSuccessMessage() }}</span>
-            </div>
-          }
-
-          <form (ngSubmit)="submitCourseReview()" class="space-y-4">
-            <div>
-              <label class="block font-semibold text-on-surface mb-1">Your Rating</label>
-              <div class="flex items-center gap-2">
-                @for (star of [1, 2, 3, 4, 5]; track star) {
-                  <button
-                    type="button"
-                    (click)="reviewRating.set(star)"
-                    class="text-2xl transition-transform hover:scale-110 cursor-pointer"
-                    [class.text-amber-500]="reviewRating() >= star"
-                    [class.text-neutral-300]="reviewRating() < star"
-                  >
-                    ★
-                  </button>
-                }
-                <span class="text-xs font-bold text-on-surface ml-2">{{ reviewRating() }} / 5 Stars</span>
-              </div>
-            </div>
-
-            <div>
-              <label class="block font-semibold text-on-surface mb-1">Review Headline</label>
-              <input
-                type="text"
-                [(ngModel)]="reviewTitle"
-                name="reviewTitle"
-                placeholder="e.g. Inspiring masterclass with clear guidance!"
-                class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-xs text-on-surface focus:outline-none focus:border-primary"
-              />
-            </div>
-
-            <div>
-              <label class="block font-semibold text-on-surface mb-1">Your Detailed Review <span class="text-red-500">*</span></label>
-              <textarea
-                [(ngModel)]="reviewComment"
-                name="reviewComment"
-                rows="4"
-                required
-                placeholder="Describe what you enjoyed most, materials learned, and trainer feedback..."
-                class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-xs text-on-surface focus:outline-none focus:border-primary"
-              ></textarea>
-            </div>
-
-            <button
-              type="submit"
-              [disabled]="isSubmittingReview() || !reviewComment().trim()"
-              class="w-full py-2.5 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 transition flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
-            >
-              <span *ngIf="isSubmittingReview()" class="material-symbols-outlined animate-spin text-sm">progress_activity</span>
-              <span>{{ myReview() ? 'Update My Review' : 'Submit Review' }}</span>
+          @if (!certificate()) {
+            <button 
+              (click)="claimCertificate()" 
+              [disabled]="certificateClaiming()"
+              class="bg-surface-container-high border border-outline-variant text-on-surface px-5 py-2.5 rounded-lg font-semibold hover:bg-surface-container cursor-pointer disabled:opacity-50 text-xs">
+              {{ certificateClaiming() ? 'Registering...' : 'Register Official Code' }}
             </button>
-          </form>
+          }
         </div>
       </div>
     }
+
+    <!-- Tab 5: Course Review & Rating (Visible to Everyone) -->
+    @if (activeTab() === 'reviews') {
+      <div class="max-w-2xl mx-auto space-y-8 py-4">
+        
+        <!-- Submit / Edit My Review Box -->
+        <div class="bg-surface-container-low border border-outline-variant/30 rounded-2xl p-6 space-y-4">
+          <div class="flex justify-between items-center border-b border-outline-variant/20 pb-3">
+            <div>
+              <h3 class="font-bold text-sm text-on-surface">
+                {{ myReview() ? 'Your Submitted Review' : 'Rate & Review This Masterclass' }}
+              </h3>
+              <p class="text-[11px] text-on-surface-variant">Share your learning experience and feedback with the community.</p>
+            </div>
+            @if (myReview()) {
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-800">
+                Review Recorded
+              </span>
+            }
+          </div>
+
+          <!-- Star Rating Selector -->
+          <div>
+            <label class="block font-semibold text-xs mb-1">Your Rating *</label>
+            <div class="flex items-center gap-1">
+              @for (star of [1, 2, 3, 4, 5]; track star) {
+                <button 
+                  type="button"
+                  (click)="reviewRating.set(star)"
+                  class="text-2xl cursor-pointer transition-transform hover:scale-110 focus:outline-none"
+                  [class.text-amber-500]="star <= reviewRating()"
+                  [class.text-outline-variant]="star > reviewRating()">
+                  ★
+                </button>
+              }
+              <span class="ml-2 font-bold text-xs text-on-surface">{{ reviewRating() }} / 5 Stars</span>
+            </div>
+          </div>
+
+          <!-- Review Title -->
+          <div>
+            <label class="block font-semibold text-xs mb-1">Review Headline (Optional)</label>
+            <input 
+              type="text" 
+              [ngModel]="reviewTitle()"
+              (ngModelChange)="reviewTitle.set($event)"
+              placeholder="e.g. Incredible masterclass, learned so much about mirror placement!"
+              class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+            />
+          </div>
+
+          <!-- Review Comment -->
+          <div>
+            <label class="block font-semibold text-xs mb-1">Detailed Feedback &amp; Comments *</label>
+            <textarea 
+              rows="4" 
+              [ngModel]="reviewComment()"
+              (ngModelChange)="reviewComment.set($event)"
+              placeholder="Describe what you enjoyed most, techniques learned, material quality, and trainer feedback..."
+              class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none leading-relaxed"
+            ></textarea>
+          </div>
+
+          @if (reviewSuccessMessage()) {
+            <div class="p-2.5 bg-green-50 text-green-800 rounded-lg text-xs font-semibold border border-green-200">
+              {{ reviewSuccessMessage() }}
+            </div>
+          }
+
+          <div class="flex justify-end">
+            <button 
+              (click)="submitCourseReview()"
+              [disabled]="isSubmittingReview() || !reviewComment().trim()"
+              class="bg-primary text-on-primary font-semibold px-6 py-2.5 rounded-lg hover:opacity-90 disabled:opacity-50 cursor-pointer text-xs flex items-center gap-1.5 shadow-xs">
+              @if (isSubmittingReview()) {
+                <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                <span>Submitting...</span>
+              } @else {
+                <span class="material-symbols-outlined text-sm">send</span>
+                <span>{{ myReview() ? 'Update My Review' : 'Submit Review' }}</span>
+              }
+            </button>
+          </div>
+        </div>
+
+        <!-- All Student Reviews for this Course -->
+        <div class="space-y-4">
+          <h3 class="font-bold text-sm text-on-surface flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-base">forum</span>
+            Student Reviews &amp; Testimonials ({{ allReviews().length }})
+          </h3>
+
+          @for (rev of allReviews(); track rev.id) {
+            <div class="p-4 bg-surface-container-low border border-outline-variant/30 rounded-xl space-y-2">
+              <div class="flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container font-bold flex items-center justify-center text-xs">
+                    {{ (rev.student?.name || rev.studentName || 'Student')[0].toUpperCase() }}
+                  </div>
+                  <div>
+                    <span class="font-bold text-xs text-on-surface block">{{ rev.student?.name || rev.studentName || 'Artisan Student' }}</span>
+                    <span class="text-[10px] text-on-surface-variant">{{ rev.createdAt ? (rev.createdAt | date:'mediumDate') : 'Recent Review' }}</span>
+                  </div>
+                </div>
+                <div class="text-amber-500 text-sm font-bold">
+                  {{ '★'.repeat(rev.rating || 5) }}{{ '☆'.repeat(5 - (rev.rating || 5)) }}
+                </div>
+              </div>
+
+              @if (rev.title) {
+                <h4 class="font-bold text-xs text-on-surface">{{ rev.title }}</h4>
+              }
+              <p class="text-xs text-on-surface-variant leading-relaxed">{{ rev.comment }}</p>
+            </div>
+          }
+
+          @if (allReviews().length === 0) {
+            <div class="text-center py-8 text-on-surface-variant bg-surface-container-low rounded-xl">
+              <p>No community reviews posted for this course yet. Be the first to share your experience!</p>
+            </div>
+          }
+        </div>
+
+      </div>
+    }
+
   </div>
 </main>
-

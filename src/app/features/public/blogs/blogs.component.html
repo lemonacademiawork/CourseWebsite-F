@@ -4,7 +4,7 @@
     <!-- Filters and Search Bar -->
     <div class="flex flex-col md:flex-row gap-6 justify-between items-center border-b border-outline/15 pb-6">
       <div class="flex flex-wrap gap-2 justify-center md:justify-start w-full md:w-auto">
-        @for (cat of categories; track cat) {
+        @for (cat of categories(); track cat) {
           <button
             (click)="selectCategory(cat)"
             class="px-4 py-2 font-label-md text-xs rounded-full transition-all duration-200"
@@ -138,9 +138,9 @@
     <!-- Newsletter Box -->
     <section class="bg-surface-container rounded-2xl p-8 md:p-12 flex flex-col lg:flex-row items-center justify-between gap-8 organic-shadow">
       <div class="space-y-3 max-w-lg text-center lg:text-left">
-        <h3 class="font-display-lg text-2xl text-on-surface font-bold">Join the Atelier Circle</h3>
+        <h3 class="font-display-lg text-2xl text-on-surface font-bold">Subscribe to Artisan Newsletter</h3>
         <p class="font-body-md text-sm text-on-surface-variant">
-          Receive a monthly dispatch containing craft blueprints, historical deep dives, and early alerts for enrollment openings.
+          Receive regular craft blueprints, tutorials, and workshop updates directly in your inbox.
         </p>
       </div>
       <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
@@ -149,7 +149,7 @@
           placeholder="Enter your email"
           class="bg-surface-container-lowest text-on-surface font-body-md text-sm px-6 py-4 rounded-lg border border-outline/25 focus:outline-none focus:border-primary w-full sm:w-80"
         />
-        <button class="bg-primary text-on-primary font-label-md text-sm px-8 py-4 rounded-lg hover:opacity-90 transition-opacity whitespace-nowrap font-semibold">
+        <button class="bg-primary text-on-primary font-label-md text-sm px-8 py-4 rounded-lg hover:opacity-90 transition-opacity whitespace-nowrap font-semibold cursor-pointer">
           Subscribe
         </button>
       </div>

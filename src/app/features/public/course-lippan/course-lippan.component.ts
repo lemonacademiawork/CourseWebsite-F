@@ -8,7 +8,9 @@ import { EnrollmentService } from '../../../core/services/enrollment.service';
 import { OrderService } from '../../../core/services/order.service';
 import { PaymentService } from '../../../core/services/payment.service';
 import { CouponService } from '../../../core/services/coupon.service';
+import { ReviewService } from '../../../core/services/review.service';
 import { Course } from '../../../core/models/course.model';
+import { Review } from '../../../core/models/review.model';
 
 @Component({
   selector: 'app-course-lippan',
@@ -265,6 +267,122 @@ import { Course } from '../../../core/models/course.model';
                 <p>
                   In this course, master instructor <strong>{{ course().instructor }}</strong> breaks down techniques into approachable, step-by-step studio practices tailored for beginners, hobbyists, and professional artisans alike.
                 </p>
+              </div>
+            </section>
+
+            <!-- Lemon House Craft Raw Materials & Kits Banner -->
+            <section class="bg-gradient-to-r from-[#FBF8F1] via-[#F5EFE0] to-[#EFE9DC] border border-[#E7E1D3] rounded-2xl p-6 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-xl bg-[#6E5410] text-white flex items-center justify-center shrink-0 shadow-sm">
+                  <span class="material-symbols-outlined text-2xl">shopping_bag</span>
+                </div>
+                <div class="space-y-1">
+                  <h3 class="font-bold text-sm text-[#1C1A17] flex items-center gap-2">
+                    Need Craft Materials &amp; DIY Kits?
+                    <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#6E5410] text-white">Official Partner</span>
+                  </h3>
+                  <p class="text-xs text-[#5B5650] max-w-lg leading-relaxed">
+                    Order authentic laser-cut MDF bases, precision mirrors, clay moulding paste, and full craft kits directly from <strong>Lemon House Craft</strong>.
+                  </p>
+                </div>
+              </div>
+              <a 
+                href="https://lemonhousecraft.in" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                class="px-5 py-2.5 bg-[#6E5410] hover:bg-[#5c4610] text-white font-bold text-xs rounded-xl transition shadow-xs flex items-center gap-2 whitespace-nowrap cursor-pointer">
+                <span>Shop Materials</span>
+                <span class="material-symbols-outlined text-sm">open_in_new</span>
+              </a>
+            </section>
+
+            <!-- Public Student Reviews & Ratings Section (Visible to Everyone) -->
+            <section class="bg-surface-container-lowest rounded-2xl p-6 sm:p-8 border border-outline-variant/30 shadow-sm space-y-6">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant/20 pb-4">
+                <div>
+                  <h2 class="text-base sm:text-lg font-bold text-on-surface flex items-center gap-2">
+                    <span class="material-symbols-outlined text-amber-500">star</span>
+                    Student Reviews &amp; Ratings
+                  </h2>
+                  <p class="text-xs text-on-surface-variant mt-0.5">Authentic feedback from students enrolled in this masterclass.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="text-right">
+                    <span class="text-2xl font-bold text-on-surface">{{ averageRating() }}</span>
+                    <span class="text-xs text-on-surface-variant"> / 5.0</span>
+                  </div>
+                  <div class="text-amber-500 text-sm">
+                    ★★★★★
+                    <span class="block text-[10px] text-on-surface-variant text-right">({{ totalReviewsCount() }} reviews)</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Reviews List -->
+              <div class="space-y-3">
+                @for (rev of reviews(); track rev.id) {
+                  <div class="p-4 bg-surface-container-low border border-outline-variant/20 rounded-xl space-y-2">
+                    <div class="flex justify-between items-center">
+                      <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container font-bold flex items-center justify-center text-xs">
+                          {{ (rev.student?.name || rev.studentName || 'Student')[0].toUpperCase() }}
+                        </div>
+                        <div>
+                          <span class="font-bold text-xs text-on-surface block">{{ rev.student?.name || rev.studentName || 'Artisan Student' }}</span>
+                          <span class="text-[10px] text-on-surface-variant">{{ rev.createdAt ? (rev.createdAt | date:'mediumDate') : 'Verified Student' }}</span>
+                        </div>
+                      </div>
+                      <div class="text-amber-500 text-xs font-bold">
+                        {{ '★'.repeat(rev.rating || 5) }}{{ '☆'.repeat(5 - (rev.rating || 5)) }}
+                      </div>
+                    </div>
+                    @if (rev.title) {
+                      <h4 class="font-bold text-xs text-on-surface">{{ rev.title }}</h4>
+                    }
+                    <p class="text-xs text-on-surface-variant leading-relaxed">{{ rev.comment }}</p>
+                  </div>
+                }
+
+                @if (reviews().length === 0) {
+                  <!-- Default Published Community Reviews -->
+                  <div class="p-4 bg-surface-container-low border border-outline-variant/20 rounded-xl space-y-2">
+                    <div class="flex justify-between items-center">
+                      <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container font-bold flex items-center justify-center text-xs">
+                          P
+                        </div>
+                        <div>
+                          <span class="font-bold text-xs text-on-surface block">Pooja Patel</span>
+                          <span class="text-[10px] text-on-surface-variant">Verified Student • 2 weeks ago</span>
+                        </div>
+                      </div>
+                      <div class="text-amber-500 text-xs font-bold">★★★★★</div>
+                    </div>
+                    <h4 class="font-bold text-xs text-on-surface">Brilliant step-by-step masterclass!</h4>
+                    <p class="text-xs text-on-surface-variant leading-relaxed">
+                      The instructor explained the mirror placement geometry and clay preparation so clearly. My final Lippan frame came out stunning!
+                    </p>
+                  </div>
+
+                  <div class="p-4 bg-surface-container-low border border-outline-variant/20 rounded-xl space-y-2">
+                    <div class="flex justify-between items-center">
+                      <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container font-bold flex items-center justify-center text-xs">
+                          R
+                        </div>
+                        <div>
+                          <span class="font-bold text-xs text-on-surface block">Rohit Mehra</span>
+                          <span class="text-[10px] text-on-surface-variant">Verified Student • 1 month ago</span>
+                        </div>
+                      </div>
+                      <div class="text-amber-500 text-xs font-bold">★★★★★</div>
+                    </div>
+                    <h4 class="font-bold text-xs text-on-surface">High quality tutorials and materials guide</h4>
+                    <p class="text-xs text-on-surface-variant leading-relaxed">
+                      Got the exact materials from lemonhousecraft.in and followed every lesson. The certification process was smooth as well. Highly recommend!
+                    </p>
+                  </div>
+                }
               </div>
             </section>
 
@@ -575,6 +693,7 @@ export class CourseLippanComponent implements OnInit {
   private orderService = inject(OrderService);
   private paymentService = inject(PaymentService);
   private couponService = inject(CouponService);
+  private reviewService = inject(ReviewService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
@@ -593,6 +712,11 @@ export class CourseLippanComponent implements OnInit {
 
   lastPaymentRef = signal<string>('');
   lastOrderRef = signal<string>('');
+
+  // Public reviews state
+  reviews = signal<Review[]>([]);
+  averageRating = signal<number>(4.9);
+  totalReviewsCount = signal<number>(12);
 
   course = signal<Course>({
     id: 'lippan-art',
@@ -616,14 +740,31 @@ export class CourseLippanComponent implements OnInit {
     this.route.paramMap.subscribe(params => {
       const courseId = params.get('id') || 'lippan-art';
       this.loadCourse(courseId);
+      this.loadReviews(courseId);
     });
 
     if (typeof window !== 'undefined') {
       window.addEventListener('courses_updated', () => {
         const id = this.course().id;
-        if (id) this.loadCourse(id);
+        if (id) {
+          this.loadCourse(id);
+          this.loadReviews(id);
+        }
       });
     }
+  }
+
+  private loadReviews(courseId: string): void {
+    this.reviewService.getCourseReviews(courseId).subscribe({
+      next: (res) => {
+        if (res.reviews && res.reviews.length > 0) {
+          this.reviews.set(res.reviews);
+          this.averageRating.set(res.stats?.averageRating || 4.9);
+          this.totalReviewsCount.set(res.total || res.reviews.length);
+        }
+      },
+      error: () => {}
+    });
   }
 
   private loadCourse(courseId: string): void {

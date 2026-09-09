@@ -5,6 +5,11 @@ export interface Review {
   studentId: string;
   studentName?: string;
   studentAvatar?: string;
+  student?: {
+    name?: string;
+    avatarUrl?: string;
+    email?: string;
+  };
   rating: number;
   title?: string;
   comment: string;

@@ -13,7 +13,7 @@ interface StudentItem {
   studentId: string;
   email: string;
   phone: string;
-  courseName: string;
+  courseName?: string | null;
   coursesList: string[];
   coursesCount: number;
   joinDate: string;
@@ -113,24 +113,23 @@ interface StudentItem {
                   <td class="py-3.5 px-4 font-semibold text-on-surface">{{ st.name }}</td>
                   <td class="py-3.5 px-4 text-on-surface-variant font-mono text-[11px]">{{ st.studentId }}</td>
                   <td class="py-3.5 px-4 text-on-surface-variant">{{ st.email }}</td>
-                  <td class="py-3.5 px-4">
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20 shadow-2xs">
-                      <span class="material-symbols-outlined text-[13px]">school</span>
-                      <span>{{ st.courseName }}</span>
+                  <td class="py-3 px-4">
+                  @if (st.courseName) {
+                    <span class="font-medium text-on-surface bg-surface-container-high px-2 py-0.5 rounded text-[11px] border border-outline-variant/30">
+                      {{ st.courseName }}
                     </span>
-                  </td>
-                  <td class="py-3.5 px-4 font-semibold text-center sm:text-left">{{ st.coursesCount }}</td>
-                  <td class="py-3.5 px-4 text-on-surface-variant whitespace-nowrap">{{ st.joinDate }}</td>
-                  <td class="py-3.5 px-4">
-                    <span 
-                      class="px-2.5 py-1 rounded-full text-[10px] font-bold inline-block"
-                      [class.bg-green-100]="st.status === 'Paid'"
-                      [class.text-green-800]="st.status === 'Paid'"
-                      [class.bg-yellow-100]="st.status === 'Pending'"
-                      [class.text-yellow-800]="st.status === 'Pending'">
-                      {{ st.status }}
-                    </span>
-                  </td>
+                  } @else {
+                    <span class="text-on-surface-variant/60 italic font-mono">-</span>
+                  }
+                </td>
+                <td class="py-3 px-4 text-center font-bold text-primary">{{ st.coursesCount }}</td>
+                <td class="py-3 px-4 text-on-surface-variant">{{ st.joinDate }}</td>
+                <td class="py-3 px-4">
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold"
+                        [class]="st.status === 'Paid' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'">
+                    {{ st.status }}
+                  </span>
+                </td>
                 </tr>
               }
 
@@ -160,7 +159,7 @@ export class AdminStudentsComponent implements OnInit {
   name = signal<string>('');
   email = signal<string>('');
   phone = signal<string>('');
-  selectedCourse = signal<string>('Lippan Mirror Art');
+  selectedCourse = signal<string>('');
   status = signal<'Paid' | 'Pending'>('Paid');
 
   ngOnInit(): void {
@@ -184,7 +183,8 @@ export class AdminStudentsComponent implements OnInit {
         const studentCoursesMap = new Map<string, string[]>();
 
         enrollments.forEach(e => {
-          const title = e.course?.title || courseTitleMap.get(e.courseId) || 'Lippan Mirror Art';
+          const title = e.course?.title || courseTitleMap.get(e.courseId) || '';
+          if (!title) return;
           
           if (e.studentId) {
             const list = studentCoursesMap.get(e.studentId) || [];
@@ -205,9 +205,9 @@ export class AdminStudentsComponent implements OnInit {
               || (u.enrolledCourses ? (Array.isArray(u.enrolledCourses) ? u.enrolledCourses.map((c: any) => c.title || c) : [u.enrolledCourses]) : null)
               || (u.courseName ? [u.courseName] : null)
               || (u.courses ? (Array.isArray(u.courses) ? u.courses.map((c: any) => c.title || c) : [u.courses]) : null)
-              || ['Lippan Mirror Art'];
+              || [];
 
-            const courseName = registered.join(', ') || 'Lippan Mirror Art';
+            const courseName = registered.length > 0 ? registered.join(', ') : null;
 
             return {
               id: u.id || i + 1,
@@ -217,7 +217,7 @@ export class AdminStudentsComponent implements OnInit {
               phone: u.phone || 'N/A',
               courseName: courseName,
               coursesList: registered,
-              coursesCount: registered.length || u.coursesCount || u.enrollmentsCount || 1,
+              coursesCount: registered.length || u.coursesCount || u.enrollmentsCount || 0,
               joinDate: u.createdAt
                 ? new Date(u.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
                 : 'Sep 08, 2026',
@@ -240,7 +240,7 @@ export class AdminStudentsComponent implements OnInit {
   handleAddStudent(): void {
     if (!this.name().trim()) return;
 
-    const chosenCourse = this.selectedCourse().trim() || 'Lippan Mirror Art';
+    const chosenCourse = this.selectedCourse().trim() || null;
 
     const newStudent: StudentItem = {
       id: Date.now(),
@@ -249,8 +249,8 @@ export class AdminStudentsComponent implements OnInit {
       email: this.email().trim() || 'student@example.com',
       phone: this.phone().trim() || 'N/A',
       courseName: chosenCourse,
-      coursesList: [chosenCourse],
-      coursesCount: 1,
+      coursesList: chosenCourse ? [chosenCourse] : [],
+      coursesCount: chosenCourse ? 1 : 0,
       joinDate: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
       status: this.status()
     };
@@ -259,6 +259,11 @@ export class AdminStudentsComponent implements OnInit {
     this.name.set('');
     this.email.set('');
     this.phone.set('');
+    this.selectedCourse.set('');
     this.isAdding.set(false);
+  }
+
+  deleteStudent(id: any): void {
+    this.students.update(list => list.filter(s => s.id !== id));
   }
 }

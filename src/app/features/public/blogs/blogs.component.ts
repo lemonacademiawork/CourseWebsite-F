@@ -1,8 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BlogService } from '../../../core/services/blog.service';
+import { BlogCategoryService } from '../../../core/services/blog-category.service';
 import { BlogPost } from '../../../core/models/common.model';
 
 @Component({
@@ -12,18 +13,26 @@ import { BlogPost } from '../../../core/models/common.model';
   templateUrl: './blogs.component.html'
 })
 export class BlogsComponent implements OnInit {
-  categories = ["All Stories", "Crafting Tips", "Materials Guide", "Artisan Spotlight", "Community"];
+  private blogService = inject(BlogService);
+  private blogCategoryService = inject(BlogCategoryService);
+
+  categories = signal<string[]>(["All Stories", "Crafting Tips", "Materials Guide", "Artisan Spotlight", "Community"]);
   posts = signal<BlogPost[]>([]);
   selectedCategory = signal<string>("All Stories");
   searchQuery = signal<string>("");
   isLoading = signal<boolean>(true);
 
-  constructor(private blogService: BlogService) {}
-
   ngOnInit(): void {
     this.blogService.getBlogs().subscribe(blogs => {
       this.posts.set(blogs);
       this.isLoading.set(false);
+    });
+
+    this.blogCategoryService.getCategories().subscribe(cats => {
+      if (cats && cats.length > 0) {
+        const catNames = ["All Stories", ...cats.map(c => c.name)];
+        this.categories.set([...new Set(catNames)]);
+      }
     });
   }
 
