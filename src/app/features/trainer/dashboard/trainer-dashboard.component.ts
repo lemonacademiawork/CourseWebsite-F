@@ -1,24 +1,32 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { TrainerService } from '../../../core/services/trainer.service';
+import { CourseService } from '../../../core/services/course.service';
 import { TrainerDashboardMetrics } from '../../../core/models/trainer.model';
+import { Course } from '../../../core/models/course.model';
 
 @Component({
   selector: 'app-trainer-dashboard',
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <div class="relative min-h-screen pb-4 text-xs">
+    <div class="relative min-h-screen pb-6 text-xs">
       <div class="absolute inset-0 pointer-events-none opacity-20" style="background-image: radial-gradient(circle at 100% 0%, #ffe17a 0%, transparent 40%), radial-gradient(circle at 0% 100%, #fe9d7a 0%, transparent 40%)"></div>
       
-      <div class="max-w-container-max mx-auto px-margin-mobile md:px-6 py-4 relative z-10 text-xs">
-        <header class="mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-surface-variant/30 pb-3">
+      <div class="max-w-container-max mx-auto px-margin-mobile md:px-6 py-4 relative z-10 text-xs space-y-6">
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-surface-variant/30 pb-3">
           <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-bold text-[10px] uppercase tracking-wider">
+                Instructor Dashboard
+              </span>
+            </div>
             <h2 class="text-xl font-bold text-on-surface">
               Welcome back, {{ authService.userName() }} 👋
             </h2>
+            <p class="text-[11px] text-on-surface-variant mt-0.5">Track your workshops, live sessions, and student engagements.</p>
           </div>
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-full bg-secondary-container text-on-secondary-container border-2 border-surface-lowest flex items-center justify-center font-bold text-sm shadow-sm">
@@ -28,7 +36,7 @@ import { TrainerDashboardMetrics } from '../../../core/models/trainer.model';
         </header>
 
         <!-- Bento Grid Layout -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 auto-rows-min mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 auto-rows-min">
           <div class="md:col-span-4 bg-surface-container-lowest border border-outline-variant/40 rounded-xl p-3.5 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col justify-between">
             <div class="flex justify-between items-start">
               <span class="font-semibold text-[10px] text-on-surface-variant uppercase tracking-wider">Total Students</span>
@@ -38,7 +46,7 @@ import { TrainerDashboardMetrics } from '../../../core/models/trainer.model';
             </div>
             <div class="mt-2">
               <div class="text-xl font-bold text-on-surface leading-none">
-                {{ metrics()?.totalStudents ?? 0 }}
+                {{ totalStudents() }}
               </div>
               <div class="flex items-center gap-1 text-[10px] text-on-surface-variant mt-1">
                 <span>Enrolled students across your courses</span>
@@ -55,7 +63,7 @@ import { TrainerDashboardMetrics } from '../../../core/models/trainer.model';
             </div>
             <div class="mt-2">
               <div class="text-xl font-bold text-on-surface leading-none">
-                {{ metrics()?.activeCourses ?? 0 }}
+                {{ activeCoursesCount() }}
               </div>
               <div class="flex items-center gap-1 text-[10px] text-on-surface-variant mt-1">
                 <span>Published active workshops</span>
@@ -91,7 +99,7 @@ import { TrainerDashboardMetrics } from '../../../core/models/trainer.model';
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
           <a routerLink="/trainer/courses" class="p-3 bg-surface-container-lowest rounded-xl border border-outline-variant/30 hover:bg-surface-container-low transition-colors flex items-center gap-2.5 shadow-sm">
             <span class="material-symbols-outlined text-primary text-xl">school</span>
-            <span class="font-semibold text-xs">My Courses</span>
+            <span class="font-semibold text-xs">My Courses ({{ assignedCourses().length }})</span>
           </a>
           <a routerLink="/trainer/students" class="p-3 bg-surface-container-lowest rounded-xl border border-outline-variant/30 hover:bg-surface-container-low transition-colors flex items-center gap-2.5 shadow-sm">
             <span class="material-symbols-outlined text-primary text-xl">group</span>
@@ -106,20 +114,126 @@ import { TrainerDashboardMetrics } from '../../../core/models/trainer.model';
             <span class="font-semibold text-xs">Creations Gallery</span>
           </a>
         </div>
+
+        <!-- Assigned Courses Section on Dashboard -->
+        <div class="space-y-3">
+          <div class="flex justify-between items-center">
+            <h3 class="font-bold text-sm text-on-surface flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-primary text-base">school</span>
+              <span>Your Assigned Workshops &amp; Masterclasses</span>
+            </h3>
+            <a routerLink="/trainer/courses" class="text-primary font-bold text-xs hover:underline flex items-center gap-0.5">
+              <span>View All ({{ assignedCourses().length }})</span>
+              <span class="material-symbols-outlined text-xs">arrow_forward</span>
+            </a>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            @for (c of assignedCourses().slice(0, 3); track c.id) {
+              <div class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl overflow-hidden shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between">
+                <div class="h-32 bg-surface-container-low relative">
+                  <img [src]="c.imageUrl || c.thumbnailUrl" [alt]="c.title" class="w-full h-full object-cover" />
+                  <span class="absolute top-2.5 left-2.5 bg-black/60 text-white px-2 py-0.5 rounded-full text-[9px] font-bold uppercase">
+                    {{ c.category }}
+                  </span>
+                </div>
+                <div class="p-3.5 space-y-2">
+                  <h4 class="font-bold text-xs text-on-surface truncate">{{ c.title }}</h4>
+                  <p class="text-[11px] text-on-surface-variant line-clamp-2">{{ c.description }}</p>
+                  <div class="flex items-center justify-between text-[11px] pt-2 border-t border-outline-variant/20">
+                    <span class="text-on-surface-variant">{{ c.studentsCount || 0 }} Students</span>
+                    <span class="font-bold text-primary">Rs. {{ c.price }}</span>
+                  </div>
+                </div>
+                <div class="p-2.5 bg-surface-container-low/70 border-t border-outline-variant/20 flex gap-2">
+                  @if (c.liveClassLink) {
+                    <a [href]="c.liveClassLink" target="_blank" class="flex-1 text-center py-1.5 bg-blue-600 text-white font-bold rounded-lg text-[11px] flex items-center justify-center gap-1">
+                      <span class="material-symbols-outlined text-xs">videocam</span>
+                      <span>Zoom</span>
+                    </a>
+                  }
+                  <a routerLink="/trainer/courses" class="flex-1 text-center py-1.5 bg-surface-container-highest text-on-surface font-semibold rounded-lg text-[11px]">
+                    Curriculum
+                  </a>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
       </div>
     </div>
   `
 })
-export class TrainerDashboardComponent {
+export class TrainerDashboardComponent implements OnInit, OnDestroy {
   authService = inject(AuthService);
   private trainerService = inject(TrainerService);
+  private courseService = inject(CourseService);
 
   metrics = signal<TrainerDashboardMetrics | null>(null);
+  assignedCourses = signal<Course[]>([]);
+  totalStudents = signal<number>(0);
+  activeCoursesCount = signal<number>(0);
 
-  constructor() {
+  private refreshHandler = () => this.loadData();
+
+  ngOnInit(): void {
+    this.loadData();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('courses_updated', this.refreshHandler);
+      window.addEventListener('storage', this.refreshHandler);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('courses_updated', this.refreshHandler);
+      window.removeEventListener('storage', this.refreshHandler);
+    }
+  }
+
+  loadData(): void {
     this.trainerService.getTrainerDashboard().subscribe({
-      next: (data) => this.metrics.set(data),
+      next: (data) => {
+        if (data) {
+          this.metrics.set(data);
+          this.totalStudents.set(data.totalStudents || 0);
+          this.activeCoursesCount.set(data.activeCourses || 0);
+        }
+      },
       error: () => {}
+    });
+
+    this.courseService.getCourses().subscribe({
+      next: (all) => {
+        const currentName = (this.authService.userName() || (typeof window !== 'undefined' ? localStorage.getItem('user_name') : '') || '').trim().toLowerCase();
+        const currentEmail = (this.authService.userEmail() || (typeof window !== 'undefined' ? localStorage.getItem('user_email') : '') || '').trim().toLowerCase();
+
+        const matched = all.filter(c => {
+          const trAny = c.trainer as any;
+          const inst = (c.instructor || '').toLowerCase();
+          const trObjName = (typeof trAny === 'string' ? trAny : trAny?.name || trAny?.user?.name || '').toLowerCase();
+          const trEmail = (trAny?.email || trAny?.user?.email || '').toLowerCase();
+
+          if (!currentName || currentName === 'user') return true;
+
+          return (
+            inst.includes(currentName) || 
+            currentName.includes(inst) ||
+            trObjName.includes(currentName) ||
+            currentName.includes(trObjName) ||
+            (currentEmail && trEmail && trEmail === currentEmail)
+          );
+        });
+
+        const finalCourses = matched.length > 0 ? matched : all;
+        this.assignedCourses.set(finalCourses);
+        if (!this.metrics() || !this.metrics()?.activeCourses) {
+          this.activeCoursesCount.set(finalCourses.length);
+          this.totalStudents.set(finalCourses.reduce((acc, c) => acc + (c.studentsCount || 0), 0));
+        }
+      }
     });
   }
 }
+
