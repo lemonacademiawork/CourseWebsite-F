@@ -7,9 +7,13 @@ import { SessionService } from '../../../core/services/session.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { TrainerService } from '../../../core/services/trainer.service';
 import { UploadService } from '../../../core/services/upload.service';
+import { ModuleService } from '../../../core/services/module.service';
+import { LessonService } from '../../../core/services/lesson.service';
 import { Course, UpdateCoursePayload } from '../../../core/models/course.model';
 import { CourseSession, SessionStatus } from '../../../core/models/session.model';
 import { Category } from '../../../core/models/category.model';
+import { CourseModule } from '../../../core/models/module.model';
+import { Lesson, CreateLessonPayload, UpdateLessonPayload } from '../../../core/models/lesson.model';
 
 export interface AdminCourseItem {
   id: string;
@@ -43,6 +47,8 @@ export class AdminCoursesComponent implements OnInit {
   private categoryService = inject(CategoryService);
   private trainerService = inject(TrainerService);
   private uploadService = inject(UploadService);
+  private moduleService = inject(ModuleService);
+  private lessonService = inject(LessonService);
 
   courses = signal<AdminCourseItem[]>([]);
   categories = signal<Category[]>([]);
@@ -109,6 +115,36 @@ export class AdminCoursesComponent implements OnInit {
   courseToDelete = signal<AdminCourseItem | null>(null);
   isDeleting = signal<boolean>(false);
   errorMessage = signal<string>('');
+
+  // --- LESSONS & MODULES MANAGER STATES ---
+  selectedCourseForLessons = signal<AdminCourseItem | Course | null>(null);
+  courseModules = signal<CourseModule[]>([]);
+  selectedModuleId = signal<string>('');
+  moduleLessons = signal<Lesson[]>([]);
+  isLoadingLessons = signal<boolean>(false);
+  isLessonFormModalOpen = signal<boolean>(false);
+  isEditingLesson = signal<boolean>(false);
+  editingLessonId = signal<string>('');
+  isSavingLesson = signal<boolean>(false);
+  isUploadingLessonThumbnail = signal<boolean>(false);
+
+  // Lesson Form fields
+  lessonTitle = signal<string>('');
+  lessonDescription = signal<string>('');
+  lessonVideoProvider = signal<string>('CLOUDINARY');
+  lessonVideoId = signal<string>('');
+  lessonVideoUrl = signal<string>('');
+  lessonThumbnailUrl = signal<string>('');
+  lessonDurationMinutes = signal<number>(10);
+  lessonOrderIndex = signal<number>(1);
+  lessonIsPreview = signal<boolean>(false);
+  lessonIsPublished = signal<boolean>(true);
+
+  // Module creation fields
+  isCreatingModule = signal<boolean>(false);
+  newModuleTitle = signal<string>('');
+  newModuleDesc = signal<string>('');
+  isSubmittingModule = signal<boolean>(false);
 
   ngOnInit(): void {
     this.fetchCourses();
@@ -588,5 +624,288 @@ export class AdminCoursesComponent implements OnInit {
 
   getStatus(session: CourseSession): SessionStatus {
     return this.sessionService.getSessionStatus(session);
+  }
+
+  // ==========================================
+  // --- LESSON & MODULE MANAGEMENT METHODS ---
+  // ==========================================
+
+  openLessonsManager(course: AdminCourseItem | Course, event?: MouseEvent): void {
+    if (event) event.stopPropagation();
+    this.selectedCourseForLessons.set(course);
+    this.isCreatingModule.set(false);
+    this.isLessonFormModalOpen.set(false);
+    this.loadModulesForCourse(course.id);
+  }
+
+  closeLessonsManager(): void {
+    this.selectedCourseForLessons.set(null);
+    this.selectedModuleId.set('');
+    this.courseModules.set([]);
+    this.moduleLessons.set([]);
+    this.isLessonFormModalOpen.set(false);
+    this.isCreatingModule.set(false);
+  }
+
+  loadModulesForCourse(courseId: string, preferredModuleId?: string): void {
+    this.isLoadingLessons.set(true);
+    this.moduleService.getModules(courseId).subscribe({
+      next: (modules) => {
+        this.courseModules.set(modules);
+        if (modules && modules.length > 0) {
+          const targetModId = preferredModuleId && modules.some(m => m.id === preferredModuleId)
+            ? preferredModuleId
+            : modules[0].id;
+          this.selectedModuleId.set(targetModId);
+          this.loadLessonsForModule(targetModId);
+        } else {
+          this.selectedModuleId.set('');
+          this.moduleLessons.set([]);
+          this.isLoadingLessons.set(false);
+        }
+      },
+      error: () => {
+        this.courseModules.set([]);
+        this.moduleLessons.set([]);
+        this.isLoadingLessons.set(false);
+      }
+    });
+  }
+
+  selectModule(moduleId: string): void {
+    this.selectedModuleId.set(moduleId);
+    this.loadLessonsForModule(moduleId);
+  }
+
+  loadLessonsForModule(moduleId: string): void {
+    if (!moduleId) {
+      this.moduleLessons.set([]);
+      this.isLoadingLessons.set(false);
+      return;
+    }
+    this.isLoadingLessons.set(true);
+    this.lessonService.getLessons(moduleId).subscribe({
+      next: (lessons) => {
+        this.moduleLessons.set(lessons || []);
+        this.isLoadingLessons.set(false);
+      },
+      error: () => {
+        this.moduleLessons.set([]);
+        this.isLoadingLessons.set(false);
+      }
+    });
+  }
+
+  openAddLessonModal(): void {
+    this.isEditingLesson.set(false);
+    this.editingLessonId.set('');
+    this.lessonTitle.set('');
+    this.lessonDescription.set('');
+    this.lessonVideoProvider.set('CLOUDINARY');
+    this.lessonVideoId.set(`v_${Date.now()}`);
+    this.lessonVideoUrl.set('');
+    this.lessonThumbnailUrl.set('');
+    this.lessonDurationMinutes.set(10);
+    this.lessonOrderIndex.set(this.moduleLessons().length + 1);
+    this.lessonIsPreview.set(false);
+    this.lessonIsPublished.set(true);
+    this.isLessonFormModalOpen.set(true);
+  }
+
+  openEditLessonModal(lesson: Lesson): void {
+    this.isEditingLesson.set(true);
+    this.editingLessonId.set(lesson.id);
+    this.lessonTitle.set(lesson.title || '');
+    this.lessonDescription.set(lesson.description || '');
+    this.lessonVideoProvider.set(lesson.videoProvider || 'CLOUDINARY');
+    this.lessonVideoId.set(lesson.videoId || '');
+    this.lessonVideoUrl.set(lesson.videoUrl || '');
+    this.lessonThumbnailUrl.set(lesson.thumbnailUrl || '');
+    this.lessonDurationMinutes.set(Math.max(1, Math.round((lesson.durationSeconds || 600) / 60)));
+    this.lessonOrderIndex.set(lesson.orderIndex || 1);
+    this.lessonIsPreview.set(!!lesson.isPreview);
+    this.lessonIsPublished.set(lesson.isPublished !== false);
+    this.isLessonFormModalOpen.set(true);
+  }
+
+  closeLessonFormModal(): void {
+    this.isLessonFormModalOpen.set(false);
+    this.editingLessonId.set('');
+  }
+
+  handleSaveLesson(): void {
+    const modId = this.selectedModuleId();
+    if (!modId) {
+      alert('Please select or create a module first.');
+      return;
+    }
+    if (!this.lessonTitle().trim()) {
+      alert('Please provide a lesson title.');
+      return;
+    }
+
+    const durationSec = Math.max(1, Math.round(Number(this.lessonDurationMinutes()) * 60));
+    const payload: CreateLessonPayload = {
+      title: this.lessonTitle().trim(),
+      description: this.lessonDescription().trim(),
+      videoProvider: this.lessonVideoProvider().trim() || 'CLOUDINARY',
+      videoId: this.lessonVideoId().trim() || `v_${Date.now()}`,
+      videoUrl: this.lessonVideoUrl().trim(),
+      thumbnailUrl: this.lessonThumbnailUrl().trim(),
+      durationSeconds: durationSec,
+      fileSizeBytes: 52428800,
+      orderIndex: Number(this.lessonOrderIndex()) || 1,
+      isPreview: this.lessonIsPreview(),
+      isPublished: this.lessonIsPublished()
+    };
+
+    this.isSavingLesson.set(true);
+
+    if (this.isEditingLesson() && this.editingLessonId()) {
+      this.lessonService.updateLesson(modId, this.editingLessonId(), payload).subscribe({
+        next: () => {
+          this.isSavingLesson.set(false);
+          this.isLessonFormModalOpen.set(false);
+          this.saveSuccess.set(`Lesson "${payload.title}" updated successfully!`);
+          this.loadLessonsForModule(modId);
+          setTimeout(() => this.saveSuccess.set(''), 3500);
+        },
+        error: () => {
+          this.isSavingLesson.set(false);
+          this.isLessonFormModalOpen.set(false);
+          this.loadLessonsForModule(modId);
+        }
+      });
+    } else {
+      this.lessonService.createLesson(modId, payload).subscribe({
+        next: () => {
+          this.isSavingLesson.set(false);
+          this.isLessonFormModalOpen.set(false);
+          this.saveSuccess.set(`Lesson "${payload.title}" added to module successfully!`);
+          this.loadLessonsForModule(modId);
+          setTimeout(() => this.saveSuccess.set(''), 3500);
+        },
+        error: () => {
+          this.isSavingLesson.set(false);
+          this.isLessonFormModalOpen.set(false);
+          this.loadLessonsForModule(modId);
+        }
+      });
+    }
+  }
+
+  toggleLessonPublish(lesson: Lesson): void {
+    const modId = this.selectedModuleId();
+    if (!modId || !lesson.id) return;
+
+    this.lessonService.togglePublishLesson(modId, lesson.id).subscribe({
+      next: () => {
+        lesson.isPublished = !lesson.isPublished;
+        this.saveSuccess.set(`Lesson "${lesson.title}" publish status toggled.`);
+        setTimeout(() => this.saveSuccess.set(''), 2500);
+      },
+      error: () => {
+        lesson.isPublished = !lesson.isPublished;
+      }
+    });
+  }
+
+  handleDeleteLesson(lesson: Lesson): void {
+    const modId = this.selectedModuleId();
+    if (!modId || !lesson.id) return;
+
+    if (confirm(`Are you sure you want to delete lesson "${lesson.title}"?`)) {
+      this.lessonService.deleteLesson(modId, lesson.id).subscribe({
+        next: () => {
+          this.saveSuccess.set(`Lesson "${lesson.title}" deleted.`);
+          this.loadLessonsForModule(modId);
+          setTimeout(() => this.saveSuccess.set(''), 3000);
+        },
+        error: () => {
+          this.loadLessonsForModule(modId);
+        }
+      });
+    }
+  }
+
+  handleCreateModule(): void {
+    const course = this.selectedCourseForLessons();
+    if (!course || !this.newModuleTitle().trim()) return;
+
+    const payload = {
+      title: this.newModuleTitle().trim(),
+      description: this.newModuleDesc().trim(),
+      orderIndex: this.courseModules().length + 1,
+      isPublished: true
+    };
+
+    this.isSubmittingModule.set(true);
+    this.moduleService.createModule(course.id, payload).subscribe({
+      next: (created) => {
+        this.isSubmittingModule.set(false);
+        this.isCreatingModule.set(false);
+        this.newModuleTitle.set('');
+        this.newModuleDesc.set('');
+        this.saveSuccess.set(`Module "${payload.title}" created successfully!`);
+        this.loadModulesForCourse(course.id, created?.id || created?.data?.id);
+        setTimeout(() => this.saveSuccess.set(''), 3500);
+      },
+      error: () => {
+        this.isSubmittingModule.set(false);
+        this.isCreatingModule.set(false);
+        this.loadModulesForCourse(course.id);
+      }
+    });
+  }
+
+  handleDeleteModule(mod: CourseModule): void {
+    const course = this.selectedCourseForLessons();
+    if (!course || !mod.id) return;
+
+    if (confirm(`Are you sure you want to delete module "${mod.title}" and its lessons?`)) {
+      this.moduleService.deleteModule(course.id, mod.id).subscribe({
+        next: () => {
+          this.saveSuccess.set(`Module "${mod.title}" deleted.`);
+          this.loadModulesForCourse(course.id);
+          setTimeout(() => this.saveSuccess.set(''), 3000);
+        },
+        error: () => {
+          this.loadModulesForCourse(course.id);
+        }
+      });
+    }
+  }
+
+  onLessonThumbnailSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      this.isUploadingLessonThumbnail.set(true);
+      this.uploadService.uploadImage(file, 'lessons').subscribe({
+        next: (res: any) => {
+          this.isUploadingLessonThumbnail.set(false);
+          const url = res.url || res.secure_url || res.data?.url;
+          if (url) this.lessonThumbnailUrl.set(url);
+          input.value = '';
+        },
+        error: () => {
+          const reader = new FileReader();
+          reader.onload = (e: any) => {
+            this.isUploadingLessonThumbnail.set(false);
+            if (e.target?.result) this.lessonThumbnailUrl.set(e.target.result as string);
+            input.value = '';
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+  }
+
+  formatDuration(seconds?: number): string {
+    if (!seconds || seconds <= 0) return '0 min';
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    if (secs === 0) return `${mins} min`;
+    return `${mins}m ${secs}s`;
   }
 }

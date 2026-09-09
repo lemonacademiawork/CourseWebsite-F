@@ -18,10 +18,10 @@ export interface Lesson {
 
 export interface CreateLessonPayload {
   title: string;
-  videoId: string;
-  videoUrl: string;
   description?: string;
   videoProvider?: string;
+  videoId?: string;
+  videoUrl?: string;
   thumbnailUrl?: string;
   durationSeconds?: number;
   fileSizeBytes?: number;

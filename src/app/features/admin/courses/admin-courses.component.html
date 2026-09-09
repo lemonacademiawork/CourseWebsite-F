@@ -91,10 +91,19 @@
                 </span>
               </td>
               <td class="py-3 px-4 text-right space-x-1.5 whitespace-nowrap" (click)="$event.stopPropagation()">
+                <!-- Lessons Button -->
+                <button 
+                  (click)="openLessonsManager(course, $event)"
+                  class="bg-primary/10 text-primary hover:bg-primary/20 font-bold px-2.5 py-1 rounded transition-colors cursor-pointer text-xs inline-flex items-center gap-1"
+                  title="Manage Modules & Lessons">
+                  <span class="material-symbols-outlined text-xs">play_lesson</span>
+                  <span>Lessons</span>
+                </button>
+
                 <!-- Edit Course Button -->
                 <button 
                   (click)="openEditCourseModal(course, $event)"
-                  class="bg-primary/10 text-primary hover:bg-primary/20 font-bold px-2.5 py-1 rounded transition-colors cursor-pointer text-xs inline-flex items-center gap-1"
+                  class="bg-surface-container-high text-on-surface hover:bg-surface-dim font-bold px-2.5 py-1 rounded transition-colors cursor-pointer text-xs inline-flex items-center gap-1"
                   title="Edit Course Details & Links">
                   <span class="material-symbols-outlined text-xs">edit</span>
                   <span>Edit</span>
@@ -240,13 +249,20 @@
 
         <!-- Action Buttons -->
         <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-outline-variant/20">
-          <div class="flex gap-2">
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- Lessons Button in Details -->
+            <button 
+              (click)="openLessonsManager(selectedCourseDetails()!)"
+              class="px-3.5 py-2 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 flex items-center gap-1.5 cursor-pointer text-xs shadow-sm">
+              <span class="material-symbols-outlined text-sm">play_lesson</span>
+              Manage Lessons &amp; Curriculum
+            </button>
             <!-- Edit Button in Details -->
             <button 
               (click)="openEditCourseModal(selectedCourseDetails()!)"
-              class="px-3.5 py-2 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 flex items-center gap-1.5 cursor-pointer text-xs shadow-sm">
+              class="px-3 py-2 bg-surface-container-high text-on-surface font-semibold rounded-lg hover:bg-surface-dim flex items-center gap-1.5 cursor-pointer text-xs">
               <span class="material-symbols-outlined text-sm">edit</span>
-              Edit Course Details &amp; Links
+              Edit Details
             </button>
             <a 
               [routerLink]="['/courses', selectedCourseDetails()?.id]" 
@@ -949,6 +965,468 @@
             </div>
           }
         </div>
+      </div>
+    </div>
+  }
+
+  <!-- ============================================================== -->
+  <!-- MODAL: COURSE CURRICULUM & LESSONS MANAGER (/api/v1/modules)   -->
+  <!-- ============================================================== -->
+  @if (selectedCourseForLessons()) {
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fadeIn">
+      <div class="bg-surface-container-lowest rounded-2xl max-w-4xl w-full border border-outline-variant/30 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+        
+        <!-- Header -->
+        <div class="p-5 border-b border-outline-variant/20 flex justify-between items-start bg-surface-container-low/60 shrink-0">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="bg-primary/15 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                <span class="material-symbols-outlined text-xs">play_lesson</span>
+                Curriculum &amp; Lessons
+              </span>
+              <span class="text-on-surface-variant text-xs">
+                {{ selectedCourseForLessons()?.category }} • {{ selectedCourseForLessons()?.trainer }}
+              </span>
+            </div>
+            <h2 class="font-bold text-lg text-on-surface leading-snug">
+              {{ selectedCourseForLessons()?.title }}
+            </h2>
+            <p class="text-[11px] text-on-surface-variant">
+              Manage video modules and structured lessons (/api/v1/modules/&#123;moduleId&#125;/lessons).
+            </p>
+          </div>
+          <button (click)="closeLessonsManager()" class="text-on-surface-variant hover:text-on-surface p-1 cursor-pointer">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <!-- Body Content (Modules on Top / Lessons Below) -->
+        <div class="p-5 overflow-y-auto space-y-5 flex-grow">
+          
+          <!-- Modules Navigation Bar -->
+          <div class="space-y-3 bg-surface-container-low p-4 rounded-xl border border-outline-variant/30">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-base">folder_special</span>
+                <span class="font-bold text-xs text-on-surface">Course Modules ({{ courseModules().length }})</span>
+              </div>
+              <button 
+                (click)="isCreatingModule.set(!isCreatingModule())"
+                class="px-2.5 py-1 bg-primary/10 text-primary hover:bg-primary/20 font-bold rounded-lg text-xs flex items-center gap-1 cursor-pointer transition-colors">
+                <span class="material-symbols-outlined text-sm">{{ isCreatingModule() ? 'remove' : 'add' }}</span>
+                <span>{{ isCreatingModule() ? 'Cancel' : 'New Module' }}</span>
+              </button>
+            </div>
+
+            <!-- Create Module Inline Form -->
+            @if (isCreatingModule()) {
+              <div class="p-3 bg-surface-container-lowest rounded-lg border border-primary/20 space-y-2 animate-fadeIn">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <input 
+                    type="text" 
+                    [ngModel]="newModuleTitle()"
+                    (ngModelChange)="newModuleTitle.set($event)"
+                    placeholder="Module Title (e.g. Foundation & Stitches)"
+                    class="w-full bg-surface-container-low border border-outline-variant/40 rounded p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                  />
+                  <input 
+                    type="text" 
+                    [ngModel]="newModuleDesc()"
+                    (ngModelChange)="newModuleDesc.set($event)"
+                    placeholder="Short description (optional)"
+                    class="w-full bg-surface-container-low border border-outline-variant/40 rounded p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+                  />
+                </div>
+                <div class="flex justify-end gap-2 pt-1">
+                  <button (click)="isCreatingModule.set(false)" class="px-3 py-1 bg-surface-container rounded text-xs">Cancel</button>
+                  <button 
+                    (click)="handleCreateModule()"
+                    [disabled]="!newModuleTitle().trim() || isSubmittingModule()"
+                    class="px-3.5 py-1 bg-primary text-on-primary rounded text-xs font-bold disabled:opacity-50 flex items-center gap-1 cursor-pointer">
+                    @if (isSubmittingModule()) {
+                      <span class="material-symbols-outlined text-xs animate-spin">progress_activity</span>
+                      <span>Saving...</span>
+                    } @else {
+                      <span class="material-symbols-outlined text-xs">save</span>
+                      <span>Save Module</span>
+                    }
+                  </button>
+                </div>
+              </div>
+            }
+
+            <!-- Module Tabs -->
+            <div class="flex flex-wrap gap-2 pt-1">
+              @for (mod of courseModules(); track mod.id) {
+                <div 
+                  (click)="selectModule(mod.id)"
+                  [class.bg-primary]="selectedModuleId() === mod.id"
+                  [class.text-on-primary]="selectedModuleId() === mod.id"
+                  [class.bg-surface-container-lowest]="selectedModuleId() !== mod.id"
+                  [class.text-on-surface]="selectedModuleId() !== mod.id"
+                  [class.border-primary]="selectedModuleId() === mod.id"
+                  [class.border-outline-variant/30]="selectedModuleId() !== mod.id"
+                  class="px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-2 cursor-pointer transition-all shadow-2xs hover:shadow-xs group">
+                  <span class="material-symbols-outlined text-xs" [class.text-primary]="selectedModuleId() !== mod.id">folder</span>
+                  <span>{{ mod.title }}</span>
+                  <button 
+                    (click)="handleDeleteModule(mod); $event.stopPropagation()"
+                    class="opacity-60 hover:opacity-100 hover:text-red-500 p-0.5 transition-opacity" 
+                    title="Delete Module">
+                    <span class="material-symbols-outlined text-[13px]">delete</span>
+                  </button>
+                </div>
+              }
+              @if (courseModules().length === 0) {
+                <p class="text-xs text-on-surface-variant italic">No modules created yet. Click "+ New Module" above.</p>
+              }
+            </div>
+          </div>
+
+          <!-- Lessons Section for Selected Module -->
+          <div class="space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-outline-variant/20 pb-2">
+              <div>
+                <h3 class="font-bold text-sm text-on-surface flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-primary text-base">video_library</span>
+                  Lessons in Selected Module ({{ moduleLessons().length }})
+                </h3>
+                <p class="text-[11px] text-on-surface-variant">
+                  Published lessons will be playable in the student classroom.
+                </p>
+              </div>
+
+              <button 
+                (click)="openAddLessonModal()"
+                [disabled]="!selectedModuleId()"
+                class="px-3.5 py-2 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 disabled:opacity-50 text-xs flex items-center gap-1.5 shadow-sm cursor-pointer">
+                <span class="material-symbols-outlined text-sm">add</span>
+                <span>Add Lesson</span>
+              </button>
+            </div>
+
+            @if (isLoadingLessons()) {
+              <div class="py-12 flex flex-col items-center justify-center space-y-2">
+                <span class="material-symbols-outlined text-primary text-3xl animate-spin">progress_activity</span>
+                <span class="text-xs text-on-surface-variant">Loading lessons...</span>
+              </div>
+            } @else if (moduleLessons().length === 0) {
+              <div class="py-10 text-center bg-surface-container-low rounded-xl border border-outline-variant/30 space-y-2">
+                <span class="material-symbols-outlined text-3xl text-on-surface-variant/70">smart_display</span>
+                <p class="font-bold text-xs text-on-surface">No Lessons Added Yet</p>
+                <p class="text-[11px] text-on-surface-variant max-w-sm mx-auto">
+                  Click <strong>Add Lesson</strong> above to add video tutorials, Cloudinary recordings, or YouTube classes to this module.
+                </p>
+              </div>
+            } @else {
+              <!-- Lessons List -->
+              <div class="space-y-3">
+                @for (lesson of moduleLessons(); track lesson.id) {
+                  <div class="p-3.5 bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-2xs hover:border-outline-variant/60 transition-colors flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    
+                    <!-- Left: Thumbnail & Info -->
+                    <div class="flex items-start sm:items-center gap-3 min-w-0">
+                      <div class="w-16 h-12 rounded-lg bg-surface-container-high shrink-0 overflow-hidden relative border border-outline-variant/30 flex items-center justify-center">
+                        @if (lesson.thumbnailUrl) {
+                          <img [src]="lesson.thumbnailUrl" [alt]="lesson.title" class="w-full h-full object-cover" />
+                        } @else {
+                          <span class="material-symbols-outlined text-primary text-xl">play_circle</span>
+                        }
+                        @if (lesson.isPreview) {
+                          <span class="absolute bottom-0 inset-x-0 bg-green-600/90 text-[8px] font-bold text-white text-center py-0.2">PREVIEW</span>
+                        }
+                      </div>
+
+                      <div class="min-w-0 space-y-1">
+                        <div class="flex flex-wrap items-center gap-1.5">
+                          <span class="font-bold text-xs text-on-surface truncate">{{ lesson.orderIndex || 1 }}. {{ lesson.title }}</span>
+                          <span class="text-[9px] font-bold px-1.5 py-0.2 rounded uppercase"
+                            [class.bg-green-100]="lesson.isPublished"
+                            [class.text-green-800]="lesson.isPublished"
+                            [class.bg-neutral-100]="!lesson.isPublished"
+                            [class.text-neutral-700]="!lesson.isPublished">
+                            {{ lesson.isPublished ? 'Published' : 'Draft' }}
+                          </span>
+                          @if (lesson.videoProvider) {
+                            <span class="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-primary/10 text-primary">
+                              {{ lesson.videoProvider }}
+                            </span>
+                          }
+                        </div>
+
+                        <p class="text-[11px] text-on-surface-variant line-clamp-1">
+                          {{ lesson.description || 'Step-by-step masterclass lesson' }}
+                        </p>
+
+                        <div class="flex items-center gap-3 text-[10px] text-on-surface-variant font-mono">
+                          @if (lesson.durationSeconds) {
+                            <span class="flex items-center gap-0.5">
+                              <span class="material-symbols-outlined text-[11px]">timer</span>
+                              {{ formatDuration(lesson.durationSeconds) }}
+                            </span>
+                          }
+                          @if (lesson.videoUrl) {
+                            <a [href]="lesson.videoUrl" target="_blank" class="text-blue-600 hover:underline flex items-center gap-0.5 truncate max-w-[200px]" (click)="$event.stopPropagation()">
+                              <span class="material-symbols-outlined text-[11px]">link</span>
+                              {{ lesson.videoUrl }}
+                            </a>
+                          }
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Right: Action Buttons -->
+                    <div class="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
+                      <!-- Toggle Publish -->
+                      <button 
+                        (click)="toggleLessonPublish(lesson)"
+                        [class.text-green-700]="lesson.isPublished"
+                        [class.text-neutral-500]="!lesson.isPublished"
+                        class="p-1.5 rounded hover:bg-surface-container-high transition-colors cursor-pointer text-xs flex items-center gap-0.5"
+                        title="{{ lesson.isPublished ? 'Unpublish Lesson' : 'Publish Lesson' }}">
+                        <span class="material-symbols-outlined text-sm">
+                          {{ lesson.isPublished ? 'visibility' : 'visibility_off' }}
+                        </span>
+                      </button>
+
+                      <!-- Edit Lesson -->
+                      <button 
+                        (click)="openEditLessonModal(lesson)"
+                        class="px-2.5 py-1 bg-surface-container text-on-surface hover:bg-surface-variant rounded font-semibold text-xs flex items-center gap-1 cursor-pointer transition-colors">
+                        <span class="material-symbols-outlined text-xs">edit</span>
+                        <span>Edit</span>
+                      </button>
+
+                      <!-- Delete Lesson -->
+                      <button 
+                        (click)="handleDeleteLesson(lesson)"
+                        class="p-1.5 text-red-500 hover:bg-red-50 rounded transition-colors cursor-pointer"
+                        title="Delete Lesson">
+                        <span class="material-symbols-outlined text-sm">delete</span>
+                      </button>
+                    </div>
+
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="p-4 border-t border-outline-variant/20 bg-surface-container-low/60 flex justify-between items-center shrink-0">
+          <span class="text-[11px] text-on-surface-variant font-medium">
+            Total {{ moduleLessons().length }} lesson(s) in this module
+          </span>
+          <button 
+            (click)="closeLessonsManager()"
+            class="px-4 py-2 bg-surface-container-highest text-on-surface font-semibold rounded-lg hover:bg-surface-dim cursor-pointer text-xs">
+            Done &amp; Close
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- ============================================================== -->
+  <!-- MODAL: ADD / EDIT LESSON FORM (/api/v1/modules/:id/lessons)    -->
+  <!-- ============================================================== -->
+  @if (isLessonFormModalOpen()) {
+    <div class="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 z-60 animate-fadeIn">
+      <div class="bg-surface-container-lowest rounded-2xl p-6 max-w-lg w-full border border-outline-variant/30 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+        
+        <div class="flex justify-between items-center border-b border-outline-variant/20 pb-3">
+          <div>
+            <h3 class="font-bold text-base text-on-surface flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-primary">video_call</span>
+              {{ isEditingLesson() ? 'Edit Lesson' : 'Add New Lesson' }}
+            </h3>
+            <p class="text-[11px] text-on-surface-variant">POST /api/v1/modules/&#123;moduleId&#125;/lessons</p>
+          </div>
+          <button (click)="closeLessonFormModal()" class="text-on-surface-variant hover:text-on-surface cursor-pointer">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="space-y-3.5">
+          <!-- Lesson Title -->
+          <div>
+            <label class="block font-semibold mb-1 text-on-surface-variant">Lesson Title *</label>
+            <input 
+              type="text" 
+              [ngModel]="lessonTitle()"
+              (ngModelChange)="lessonTitle.set($event)"
+              placeholder="e.g. Single & Double Crochet Mastery"
+              class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+            />
+          </div>
+
+          <!-- Description -->
+          <div>
+            <label class="block font-semibold mb-1 text-on-surface-variant">Lesson Description</label>
+            <textarea 
+              rows="2"
+              [ngModel]="lessonDescription()"
+              (ngModelChange)="lessonDescription.set($event)"
+              placeholder="Detailed tutorial on height consistency and yarn tension..."
+              class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none resize-none"
+            ></textarea>
+          </div>
+
+          <!-- Video Provider & Video ID -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold mb-1 text-on-surface-variant">Video Provider</label>
+              <select 
+                [ngModel]="lessonVideoProvider()"
+                (ngModelChange)="lessonVideoProvider.set($event)"
+                class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none">
+                <option value="CLOUDINARY">Cloudinary (Recommended)</option>
+                <option value="YOUTUBE">YouTube</option>
+                <option value="VIMEO">Vimeo</option>
+                <option value="CUSTOM">Custom MP4 URL</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-on-surface-variant">Video ID / Asset Tag</label>
+              <input 
+                type="text" 
+                [ngModel]="lessonVideoId()"
+                (ngModelChange)="lessonVideoId.set($event)"
+                placeholder="e.g. v1620000000/crochet_stitches"
+                class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none font-mono"
+              />
+            </div>
+          </div>
+
+          <!-- Video URL -->
+          <div>
+            <label class="block font-semibold mb-1 text-on-surface-variant">Video URL (Direct MP4 / Cloudinary / YouTube)</label>
+            <input 
+              type="url" 
+              [ngModel]="lessonVideoUrl()"
+              (ngModelChange)="lessonVideoUrl.set($event)"
+              placeholder="https://res.cloudinary.com/... or https://youtube.com/watch?v=..."
+              class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2.5 text-xs focus:ring-1 focus:ring-primary focus:outline-none font-mono"
+            />
+          </div>
+
+          <!-- Thumbnail Image URL & File Picker -->
+          <div class="space-y-1.5">
+            <label class="block font-semibold text-on-surface-variant">Lesson Thumbnail Image</label>
+            <div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+              <input 
+                type="url" 
+                [ngModel]="lessonThumbnailUrl()"
+                (ngModelChange)="lessonThumbnailUrl.set($event)"
+                placeholder="https://images.unsplash.com/... or https://example.com/thumb.jpg"
+                class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none font-mono"
+              />
+              <div class="shrink-0">
+                <input 
+                  type="file" 
+                  #lessonThumbInput 
+                  (change)="onLessonThumbnailSelected($event)" 
+                  accept="image/png,image/jpeg,image/webp,image/jpg" 
+                  class="hidden" 
+                />
+                <button 
+                  type="button" 
+                  (click)="lessonThumbInput.click()" 
+                  [disabled]="isUploadingLessonThumbnail()"
+                  class="px-3 py-2 bg-surface-container-high hover:bg-surface-dim text-on-surface rounded-lg font-semibold flex items-center gap-1.5 cursor-pointer text-xs border border-outline-variant/30 transition-all disabled:opacity-50">
+                  @if (isUploadingLessonThumbnail()) {
+                    <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                    <span>Uploading...</span>
+                  } @else {
+                    <span class="material-symbols-outlined text-sm text-primary">add_photo_alternate</span>
+                    <span>Upload</span>
+                  }
+                </button>
+              </div>
+            </div>
+
+            @if (lessonThumbnailUrl()) {
+              <div class="p-2 bg-surface-container-low rounded-lg flex items-center gap-2.5 border border-outline-variant/20">
+                <img [src]="lessonThumbnailUrl()" alt="Thumbnail preview" class="w-12 h-9 object-cover rounded border border-outline-variant/30 shrink-0" />
+                <div class="truncate text-[11px] text-on-surface-variant">
+                  <span class="font-semibold text-on-surface">Preview Loaded</span>
+                  <p class="truncate text-[10px] font-mono text-on-surface-variant/80">{{ lessonThumbnailUrl() }}</p>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Duration & Order -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold mb-1 text-on-surface-variant">Duration (Minutes)</label>
+              <input 
+                type="number" 
+                [ngModel]="lessonDurationMinutes()"
+                (ngModelChange)="lessonDurationMinutes.set($event)"
+                class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+              />
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-on-surface-variant">Order Index</label>
+              <input 
+                type="number" 
+                [ngModel]="lessonOrderIndex()"
+                (ngModelChange)="lessonOrderIndex.set($event)"
+                class="w-full bg-surface-container-low border border-outline-variant/40 rounded-lg p-2 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <!-- Toggles: Free Preview & Published -->
+          <div class="flex flex-col sm:flex-row gap-3 pt-2">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input 
+                type="checkbox" 
+                [checked]="lessonIsPreview()"
+                (change)="lessonIsPreview.set($any($event.target).checked)"
+                class="rounded border-outline-variant text-primary focus:ring-primary h-4 w-4"
+              />
+              <span class="text-xs font-semibold text-on-surface">Free Preview (Accessible before purchase)</span>
+            </label>
+
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input 
+                type="checkbox" 
+                [checked]="lessonIsPublished()"
+                (change)="lessonIsPublished.set($any($event.target).checked)"
+                class="rounded border-outline-variant text-primary focus:ring-primary h-4 w-4"
+              />
+              <span class="text-xs font-semibold text-on-surface">Published</span>
+            </label>
+          </div>
+
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex justify-end gap-2 pt-3 border-t border-outline-variant/20">
+          <button 
+            (click)="closeLessonFormModal()"
+            class="px-4 py-2 rounded-lg bg-surface-container text-on-surface font-semibold hover:bg-surface-dim cursor-pointer text-xs">
+            Cancel
+          </button>
+          <button 
+            (click)="handleSaveLesson()"
+            [disabled]="!lessonTitle().trim() || isSavingLesson()"
+            class="px-5 py-2 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 disabled:opacity-50 cursor-pointer text-xs shadow-sm flex items-center gap-1.5">
+            @if (isSavingLesson()) {
+              <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+              <span>Saving Lesson...</span>
+            } @else {
+              <span class="material-symbols-outlined text-sm">save</span>
+              <span>{{ isEditingLesson() ? 'Update Lesson' : 'Add Lesson' }}</span>
+            }
+          </button>
+        </div>
+
       </div>
     </div>
   }
