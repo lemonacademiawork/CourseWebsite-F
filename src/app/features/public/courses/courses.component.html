@@ -1,58 +1,139 @@
-<main class="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-12 text-sm">
+<main class="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-8 md:py-12 text-sm text-on-surface">
+  
+  <!-- Page Hero Title & Search Header -->
+  <div class="mb-8 space-y-4">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-on-surface tracking-tight">Explore Artisan Craft Courses</h1>
+        <p class="text-xs text-on-surface-variant mt-1 max-w-2xl leading-relaxed">
+          Master traditional and modern craft techniques under master artisans. Learn Lippan Art, Botanical Candle Making, Resin Crafts, and more.
+        </p>
+      </div>
+
+      <!-- Live Search Box -->
+      <div class="relative w-full md:w-80">
+        <span class="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant text-sm">search</span>
+        <input 
+          type="text" 
+          [ngModel]="searchQuery()"
+          (ngModelChange)="onSearchInput($event)"
+          placeholder="Search courses, crafts, trainers..."
+          class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-xl pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-primary shadow-2xs"
+        />
+        @if (searchQuery()) {
+          <button 
+            (click)="onSearchInput('')" 
+            class="absolute right-2.5 top-2.5 text-on-surface-variant hover:text-on-surface cursor-pointer">
+            <span class="material-symbols-outlined text-xs">close</span>
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
   <div class="flex flex-col md:flex-row gap-8">
     <!-- Filters Sidebar -->
-    <aside class="w-full md:w-64 flex-shrink-0">
-      <div class="sticky top-24 space-y-8 bg-surface-container-low p-6 rounded-2xl border border-surface-variant/40">
+    <aside class="w-full md:w-64 flex-shrink-0 space-y-6">
+      <div class="sticky top-24 space-y-6 bg-surface-container-low p-6 rounded-2xl border border-surface-variant/40 shadow-2xs">
+        
+        <!-- Filter Header & Reset -->
+        <div class="flex items-center justify-between border-b border-outline-variant/20 pb-3">
+          <span class="font-bold text-xs uppercase tracking-wider text-on-surface flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm text-primary">tune</span>
+            Filters
+          </span>
+          @if (selectedCategory() || selectedLevel() || searchQuery()) {
+            <button 
+              (click)="onCategorySelect(''); onLevelSelect(''); onSearchInput('')" 
+              class="text-[11px] text-primary hover:underline font-bold cursor-pointer">
+              Reset All
+            </button>
+          }
+        </div>
+
+        <!-- Categories Filter -->
         <div>
-          <h3 class="font-bold text-xs uppercase tracking-widest text-on-surface mb-4">Categories</h3>
-          <div class="space-y-3 text-[14px]">
+          <h3 class="font-bold text-xs uppercase tracking-widest text-on-surface mb-3">Categories</h3>
+          <div class="space-y-2 text-xs">
+            <button
+              (click)="onCategorySelect('')"
+              class="w-full text-left px-2.5 py-1.5 rounded-lg font-medium transition-colors flex items-center justify-between cursor-pointer"
+              [class]="!selectedCategory() ? 'bg-primary text-on-primary font-bold shadow-2xs' : 'text-on-surface-variant hover:bg-surface-container-high'">
+              <span>All Categories</span>
+              <span class="text-[10px] opacity-75">({{ pagination().total }})</span>
+            </button>
+
             @for (cat of categories(); track cat.id || cat.slug) {
-              <label class="flex items-center gap-3 cursor-pointer group">
-                <input 
-                  class="form-checkbox text-primary rounded border-outline-variant focus:ring-primary w-4 h-4 accent-primary" 
-                  type="checkbox"
-                  [checked]="selectedCategories().includes(cat.slug)"
-                  (change)="handleCategoryToggle(cat.slug)"
-                />
-                <span class="text-on-surface-variant group-hover:text-primary transition-colors font-medium">
-                  {{ cat.name }}
-                </span>
-              </label>
+              <button
+                (click)="onCategorySelect(cat.slug || cat.id)"
+                class="w-full text-left px-2.5 py-1.5 rounded-lg font-medium transition-colors flex items-center justify-between cursor-pointer"
+                [class]="selectedCategory() === (cat.slug || cat.id) ? 'bg-primary text-on-primary font-bold shadow-2xs' : 'text-on-surface-variant hover:bg-surface-container-high'">
+                <span>{{ cat.name }}</span>
+                <span class="material-symbols-outlined text-xs" [class.invisible]="selectedCategory() !== (cat.slug || cat.id)">check</span>
+              </button>
             }
           </div>
         </div>
-        <hr class="border-t border-outline-variant/30" />
+
+        <hr class="border-t border-outline-variant/20" />
+
+        <!-- Level Filter -->
         <div>
-          <h3 class="font-bold text-xs uppercase tracking-widest text-on-surface mb-4">Level</h3>
-          <div class="space-y-3 text-[14px]">
+          <h3 class="font-bold text-xs uppercase tracking-widest text-on-surface mb-3">Skill Level</h3>
+          <div class="space-y-2 text-xs">
             @for (level of ['Beginner', 'Intermediate', 'Advanced']; track level) {
-              <label class="flex items-center gap-3 cursor-pointer group">
-                <input class="form-checkbox text-primary rounded border-outline-variant focus:ring-primary w-4 h-4 accent-primary" type="checkbox" />
-                <span class="text-on-surface-variant group-hover:text-primary transition-colors font-medium">{{ level }}</span>
-              </label>
+              <button
+                (click)="onLevelSelect(level)"
+                class="w-full text-left px-2.5 py-1.5 rounded-lg font-medium transition-colors flex items-center justify-between cursor-pointer"
+                [class]="selectedLevel() === level ? 'bg-primary text-on-primary font-bold shadow-2xs' : 'text-on-surface-variant hover:bg-surface-container-high'">
+                <span>{{ level }}</span>
+                <span class="material-symbols-outlined text-xs" [class.invisible]="selectedLevel() !== level">check</span>
+              </button>
             }
           </div>
         </div>
+
       </div>
     </aside>
 
     <!-- Courses Grid Content -->
-    <div class="flex-grow">
-      <div class="flex justify-between items-center mb-6">
-        <span class="font-medium text-on-surface-variant text-[15px]">
-          Showing {{ filteredCourses.length }} creative courses
+    <div class="flex-grow space-y-6">
+      
+      <!-- Top Info Row -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-outline-variant/15 pb-4">
+        <span class="font-semibold text-on-surface-variant text-xs">
+          Showing <strong>{{ courses().length }}</strong> courses on this page
+          <span class="text-on-surface-variant/70 font-normal">({{ pagination().total }} total courses)</span>
         </span>
-        <select class="bg-surface-container-low border border-outline-variant/40 rounded-lg py-2 pl-3.5 pr-8 font-medium text-xs text-on-surface focus:ring-primary focus:border-primary">
-          <option>Sort by: Recommended</option>
-          <option>Newest</option>
-          <option>Price: Low to High</option>
-          <option>Price: High to Low</option>
-        </select>
+
+        @if (selectedCategory() || selectedLevel() || searchQuery()) {
+          <div class="flex flex-wrap items-center gap-1.5 text-xs">
+            <span class="text-on-surface-variant text-[11px]">Active Filters:</span>
+            @if (selectedCategory()) {
+              <span class="bg-primary/15 text-primary font-bold px-2 py-0.5 rounded-full text-[10px] flex items-center gap-1">
+                Category: {{ selectedCategory() }}
+                <button (click)="onCategorySelect('')" class="hover:text-primary/70 cursor-pointer">×</button>
+              </span>
+            }
+            @if (selectedLevel()) {
+              <span class="bg-primary/15 text-primary font-bold px-2 py-0.5 rounded-full text-[10px] flex items-center gap-1">
+                Level: {{ selectedLevel() }}
+                <button (click)="onLevelSelect('')" class="hover:text-primary/70 cursor-pointer">×</button>
+              </span>
+            }
+            @if (searchQuery()) {
+              <span class="bg-primary/15 text-primary font-bold px-2 py-0.5 rounded-full text-[10px] flex items-center gap-1">
+                "{{ searchQuery() }}"
+                <button (click)="onSearchInput('')" class="hover:text-primary/70 cursor-pointer">×</button>
+              </span>
+            }
+          </div>
+        }
       </div>
 
+      <!-- Loading State -->
       @if (loading()) {
         <div class="flex flex-col items-center justify-center py-24 space-y-4 bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-8 shadow-sm">
-          <!-- Premium Spinner with Pulse Glow -->
           <div class="relative flex items-center justify-center">
             <div class="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
             <div class="absolute w-12 h-12 rounded-full border border-primary/10 animate-ping"></div>
@@ -60,57 +141,72 @@
           <div class="text-center space-y-1 max-w-sm">
             <p class="font-bold text-on-surface text-base">Loading courses...</p>
             <p class="text-xs text-on-surface-variant leading-relaxed">
-              Fetching available masterclasses and workshops.
+              Fetching craft masterclasses and workshops...
             </p>
           </div>
         </div>
-      } @else if (filteredCourses.length === 0) {
-        <div class="text-center py-16 text-on-surface-variant bg-surface-container-lowest border border-outline-variant/30 rounded-2xl">
+      } @else if (courses().length === 0) {
+        <div class="text-center py-16 text-on-surface-variant bg-surface-container-lowest border border-outline-variant/30 rounded-2xl space-y-3">
+          <span class="material-symbols-outlined text-outline text-4xl">school</span>
           <p class="font-bold text-base text-on-surface">No courses found</p>
-          <p class="text-xs text-on-surface-variant mt-1">No courses match the selected filters.</p>
+          <p class="text-xs text-on-surface-variant max-w-sm mx-auto">
+            No courses match the selected search query or category filter.
+          </p>
+          @if (selectedCategory() || selectedLevel() || searchQuery()) {
+            <button 
+              (click)="onCategorySelect(''); onLevelSelect(''); onSearchInput('')"
+              class="mt-2 bg-primary text-on-primary font-semibold px-4 py-2 rounded-lg hover:opacity-90 cursor-pointer text-xs">
+              Clear All Filters
+            </button>
+          }
         </div>
       } @else {
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          @for (course of filteredCourses; track course.id) {
+        <!-- Course Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          @for (course of courses(); track course.id) {
             <div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300 group flex flex-col h-full border border-outline-variant/25">
+              
+              <!-- Thumbnail & Badges -->
               <a [routerLink]="isEnrolled(course) ? ['/my-courses', course.id] : ['/courses', course.id]" class="block relative h-48 overflow-hidden bg-surface-variant cursor-pointer">
-                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" [alt]="course.title" [src]="course.imageUrl" />
-                <div class="absolute top-3 left-3 bg-tertiary-fixed px-3 py-1 rounded-full text-on-tertiary-fixed text-[11px] font-bold uppercase tracking-wider shadow-xs">
+                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" [alt]="course.title" [src]="course.imageUrl || course.thumbnailUrl" />
+                <div class="absolute top-3 left-3 bg-tertiary-fixed px-3 py-1 rounded-full text-on-tertiary-fixed text-[10px] font-bold uppercase tracking-wider shadow-xs">
                   {{ course.category }}
                 </div>
                 @if (isEnrolled(course)) {
-                  <div class="absolute top-3 right-3 bg-green-700/95 backdrop-blur-sm text-white px-3 py-1 rounded-full text-[11px] font-bold flex items-center gap-1 shadow-sm">
+                  <div class="absolute top-3 right-3 bg-green-700/95 backdrop-blur-sm text-white px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 shadow-sm">
                     <span class="material-symbols-outlined text-xs">check_circle</span>
                     Enrolled
                   </div>
                 }
               </a>
+
+              <!-- Card Body -->
               <div class="p-5 flex flex-col flex-grow justify-between gap-4">
                 <div class="space-y-2">
-                  <h3 class="font-bold text-on-surface text-base leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                  <h3 class="font-bold text-on-surface text-sm leading-snug group-hover:text-primary transition-colors line-clamp-2">
                     <a [routerLink]="isEnrolled(course) ? ['/my-courses', course.id] : ['/courses', course.id]">{{ course.title }}</a>
                   </h3>
                   <p class="text-on-surface-variant line-clamp-2 text-xs leading-relaxed">
-                    {{ course.description || "Master new artisanal skills from foundation to advanced techniques." }}
+                    {{ course.shortDescription || course.description || "Master new artisanal skills from foundation to advanced studio techniques." }}
                   </p>
                 </div>
+
+                <!-- Instructor, Rating & Price Footer -->
                 <div class="space-y-3">
                   <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center text-xs font-bold shrink-0">
+                    <div class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center text-[10px] font-bold shrink-0">
                       {{ getInitials(course.instructor) }}
                     </div>
                     <span class="text-on-surface-variant font-semibold text-xs truncate">{{ course.instructor }}</span>
                   </div>
+
                   <div class="flex justify-between items-center border-t border-surface-variant/45 pt-3">
-                    <div class="flex items-center text-primary-fixed-dim">
+                    <div class="flex items-center text-amber-500 text-xs font-bold">
                       <span class="material-symbols-outlined filled text-xs">star</span>
-                      <span class="material-symbols-outlined filled text-xs">star</span>
-                      <span class="material-symbols-outlined filled text-xs">star</span>
-                      <span class="material-symbols-outlined filled text-xs">star</span>
-                      <span class="material-symbols-outlined text-xs">star_half</span>
-                      <span class="text-on-surface font-semibold ml-1 text-xs">4.8</span>
-                      <span class="text-on-surface-variant ml-1 text-[11px]">({{ course.studentsCount }})</span>
+                      <span class="ml-1 text-on-surface font-semibold text-xs">4.9</span>
+                      <span class="text-on-surface-variant ml-1 text-[11px] font-normal">({{ course.studentsCount || 48 }})</span>
                     </div>
+
                     <div class="text-right">
                       @if (isEnrolled(course)) {
                         <a [routerLink]="['/my-courses', course.id]" class="text-primary font-bold text-xs hover:underline flex items-center gap-1">
@@ -118,16 +214,56 @@
                           <span class="material-symbols-outlined text-xs">arrow_forward</span>
                         </a>
                       } @else {
-                        <div class="font-extrabold text-primary text-base">Rs. {{ course.price }}</div>
+                        <div class="font-extrabold text-primary text-base">₹{{ course.price }}</div>
                       }
                     </div>
                   </div>
                 </div>
+
               </div>
             </div>
           }
         </div>
+
+        <!-- Pagination Controls -->
+        <div class="border-t border-outline-variant/20 pt-8 mt-10">
+          <div class="flex items-center justify-center gap-2">
+            <!-- Previous Button -->
+            <button
+              (click)="prevPage()"
+              [disabled]="currentPage() === 1 || loading()"
+              class="px-4 py-2 border border-outline-variant/40 rounded-lg text-xs font-semibold disabled:opacity-40 hover:bg-surface-container-high transition-colors cursor-pointer disabled:cursor-not-allowed flex items-center gap-1">
+              <span>←</span>
+              <span>Previous</span>
+            </button>
+
+            <!-- Page Number Buttons -->
+            @for (pageNum of getPageNumbers(); track pageNum) {
+              <button
+                (click)="setPage(pageNum)"
+                class="px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                [class]="currentPage() === pageNum ? 'bg-amber-500 text-white shadow-xs' : 'border border-outline-variant/40 hover:bg-surface-container-high text-on-surface'">
+                {{ pageNum }}
+              </button>
+            }
+
+            <!-- Next Button -->
+            <button
+              (click)="nextPage()"
+              [disabled]="currentPage() >= pagination().totalPages || loading()"
+              class="px-4 py-2 border border-outline-variant/40 rounded-lg text-xs font-semibold disabled:opacity-40 hover:bg-surface-container-high transition-colors cursor-pointer disabled:cursor-not-allowed flex items-center gap-1">
+              <span>Next</span>
+              <span>→</span>
+            </button>
+          </div>
+
+          <!-- Total Count Info -->
+          <p class="text-center text-xs text-on-surface-variant mt-3 font-medium">
+            Showing Page {{ pagination().page }} of {{ pagination().totalPages }} ({{ pagination().total }} total courses)
+          </p>
+        </div>
       }
+
     </div>
   </div>
 </main>

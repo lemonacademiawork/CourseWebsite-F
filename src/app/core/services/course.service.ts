@@ -13,6 +13,51 @@ export class CourseService {
 
   constructor(private http: HttpClient) {}
 
+  /** GET /api/v1/courses — Get paginated courses list with pagination metadata */
+  getCoursesPaginated(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    categoryId?: string;
+    level?: string;
+  }): Observable<{
+    courses: Course[];
+    pagination: { page: number; limit: number; total: number; totalPages: number; hasMore?: boolean };
+  }> {
+    let httpParams = new HttpParams();
+    const page = params?.page || 1;
+    const limit = params?.limit || 5;
+    httpParams = httpParams.set('page', String(page));
+    httpParams = httpParams.set('limit', String(limit));
+    if (params?.search) httpParams = httpParams.set('search', params.search);
+    if (params?.categoryId) httpParams = httpParams.set('categoryId', params.categoryId);
+    if (params?.level) httpParams = httpParams.set('level', params.level);
+
+    return this.http.get<any>(this.apiUrl, { params: httpParams }).pipe(
+      map(json => {
+        const raw = json.data || json;
+        const list = Array.isArray(raw) ? raw : (raw.courses || []);
+        const mappedList = list.map((c: any) => this.mapCourse(c));
+        const pagination = json.pagination || {
+          page: page,
+          limit: limit,
+          total: json.total || mappedList.length,
+          totalPages: json.totalPages || Math.ceil((json.total || mappedList.length) / limit) || 1,
+          hasMore: page < (json.totalPages || Math.ceil((json.total || mappedList.length) / limit))
+        };
+
+        return {
+          courses: mappedList,
+          pagination
+        };
+      }),
+      catchError(() => of({
+        courses: [],
+        pagination: { page: 1, limit: limit, total: 0, totalPages: 1, hasMore: false }
+      }))
+    );
+  }
+
   /** GET /api/v1/courses — List published courses with filters & pagination */
   getCourses(params?: {
     page?: number;
