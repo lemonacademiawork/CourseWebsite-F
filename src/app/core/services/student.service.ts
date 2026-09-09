@@ -92,19 +92,19 @@ export class StudentService {
     );
   }
 
-  /** GET /api/v1/students/me/notifications */
+  /** GET /api/v1/users/me/notifications */
   getStudentNotifications(): Observable<StudentNotification[]> {
-    return this.http.get<any>(`${this.apiUrl}/notifications`).pipe(
+    return this.http.get<any>(`${environment.apiUrl}/users/me/notifications`).pipe(
       map(res => {
         const data = res.data || res;
-        return Array.isArray(data) ? data : [];
+        return Array.isArray(data) ? data : (data?.notifications || []);
       }),
       catchError(() => of([]))
     );
   }
 
-  /** PATCH /api/v1/students/me/notifications/:notificationId/read */
+  /** PATCH /api/v1/users/me/notifications/:notificationId/read */
   markNotificationRead(notificationId: string): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/notifications/${notificationId}/read`, {});
+    return this.http.patch(`${environment.apiUrl}/users/me/notifications/${notificationId}/read`, {});
   }
 }
