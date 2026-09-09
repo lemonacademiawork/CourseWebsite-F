@@ -154,4 +154,48 @@ export class AdminService {
   updateSetting(payload: { settingKey: string; settingValue: string; description?: string }): Observable<any> {
     return this.http.put(`${this.apiUrl}/settings`, payload);
   }
+
+  /** GET /api/v1/content/carousel */
+  getCarouselSlides(): Observable<any[]> {
+    return this.http.get<any>(`${environment.apiUrl}/content/carousel`).pipe(
+      map(res => {
+        const data = Array.isArray(res) ? res : res?.data;
+        return Array.isArray(data) ? data : [];
+      }),
+      catchError(() => of([]))
+    );
+  }
+
+  /** Save full list of carousel slides to backend */
+  saveCarouselSlides(slides: any[]): Observable<any> {
+    return this.http.put<any>(`${environment.apiUrl}/content/carousel`, { slides, data: slides }).pipe(
+      catchError(() => this.http.post<any>(`${environment.apiUrl}/content/carousel`, { slides, data: slides })),
+      catchError(() => this.http.put<any>(`${this.apiUrl}/carousel`, { slides, data: slides })),
+      catchError(() => of(null))
+    );
+  }
+
+  /** Create single slide in backend */
+  createCarouselSlide(slide: any): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/content/carousel`, slide).pipe(
+      catchError(() => this.http.post<any>(`${this.apiUrl}/carousel`, slide)),
+      catchError(() => of(null))
+    );
+  }
+
+  /** Update single slide in backend */
+  updateCarouselSlide(id: string, slide: any): Observable<any> {
+    return this.http.put<any>(`${environment.apiUrl}/content/carousel/${id}`, slide).pipe(
+      catchError(() => this.http.put<any>(`${this.apiUrl}/carousel/${id}`, slide)),
+      catchError(() => of(null))
+    );
+  }
+
+  /** Delete single slide in backend */
+  deleteCarouselSlide(id: string): Observable<any> {
+    return this.http.delete<any>(`${environment.apiUrl}/content/carousel/${id}`).pipe(
+      catchError(() => this.http.delete<any>(`${this.apiUrl}/carousel/${id}`)),
+      catchError(() => of(null))
+    );
+  }
 }

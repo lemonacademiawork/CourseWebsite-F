@@ -223,40 +223,69 @@ export class AdminCarouselComponent implements OnInit {
               imageUrl: item.imageUrl || item.url || HERO_SLIDES[idx % HERO_SLIDES.length].imageUrl,
               route: item.route || '/courses',
               category: item.category || (item.queryParams ? item.queryParams['category'] : '') || '',
-              active: item.active !== false
+              active: item.active !== false && item.isActive !== false
             })));
           }
         } catch {}
       }
     }
 
-    this.adminService.getSettings().subscribe({
-      next: (settings) => {
-        const carouselSetting = settings.find(s => s.settingKey === 'homepage_carousel');
-        if (carouselSetting && carouselSetting.settingValue) {
-          try {
-            const parsed = JSON.parse(carouselSetting.settingValue);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              this.slides.set(parsed.map((item: any, idx: number) => ({
-                id: item.id || String(idx + 1),
-                title: item.title || HERO_SLIDES[idx % HERO_SLIDES.length].title,
-                tagline: item.tagline || HERO_SLIDES[idx % HERO_SLIDES.length].tagline,
-                description: item.description || HERO_SLIDES[idx % HERO_SLIDES.length].description,
-                imageUrl: item.imageUrl || item.url || HERO_SLIDES[idx % HERO_SLIDES.length].imageUrl,
-                route: item.route || '/courses',
-                category: item.category || (item.queryParams ? item.queryParams['category'] : '') || '',
-                active: item.active !== false
-              })));
-              if (typeof window !== 'undefined') {
-                localStorage.setItem('homepage_carousel', carouselSetting.settingValue);
-              }
-              return;
+    // 1. Fetch from GET /api/v1/content/carousel
+    this.adminService.getCarouselSlides().subscribe({
+      next: (backendSlides) => {
+        if (Array.isArray(backendSlides) && backendSlides.length > 0) {
+          const mapped = backendSlides.map((item: any, idx: number) => ({
+            id: item.id || String(idx + 1),
+            title: item.title || HERO_SLIDES[idx % HERO_SLIDES.length].title,
+            tagline: item.tagline || HERO_SLIDES[idx % HERO_SLIDES.length].tagline,
+            description: item.description || HERO_SLIDES[idx % HERO_SLIDES.length].description,
+            imageUrl: item.imageUrl || item.url || HERO_SLIDES[idx % HERO_SLIDES.length].imageUrl,
+            route: item.route || '/courses',
+            category: item.category || (item.queryParams ? item.queryParams['category'] : '') || '',
+            active: item.active !== false && item.isActive !== false
+          }));
+          this.slides.set(mapped);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('homepage_carousel', JSON.stringify(mapped));
+          }
+          return;
+        }
+
+        // 2. Fallback to settings table
+        this.adminService.getSettings().subscribe({
+          next: (settings) => {
+            const carouselSetting = settings.find(s => s.settingKey === 'homepage_carousel');
+            if (carouselSetting && carouselSetting.settingValue) {
+              try {
+                const parsed = JSON.parse(carouselSetting.settingValue);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                  this.slides.set(parsed.map((item: any, idx: number) => ({
+                    id: item.id || String(idx + 1),
+                    title: item.title || HERO_SLIDES[idx % HERO_SLIDES.length].title,
+                    tagline: item.tagline || HERO_SLIDES[idx % HERO_SLIDES.length].tagline,
+                    description: item.description || HERO_SLIDES[idx % HERO_SLIDES.length].description,
+                    imageUrl: item.imageUrl || item.url || HERO_SLIDES[idx % HERO_SLIDES.length].imageUrl,
+                    route: item.route || '/courses',
+                    category: item.category || (item.queryParams ? item.queryParams['category'] : '') || '',
+                    active: item.active !== false && item.isActive !== false
+                  })));
+                  if (typeof window !== 'undefined') {
+                    localStorage.setItem('homepage_carousel', carouselSetting.settingValue);
+                  }
+                  return;
+                }
+              } catch {}
             }
-          } catch {}
-        }
-        if (this.slides().length === 0) {
-          this.resetToDefaults();
-        }
+            if (this.slides().length === 0) {
+              this.resetToDefaults();
+            }
+          },
+          error: () => {
+            if (this.slides().length === 0) {
+              this.resetToDefaults();
+            }
+          }
+        });
       },
       error: () => {
         if (this.slides().length === 0) {
@@ -282,7 +311,7 @@ export class AdminCarouselComponent implements OnInit {
 
   saveSlides(newSlides: AdminCarouselSlide[]): void {
     this.slides.set(newSlides);
-    const payload = newSlides.map(s => ({
+    const payload = newSlides.map((s, idx) => ({
       id: s.id,
       title: s.title,
       tagline: s.tagline,
@@ -291,8 +320,10 @@ export class AdminCarouselComponent implements OnInit {
       url: s.imageUrl,
       route: s.route,
       category: s.category,
+      order: idx + 1,
       queryParams: s.category ? { category: s.category } : undefined,
-      active: s.active
+      active: s.active,
+      isActive: s.active
     }));
     const jsonStr = JSON.stringify(payload);
 
@@ -304,6 +335,12 @@ export class AdminCarouselComponent implements OnInit {
       } catch {}
     }
 
+    // 1. Save to carousel API
+    this.adminService.saveCarouselSlides(payload).subscribe({
+      error: () => {}
+    });
+
+    // 2. Save to system settings table
     this.adminService.updateSetting({
       settingKey: 'homepage_carousel',
       settingValue: jsonStr,
