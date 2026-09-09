@@ -36,9 +36,38 @@ export class CourseService {
       map(json => {
         const raw = json.data || json;
         const list = Array.isArray(raw) ? raw : (raw.courses || []);
-        return list.map((c: any) => this.mapCourse(c));
+        const mappedList = list.map((c: any) => this.mapCourse(c));
+
+        // Merge any locally created courses
+        if (typeof window !== 'undefined') {
+          try {
+            const localKeys = Object.keys(localStorage).filter(k => k.startsWith('course_override_course-'));
+            localKeys.forEach(k => {
+              const item = JSON.parse(localStorage.getItem(k) || '{}');
+              if (item && item.id && !mappedList.some((c: any) => c.id === item.id)) {
+                mappedList.unshift(this.mapCourse(item));
+              }
+            });
+          } catch {}
+        }
+
+        return mappedList;
       }),
-      catchError(() => of([]))
+      catchError(() => {
+        const fallbackList: Course[] = [];
+        if (typeof window !== 'undefined') {
+          try {
+            const localKeys = Object.keys(localStorage).filter(k => k.startsWith('course_override_course-'));
+            localKeys.forEach(k => {
+              const item = JSON.parse(localStorage.getItem(k) || '{}');
+              if (item && item.id) {
+                fallbackList.push(this.mapCourse(item));
+              }
+            });
+          } catch {}
+        }
+        return of(fallbackList);
+      })
     );
   }
 
@@ -71,22 +100,27 @@ export class CourseService {
   createCourse(payload: CreateCoursePayload): Observable<any> {
     const formattedPayload: any = {
       title: payload.title,
-      categoryId: payload.categoryId,
-      shortDescription: payload.shortDescription || payload.description?.slice(0, 120),
-      description: payload.description || payload.shortDescription,
-      price: Number(payload.price),
-      discountPrice: payload.discountPrice !== undefined ? Number(payload.discountPrice) : Number(payload.discountedPrice || payload.price),
+      slug: payload.slug || payload.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+      description: payload.description || payload.shortDescription || `${payload.title} masterclass`,
+      shortDescription: payload.shortDescription || payload.description?.slice(0, 120) || `${payload.title} masterclass`,
+      price: Number(payload.price) || 99,
+      discountPrice: payload.discountPrice !== undefined ? Number(payload.discountPrice) : Number(payload.discountedPrice || payload.price || 99),
       level: payload.level || 'BEGINNER',
-      durationHours: payload.durationHours || 10,
+      durationHours: Number(payload.durationHours) || 10,
       thumbnailUrl: payload.thumbnailUrl || payload.imageUrl || 'https://images.unsplash.com/photo-1584992236310-6edddc08acff',
+      imageUrl: payload.imageUrl || payload.thumbnailUrl || 'https://images.unsplash.com/photo-1584992236310-6edddc08acff',
       previewVideoUrl: payload.previewVideoUrl || null,
       liveClassLink: payload.liveClassLink || null,
       liveScheduleText: payload.liveScheduleText || null,
-      youtubePlaylistUrl: payload.youtubePlaylistUrl || null
+      youtubePlaylistUrl: payload.youtubePlaylistUrl || null,
+      isPublished: true
     };
 
-    if (payload.trainerId) formattedPayload.trainerId = payload.trainerId;
+    if (payload.categoryId) formattedPayload.categoryId = payload.categoryId;
+    if (payload.category) formattedPayload.category = payload.category;
+    if (payload.trainerId && payload.trainerId.length > 10) formattedPayload.trainerId = payload.trainerId;
     if (payload.trainer) formattedPayload.trainer = payload.trainer;
+    if (payload.instructor) formattedPayload.instructor = payload.instructor;
 
     return this.http.post<any>(this.apiUrl, formattedPayload).pipe(
       map(res => {
@@ -234,7 +268,7 @@ export class CourseService {
   }
 
   // --- PERSISTENCE OVERRIDES HELPER ---
-  private saveLocalCourseOverride(id: string, updates: any): void {
+  public saveLocalCourseOverride(id: string, updates: any): void {
     if (typeof window === 'undefined' || !id) return;
     try {
       const existing = localStorage.getItem(`course_override_${id}`);

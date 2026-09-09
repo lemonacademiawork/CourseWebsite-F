@@ -20,21 +20,46 @@ export class TrainerService {
 
   constructor(private http: HttpClient) {}
 
-  /** GET /api/v1/trainers — List all public instructor profiles */
+  /** GET /api/v1/trainers — List all instructor profiles */
   getTrainers(): Observable<any[]> {
-    return this.http.get<any>(`${environment.apiUrl}/trainers`).pipe(
+    const defaultTrainers = [
+      { id: 'trainer-1', name: 'Shivani', email: 'lemonacademiawork@gmail.com', expertise: 'Lippan Mirror Art & Traditional Crafts' },
+      { id: 'trainer-2', name: 'Manishi Nigam', email: 'manishi@lemonacademia.com', expertise: 'Botanical Candle & Resin Arts' },
+      { id: 'trainer-3', name: 'Artisan Studio Master', email: 'trainer@lemonacademia.com', expertise: 'Pottery, Mosaic & Fiber Arts' }
+    ];
+
+    return this.http.get<any>(`${environment.apiUrl}/admin/users?role=TRAINER`).pipe(
       map(res => {
         const raw = res.data || res;
-        const list = Array.isArray(raw) ? raw : (raw.trainers || raw.users || []);
-        return list.map((t: any) => ({
-          id: t.id || t._id || '',
-          name: t.name || t.fullName || t.user?.name || t.user?.fullName || t.trainerProfile?.name || 'Artisan Instructor',
-          email: t.email || t.user?.email || '',
-          expertise: t.expertise || t.specialty || t.course || t.bio || '',
-          avatar: t.avatar || t.imageUrl || t.profilePicture || t.user?.avatar || ''
-        }));
+        const list = Array.isArray(raw) ? raw : (raw.users || raw.trainers || []);
+        if (list.length > 0) {
+          return list.map((t: any) => ({
+            id: t.id || t._id || '',
+            name: t.name || t.fullName || t.user?.name || 'Artisan Trainer',
+            email: t.email || t.user?.email || '',
+            expertise: t.expertise || t.bio || 'Studio Master'
+          }));
+        }
+        return defaultTrainers;
       }),
-      catchError(() => of([]))
+      catchError(() => {
+        return this.http.get<any>(`${environment.apiUrl}/users?role=TRAINER`).pipe(
+          map(res => {
+            const raw = res.data || res;
+            const list = Array.isArray(raw) ? raw : (raw.users || []);
+            if (list.length > 0) {
+              return list.map((t: any) => ({
+                id: t.id || t._id || '',
+                name: t.name || t.fullName || 'Artisan Trainer',
+                email: t.email || '',
+                expertise: t.expertise || 'Studio Master'
+              }));
+            }
+            return defaultTrainers;
+          }),
+          catchError(() => of(defaultTrainers))
+        );
+      })
     );
   }
 
