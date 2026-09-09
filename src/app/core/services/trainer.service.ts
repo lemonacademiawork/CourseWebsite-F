@@ -24,8 +24,15 @@ export class TrainerService {
   getTrainers(): Observable<any[]> {
     return this.http.get<any>(`${environment.apiUrl}/trainers`).pipe(
       map(res => {
-        const data = res.data || res;
-        return Array.isArray(data) ? data : data.trainers || [];
+        const raw = res.data || res;
+        const list = Array.isArray(raw) ? raw : (raw.trainers || raw.users || []);
+        return list.map((t: any) => ({
+          id: t.id || t._id || '',
+          name: t.name || t.fullName || t.user?.name || t.user?.fullName || t.trainerProfile?.name || 'Artisan Instructor',
+          email: t.email || t.user?.email || '',
+          expertise: t.expertise || t.specialty || t.course || t.bio || '',
+          avatar: t.avatar || t.imageUrl || t.profilePicture || t.user?.avatar || ''
+        }));
       }),
       catchError(() => of([]))
     );

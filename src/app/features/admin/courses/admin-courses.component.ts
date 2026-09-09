@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { CourseService } from '../../../core/services/course.service';
 import { SessionService } from '../../../core/services/session.service';
 import { CategoryService } from '../../../core/services/category.service';
+import { TrainerService } from '../../../core/services/trainer.service';
 import { Course } from '../../../core/models/course.model';
 import { CourseSession, SessionStatus } from '../../../core/models/session.model';
 import { Category } from '../../../core/models/category.model';
@@ -22,6 +23,13 @@ export interface AdminCourseItem {
   rawCourse?: Course;
 }
 
+export interface TrainerOption {
+  id: string;
+  name: string;
+  email?: string;
+  expertise?: string;
+}
+
 @Component({
   selector: 'app-admin-courses',
   standalone: true,
@@ -32,9 +40,11 @@ export class AdminCoursesComponent implements OnInit {
   private courseService = inject(CourseService);
   private sessionService = inject(SessionService);
   private categoryService = inject(CategoryService);
+  private trainerService = inject(TrainerService);
 
   courses = signal<AdminCourseItem[]>([]);
   categories = signal<Category[]>([]);
+  trainers = signal<TrainerOption[]>([]);
   isCreating = signal<boolean>(false);
 
   // Form states for creating course
@@ -72,6 +82,7 @@ export class AdminCoursesComponent implements OnInit {
   ngOnInit(): void {
     this.fetchCourses();
     this.fetchCategories();
+    this.fetchTrainers();
   }
 
   fetchCourses(): void {
@@ -116,6 +127,45 @@ export class AdminCoursesComponent implements OnInit {
       },
       error: () => {}
     });
+  }
+
+  fetchTrainers(): void {
+    this.trainerService.getTrainers().subscribe({
+      next: (list) => {
+        if (list && list.length > 0) {
+          const mapped: TrainerOption[] = list.map(t => ({
+            id: t.id || '',
+            name: t.name || t.fullName || 'Artisan Trainer',
+            email: t.email,
+            expertise: t.expertise || ''
+          }));
+          this.trainers.set(mapped);
+          if (!this.trainer() && mapped[0]?.name) {
+            this.trainer.set(mapped[0].name);
+          }
+        } else {
+          this.setFallbackTrainers();
+        }
+      },
+      error: () => {
+        this.setFallbackTrainers();
+      }
+    });
+  }
+
+  private setFallbackTrainers(): void {
+    const fallback: TrainerOption[] = [
+      { id: 't1', name: 'Aisha Sharma', expertise: 'Lippan Art Master' },
+      { id: 't2', name: 'Rohan Mehta', expertise: 'Botanical Candle Artisan' },
+      { id: 't3', name: 'Priya Nair', expertise: 'Ocean Resin & Fluid Art' },
+      { id: 't4', name: 'Vikram Patel', expertise: 'Ceramic & Mosaic Master' },
+      { id: 't5', name: 'Ananya Deshmukh', expertise: 'Clay Pottery & Sculpting' },
+      { id: 't6', name: 'Kavita Joshi', expertise: 'Crochet & Macramé Expert' }
+    ];
+    this.trainers.set(fallback);
+    if (!this.trainer()) {
+      this.trainer.set(fallback[0].name);
+    }
   }
 
   // Course Details Drawer / Modal
@@ -197,7 +247,6 @@ export class AdminCoursesComponent implements OnInit {
       },
       error: (err) => {
         this.isSubmittingCategory.set(false);
-        // Fallback local update if offline / mocked
         const fallbackCat: Category = {
           id: Date.now().toString(),
           ...payload
@@ -234,11 +283,21 @@ export class AdminCoursesComponent implements OnInit {
     if (!this.title().trim()) return;
     const slug = this.slugify(this.title());
 
+    const selectedTrainer = this.trainers().find(t => t.name === this.trainer() || t.id === this.trainer());
+    const selectedCategory = this.categories().find(c => c.name === this.category() || c.id === this.category());
+
+    const trainerName = selectedTrainer?.name || this.trainer() || 'Instructor';
+
     this.courseService.createCourse({
       title: this.title().trim(),
       slug: slug || 'course-' + Date.now(),
-      description: `${this.category()} Masterclass with ${this.trainer() || 'Instructor'}`,
-      price: this.price()
+      description: `${this.category()} Masterclass with ${trainerName}`,
+      price: this.price(),
+      category: this.category(),
+      categoryId: selectedCategory?.id,
+      trainer: trainerName,
+      trainerId: selectedTrainer?.id,
+      instructor: trainerName
     }).subscribe({
       next: () => {
         this.fetchCourses();

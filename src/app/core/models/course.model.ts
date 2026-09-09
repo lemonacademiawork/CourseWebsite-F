@@ -27,7 +27,12 @@ export interface CreateCoursePayload {
   price: number;
   discountedPrice?: number;
   thumbnailUrl?: string;
+  imageUrl?: string;
   categoryId?: string;
+  category?: string;
+  trainerId?: string;
+  trainer?: string;
+  instructor?: string;
 }
 
 export interface UpdateCoursePayload {
@@ -37,5 +42,10 @@ export interface UpdateCoursePayload {
   price?: number;
   discountedPrice?: number;
   thumbnailUrl?: string;
+  imageUrl?: string;
   categoryId?: string;
+  category?: string;
+  trainerId?: string;
+  trainer?: string;
+  instructor?: string;
 }
