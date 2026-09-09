@@ -39,6 +39,7 @@ import { AuthCallbackComponent } from './features/public/auth-callback/auth-call
 // Admin Features
 import { AdminDashboardComponent } from './features/admin/dashboard/admin-dashboard.component';
 import { AdminCoursesComponent } from './features/admin/courses/admin-courses.component';
+import { AdminCurriculumComponent } from './features/admin/curriculum/admin-curriculum.component';
 import { AdminStudentsComponent } from './features/admin/students/admin-students.component';
 import { AdminContentComponent } from './features/admin/content/admin-content.component';
 import { AdminContentUploadComponent } from './features/admin/content-upload/admin-content-upload.component';
@@ -117,6 +118,9 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: AdminDashboardComponent },
       { path: 'courses', component: AdminCoursesComponent },
+      { path: 'curriculum', component: AdminCurriculumComponent },
+      { path: 'modules', redirectTo: 'curriculum', pathMatch: 'full' },
+      { path: 'courses/:courseId/curriculum', component: AdminCurriculumComponent },
       { path: 'students', component: AdminStudentsComponent },
       { path: 'content', component: AdminContentComponent },
       { path: 'content/upload', component: AdminContentUploadComponent },

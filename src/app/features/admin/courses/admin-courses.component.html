@@ -5,7 +5,15 @@
       <h1 class="text-xl font-bold text-on-surface">Course Management</h1>
       <p class="text-xs text-on-surface-variant mt-0.5">Manage masterclasses, edit course details, live links, YouTube playlists, categories, and pricing.</p>
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex flex-wrap items-center gap-2">
+      <!-- Curriculum Studio Button -->
+      <a 
+        routerLink="/admin/curriculum"
+        class="bg-surface-container-high text-on-surface font-semibold px-3.5 py-2.5 rounded-lg hover:bg-surface-dim flex items-center gap-1.5 shadow-xs cursor-pointer">
+        <span class="material-symbols-outlined text-sm text-primary">play_lesson</span>
+        Curriculum Studio
+      </a>
+
       <!-- Manage Categories Button -->
       <button 
         (click)="openCategoryManager()"
