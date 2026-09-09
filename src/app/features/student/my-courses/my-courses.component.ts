@@ -51,9 +51,16 @@ import { Enrollment } from '../../../core/models/enrollment.model';
                   <h3 class="text-sm font-bold text-on-surface leading-snug hover:text-primary transition-colors cursor-pointer">
                     <a [routerLink]="['/my-courses', course.id]">{{ course.title }}</a>
                   </h3>
-                  <p class="text-[10px] text-on-surface-variant mt-1">Instructor: {{ course.instructor }}</p>
+                  <div class="flex items-center justify-between gap-2 mt-1">
+                    <p class="text-[10px] text-on-surface-variant">Instructor: {{ course.instructor }}</p>
+                    @if (course.startDate || course.endDate) {
+                      <span class="text-[9px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                        📅 {{ formatDateRange(course.startDate, course.endDate) }}
+                      </span>
+                    }
+                  </div>
                   
-                  <div class="mt-6 space-y-1.5">
+                  <div class="mt-4 space-y-1.5">
                     <div class="flex justify-between text-[10px] text-on-surface-variant">
                       <span>Progress: {{ course.lessonsCompleted || 0 }}/{{ course.totalLessons || 4 }} Lessons</span>
                       <span class="font-bold text-primary">{{ course.progress || 0 }}%</span>
@@ -122,6 +129,8 @@ export class MyCoursesComponent implements OnInit {
                 thumbnailUrl: c.thumbnailUrl || '',
                 price: c.price || 0,
                 discountedPrice: c.discountedPrice || 0,
+                startDate: c.startDate || c.start_date || null,
+                endDate: c.endDate || c.end_date || null,
                 totalLessons: (c as any).totalLessons || 4,
                 lessonsCompleted: (c as any).lessonsCompleted || 0,
                 progress: (c as any).progress || 0
@@ -172,5 +181,21 @@ export class MyCoursesComponent implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  formatDateRange(start?: string | null, end?: string | null): string {
+    if (!start && !end) return '';
+    if (start && end) {
+      const s = new Date(start);
+      const e = new Date(end);
+      const sStr = s.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+      const eStr = e.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+      const diffDays = Math.max(1, Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+      return `${sStr} – ${eStr} (${diffDays} Days)`;
+    }
+    if (end) {
+      return `Ends ${new Date(end).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}`;
+    }
+    return `Starts ${new Date(start!).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}`;
   }
 }

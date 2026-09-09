@@ -92,6 +92,54 @@ export class MyCourseDetailComponent implements OnInit {
     return Math.min(pct, 100);
   });
 
+  isCourseCompleted = computed(() => {
+    return this.progressPercentage() >= 100 && this.totalLessonsCount() > 0;
+  });
+
+  isCourseTimelineEnded = computed(() => {
+    const end = this.course()?.endDate;
+    if (!end) return true;
+    const endDate = new Date(end);
+    if (isNaN(endDate.getTime())) return true;
+    return new Date().getTime() >= endDate.getTime();
+  });
+
+  isCertificateUnlocked = computed(() => {
+    return this.isCourseCompleted() && this.isCourseTimelineEnded();
+  });
+
+  certificateLockReason = computed<'INCOMPLETE' | 'TIMELINE_ACTIVE' | 'UNLOCKED'>(() => {
+    if (!this.isCourseCompleted()) return 'INCOMPLETE';
+    if (!this.isCourseTimelineEnded()) return 'TIMELINE_ACTIVE';
+    return 'UNLOCKED';
+  });
+
+  certificateUnlockDateFormatted = computed(() => {
+    const end = this.course()?.endDate;
+    if (!end) return 'scheduled end date';
+    try {
+      return new Date(end).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+    } catch {
+      return 'scheduled end date';
+    }
+  });
+
+  formatDateRange(start?: string | null, end?: string | null): string {
+    if (!start && !end) return '';
+    if (start && end) {
+      const s = new Date(start);
+      const e = new Date(end);
+      const sStr = s.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+      const eStr = e.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+      const diffDays = Math.max(1, Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+      return `${sStr} – ${eStr} (${diffDays} Days)`;
+    }
+    if (end) {
+      return `Ends ${new Date(end).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}`;
+    }
+    return `Starts ${new Date(start!).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}`;
+  }
+
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
       const id = params.get('courseId') || '';

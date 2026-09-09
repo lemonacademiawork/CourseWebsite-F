@@ -15,6 +15,10 @@ export interface Enrollment {
     discountedPrice?: number;
     trainer?: { name: string } | string;
     category?: { name: string; slug?: string } | string;
+    startDate?: string | null;
+    endDate?: string | null;
+    start_date?: string | null;
+    end_date?: string | null;
   };
   createdAt?: string;
   updatedAt?: string;

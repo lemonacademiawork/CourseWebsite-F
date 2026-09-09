@@ -139,6 +139,12 @@ import { Lesson } from '../../../core/models/lesson.model';
                   <h3 class="font-bold text-sm text-on-surface leading-snug group-hover:text-primary transition-colors line-clamp-2">
                     {{ course.title }}
                   </h3>
+                  @if (course.startDate || course.endDate) {
+                    <div class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary border border-primary/20">
+                      <span class="material-symbols-outlined text-[12px]">calendar_month</span>
+                      Batch: {{ formatDateRange(course.startDate, course.endDate) }}
+                    </div>
+                  }
                   <p class="text-xs text-on-surface-variant line-clamp-2 leading-relaxed">
                     {{ course.description || 'Hands-on masterclass curriculum with live guidance and structured video tutorials.' }}
                   </p>
@@ -461,6 +467,22 @@ export class TrainerCoursesComponent implements OnInit, OnDestroy {
     const secs = seconds % 60;
     if (secs === 0) return `${mins} min`;
     return `${mins}m ${secs}s`;
+  }
+
+  formatDateRange(start?: string | null, end?: string | null): string {
+    if (!start && !end) return '';
+    if (start && end) {
+      const s = new Date(start);
+      const e = new Date(end);
+      const sStr = s.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+      const eStr = e.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+      const diffDays = Math.max(1, Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+      return `${sStr} – ${eStr} (${diffDays} Days)`;
+    }
+    if (end) {
+      return `Ends ${new Date(end).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}`;
+    }
+    return `Starts ${new Date(start!).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}`;
   }
 }
 

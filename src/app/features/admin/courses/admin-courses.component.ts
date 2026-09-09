@@ -65,6 +65,8 @@ export class AdminCoursesComponent implements OnInit {
   level = signal<string>('BEGINNER');
   durationHours = signal<number>(1);
   imageUrl = signal<string>('');
+  startDate = signal<string>('');
+  endDate = signal<string>('');
   liveClassLink = signal<string>('');
   liveScheduleText = signal<string>('');
   youtubePlaylistUrl = signal<string>('');
@@ -81,6 +83,8 @@ export class AdminCoursesComponent implements OnInit {
   editLevel = signal<string>('BEGINNER');
   editDurationHours = signal<number>(10);
   editImageUrl = signal<string>('');
+  editStartDate = signal<string>('');
+  editEndDate = signal<string>('');
   editLiveClassLink = signal<string>('');
   editLiveScheduleText = signal<string>('');
   editYoutubePlaylistUrl = signal<string>('');
@@ -251,6 +255,8 @@ export class AdminCoursesComponent implements OnInit {
       this.editLevel.set(c.level || 'BEGINNER');
       this.editDurationHours.set(c.durationHours || 10);
       this.editImageUrl.set(c.imageUrl || c.thumbnailUrl || 'https://images.unsplash.com/photo-1513364776144-60967b0f800f');
+      this.editStartDate.set(c.startDate ? c.startDate.substring(0, 10) : '');
+      this.editEndDate.set(c.endDate ? c.endDate.substring(0, 10) : '');
       this.editLiveClassLink.set(c.liveClassLink || '');
       this.editLiveScheduleText.set(c.liveScheduleText || '');
       this.editYoutubePlaylistUrl.set(c.youtubePlaylistUrl || '');
@@ -288,6 +294,8 @@ export class AdminCoursesComponent implements OnInit {
       durationHours: Number(this.editDurationHours()),
       thumbnailUrl: this.editImageUrl().trim(),
       imageUrl: this.editImageUrl().trim(),
+      startDate: this.editStartDate() ? new Date(this.editStartDate()).toISOString() : null,
+      endDate: this.editEndDate() ? new Date(this.editEndDate()).toISOString() : null,
       liveClassLink: this.editLiveClassLink().trim(),
       liveScheduleText: this.editLiveScheduleText().trim(),
       youtubePlaylistUrl: this.editYoutubePlaylistUrl().trim(),
@@ -507,8 +515,8 @@ export class AdminCoursesComponent implements OnInit {
       discountedPrice: Number(this.discountPrice()) || Number(this.price()) || 99,
       level: this.level() || 'BEGINNER',
       durationHours: Number(this.durationHours()) || 10,
-      thumbnailUrl: this.imageUrl().trim() || 'https://images.unsplash.com/photo-1584992236310-6edddc08acff',
-      imageUrl: this.imageUrl().trim() || 'https://images.unsplash.com/photo-1584992236310-6edddc08acff',
+      startDate: this.startDate() ? new Date(this.startDate()).toISOString() : null,
+      endDate: this.endDate() ? new Date(this.endDate()).toISOString() : null,
       liveClassLink: this.liveClassLink().trim(),
       liveScheduleText: this.liveScheduleText().trim(),
       youtubePlaylistUrl: this.youtubePlaylistUrl().trim(),
@@ -524,6 +532,8 @@ export class AdminCoursesComponent implements OnInit {
         this.fetchCourses();
         this.isCreating.set(false);
         this.title.set('');
+        this.startDate.set('');
+        this.endDate.set('');
         this.liveClassLink.set('');
         this.youtubePlaylistUrl.set('');
         this.imageUrl.set('');

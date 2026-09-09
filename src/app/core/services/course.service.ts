@@ -399,10 +399,8 @@ export class CourseService {
       isPublished: merged.isPublished ?? true,
       studentsCount: enrolled,
       _count: merged._count,
-      modules: merged.modules || [],
-      procedures: merged.procedures || [],
-      resources: merged.resources || [],
-      guidance: merged.guidance || [],
+      startDate: merged.startDate || merged.start_date || null,
+      endDate: merged.endDate || merged.end_date || null,
       createdAt: merged.createdAt,
       updatedAt: merged.updatedAt
     };

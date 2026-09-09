@@ -25,6 +25,8 @@ export interface Course {
   progress?: number;
   lessonsCompleted?: number;
   totalLessons?: number;
+  startDate?: string | null;
+  endDate?: string | null;
   createdAt?: string;
   updatedAt?: string;
   trainer?: {
@@ -52,6 +54,8 @@ export interface CreateCoursePayload {
   category?: string;
   shortDescription?: string;
   description?: string;
+  startDate?: string | null;
+  endDate?: string | null;
   price: number;
   discountPrice?: number;
   discountedPrice?: number;
@@ -75,6 +79,8 @@ export interface UpdateCoursePayload {
   category?: string;
   shortDescription?: string;
   description?: string;
+  startDate?: string | null;
+  endDate?: string | null;
   price?: number;
   discountPrice?: number;
   discountedPrice?: number;

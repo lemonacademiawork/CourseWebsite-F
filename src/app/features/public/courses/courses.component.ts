@@ -227,4 +227,20 @@ export class CoursesComponent implements OnInit, OnDestroy {
   getInitials(name: string): string {
     return (name || 'Guest').split(' ').map(n => n[0]).join('');
   }
+
+  formatDateRange(start?: string | null, end?: string | null): string {
+    if (!start && !end) return '';
+    if (start && end) {
+      const s = new Date(start);
+      const e = new Date(end);
+      const sStr = s.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+      const eStr = e.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+      const diffDays = Math.max(1, Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+      return `${sStr} – ${eStr} (${diffDays} Days)`;
+    }
+    if (end) {
+      return `Ends ${new Date(end).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}`;
+    }
+    return `Starts ${new Date(start!).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}`;
+  }
 }
