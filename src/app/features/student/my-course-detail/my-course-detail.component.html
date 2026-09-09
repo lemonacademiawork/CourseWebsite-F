@@ -291,24 +291,21 @@
           />
           
           <!-- Overlay Student Name -->
-          <div class="absolute inset-x-0 top-[40.5%] sm:top-[41.5%] md:top-[42.2%] flex items-center justify-center pointer-events-none px-6">
+          <div class="absolute inset-x-0 top-[39.5%] sm:top-[40.5%] md:top-[41%] flex items-center justify-center pointer-events-none px-6">
             <span class="font-serif font-bold text-base sm:text-2xl md:text-3xl text-[#2D2006] tracking-wide drop-shadow-2xs">
               {{ authService.userName() || 'Artisan Scholar' }}
             </span>
           </div>
 
-          <!-- Overlay Course Name (Line 1) -->
-          <div class="absolute left-[47%] sm:left-[47.5%] top-[51.8%] sm:top-[52.4%] md:top-[53%] max-w-[28%] truncate pointer-events-none text-left">
-            <span class="font-serif font-bold text-[8px] sm:text-[13px] md:text-[15px] text-[#6E5410]">
-              {{ course()?.title || 'Masterclass Workshop' }}
-            </span>
-          </div>
-
-          <!-- Overlay Course Name (Line 2) -->
-          <div class="absolute left-[51%] sm:left-[51.5%] top-[55.5%] sm:top-[56%] md:top-[56.6%] max-w-[24%] truncate pointer-events-none text-left">
-            <span class="font-serif font-bold text-[8px] sm:text-[13px] md:text-[15px] text-[#6E5410]">
-              {{ course()?.title || 'Masterclass Workshop' }}
-            </span>
+          <!-- Overlay Clean Narrative Paragraph with Course Name -->
+          <div class="absolute inset-x-[11%] sm:inset-x-[12%] top-[50.5%] sm:top-[51%] md:top-[51.5%] bottom-[33%] sm:bottom-[33.5%] md:bottom-[34%] bg-[#EDE6D6] flex flex-col justify-center items-center text-center px-4 pointer-events-none">
+            <p class="text-[9px] sm:text-[13px] md:text-[15px] leading-relaxed text-[#2C261E] font-medium max-w-xl">
+              Has successfully completed the 
+              <span class="font-bold text-[#6E5410] font-serif tracking-wide underline decoration-[#6E5410]/40 decoration-1 underline-offset-2">
+                {{ course()?.title || 'Masterclass Workshop' }}
+              </span> 
+              and has demonstrated exceptional skills in class. We congratulate you on your outstanding achievement and look forward to seeing your continued growth and success.
+            </p>
           </div>
         </div>
 

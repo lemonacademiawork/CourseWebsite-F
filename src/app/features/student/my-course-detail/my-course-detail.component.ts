@@ -346,21 +346,34 @@ export class MyCourseDetailComponent implements OnInit {
       ctx.font = 'bold 44px "Cinzel", "Playfair Display", Georgia, serif';
       ctx.fillText(studentName, centerX, studentNameY);
 
-      // 3. Course Name in the paragraph blank spaces
+      // 3. Seamlessly cover the narrative placeholder with matching parchment color
+      const rectX = canvas.width * 0.155;
+      const rectY = canvas.height * 0.512;
+      const rectW = canvas.width * 0.725;
+      const rectH = canvas.height * 0.158;
+      ctx.fillStyle = '#ECE5D6';
+      ctx.fillRect(rectX, rectY, rectW, rectH);
+
+      // 4. Render the clear and beautifully formatted narrative with Course Name
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // Line 1: Has successfully completed the [Course Name]
+      ctx.font = '500 20px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.fillStyle = '#2C261E';
+      
+      // Measure course title width to place inline or formatted
+      ctx.font = 'bold 22px "Cinzel", "Playfair Display", Georgia, serif';
       ctx.fillStyle = '#6E5410';
-      ctx.font = 'bold 20px "Cinzel", Georgia, serif';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'alphabetic';
+      ctx.fillText(`Has successfully completed the "${courseTitle}"`, centerX, canvas.height * 0.540);
 
-      // Blank 1: after "Has successfully completed the "
-      const blank1X = canvas.width * 0.485;
-      const line1Y = canvas.height * 0.542;
-      ctx.fillText(courseTitle, blank1X, line1Y);
+      // Line 2
+      ctx.font = '500 19px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.fillStyle = '#2C261E';
+      ctx.fillText(`and has demonstrated exceptional skills in class. We congratulate you on your`, centerX, canvas.height * 0.575);
 
-      // Blank 2: after "demonstrated exceptional skills in "
-      const blank2X = canvas.width * 0.525;
-      const line2Y = canvas.height * 0.575;
-      ctx.fillText(courseTitle, blank2X, line2Y);
+      // Line 3
+      ctx.fillText(`outstanding achievement and look forward to seeing your continued growth and success.`, centerX, canvas.height * 0.608);
 
       // Trigger download
       const link = document.createElement('a');
