@@ -58,7 +58,6 @@ import { TrainerDashboardComponent } from './features/trainer/dashboard/trainer-
 import { TrainerCoursesComponent } from './features/trainer/courses/trainer-courses.component';
 import { TrainerStudentsComponent } from './features/trainer/students/trainer-students.component';
 import { TrainerClassesComponent } from './features/trainer/classes/trainer-classes.component';
-import { TrainerResourcesComponent } from './features/trainer/resources/trainer-resources.component';
 import { TrainerBlogsComponent } from './features/trainer/blogs/trainer-blogs.component';
 import { TrainerGalleryComponent } from './features/trainer/gallery/trainer-gallery.component';
 import { TrainerProfileComponent } from './features/trainer/profile/trainer-profile.component';
@@ -148,7 +147,6 @@ export const routes: Routes = [
       { path: 'courses', component: TrainerCoursesComponent },
       { path: 'students', component: TrainerStudentsComponent },
       { path: 'classes', component: TrainerClassesComponent },
-      { path: 'resources', component: TrainerResourcesComponent },
       { path: 'blogs', component: TrainerBlogsComponent },
       { path: 'gallery', component: TrainerGalleryComponent },
       { path: 'profile', component: TrainerProfileComponent },

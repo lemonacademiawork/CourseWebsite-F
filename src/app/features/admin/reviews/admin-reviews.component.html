@@ -78,11 +78,19 @@
           </td>
         </tr>
         <tr *ngFor="let rev of reviews()" class="hover:bg-surface-container-low/50 transition-colors">
-          <td class="py-3 px-4 font-semibold text-on-surface">
-            {{ rev.studentName || 'Student' }}
+          <td class="py-3 px-4">
+            <div class="flex items-center gap-2.5">
+              <div class="w-7 h-7 rounded-full bg-primary-container text-on-primary-container font-bold flex items-center justify-center text-[10px] shrink-0">
+                {{ (rev.student?.name || rev.studentName || 'S')[0].toUpperCase() }}
+              </div>
+              <div>
+                <div class="font-semibold text-on-surface">{{ rev.student?.name || rev.studentName || 'Artisan Student' }}</div>
+                <div class="text-[10px] text-on-surface-variant font-normal">{{ rev.student?.email || '' }}</div>
+              </div>
+            </div>
           </td>
           <td class="py-3 px-4 text-primary font-medium">
-            {{ rev.courseTitle || 'Course #' + rev.courseId }}
+            {{ rev.course?.title || rev.courseTitle || (rev.courseId ? 'Course #' + rev.courseId : 'General Course') }}
           </td>
           <td class="py-3 px-4">
             <div class="flex items-center gap-1 text-amber-500 font-bold">

@@ -10,7 +10,7 @@ import { PaymentService } from '../../../core/services/payment.service';
 import { CouponService } from '../../../core/services/coupon.service';
 import { ReviewService } from '../../../core/services/review.service';
 import { Course } from '../../../core/models/course.model';
-import { Review } from '../../../core/models/review.model';
+import { Review, RatingBreakdown } from '../../../core/models/review.model';
 
 @Component({
   selector: 'app-course-lippan',
@@ -298,35 +298,68 @@ import { Review } from '../../../core/models/review.model';
 
             <!-- Public Student Reviews & Ratings Section (Visible to Everyone) -->
             <section class="bg-surface-container-lowest rounded-2xl p-6 sm:p-8 border border-outline-variant/30 shadow-sm space-y-6">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant/20 pb-4">
-                <div>
-                  <h2 class="text-base sm:text-lg font-bold text-on-surface flex items-center gap-2">
-                    <span class="material-symbols-outlined text-amber-500">star</span>
-                    Student Reviews &amp; Ratings
-                  </h2>
-                  <p class="text-xs text-on-surface-variant mt-0.5">Authentic feedback from students enrolled in this masterclass.</p>
+              <div class="border-b border-outline-variant/20 pb-5">
+                <h2 class="text-base sm:text-lg font-bold text-on-surface flex items-center gap-2">
+                  <span class="material-symbols-outlined text-amber-500">star</span>
+                  Student Ratings &amp; Reviews
+                </h2>
+                <p class="text-xs text-on-surface-variant mt-0.5">Authentic feedback from verified students enrolled in this masterclass.</p>
+              </div>
+
+              <!-- Stats & Rating Breakdown Header -->
+              <div class="flex flex-col md:flex-row items-center gap-8 pb-6 border-b border-outline-variant/20">
+                <div class="text-center md:text-left shrink-0">
+                  <div class="text-5xl font-extrabold text-amber-500">
+                    {{ averageRating() ? averageRating().toFixed(1) : '5.0' }}
+                  </div>
+                  <div class="flex justify-center md:justify-start text-amber-400 text-lg my-1">
+                    {{ '★'.repeat(roundRating(averageRating())) }}{{ '☆'.repeat(5 - roundRating(averageRating())) }}
+                  </div>
+                  <p class="text-xs text-on-surface-variant">Based on {{ totalReviewsCount() }} reviews</p>
                 </div>
-                <div class="flex items-center gap-3">
-                  <div class="text-right">
-                    <span class="text-2xl font-bold text-on-surface">{{ averageRating() }}</span>
-                    <span class="text-xs text-on-surface-variant"> / 5.0</span>
-                  </div>
-                  <div class="text-amber-500 text-sm">
-                    ★★★★★
-                    <span class="block text-[10px] text-on-surface-variant text-right">({{ totalReviewsCount() }} reviews)</span>
-                  </div>
+
+                <!-- 1-5 Star Breakdown Distribution Bars -->
+                <div class="flex-1 w-full max-w-md space-y-2">
+                  @for (stars of [5, 4, 3, 2, 1]; track stars) {
+                    <div 
+                      (click)="toggleRatingFilter(stars)"
+                      class="flex items-center gap-3 text-xs cursor-pointer hover:opacity-85 transition-opacity"
+                      [class.font-bold]="filterRating() === stars"
+                      [class.text-amber-600]="filterRating() === stars"
+                      [class.text-on-surface-variant]="filterRating() !== stars">
+                      <span class="w-14 whitespace-nowrap">{{ stars }} Stars</span>
+                      <div class="flex-1 h-2.5 bg-surface-container-high rounded-full overflow-hidden">
+                        <div 
+                          class="h-full bg-amber-400 rounded-full transition-all"
+                          [style.width.%]="getStarPercentage(stars)">
+                        </div>
+                      </div>
+                      <span class="w-8 text-right text-[11px] text-on-surface-variant">{{ getStarCount(stars) }}</span>
+                    </div>
+                  }
                 </div>
               </div>
 
+              @if (filterRating()) {
+                <div class="flex items-center justify-between bg-amber-50 text-amber-800 px-3.5 py-2 rounded-lg text-xs font-semibold">
+                  <span>Filtered by {{ filterRating() }} Star reviews</span>
+                  <button (click)="clearRatingFilter()" class="underline hover:text-amber-950 cursor-pointer">Clear Filter</button>
+                </div>
+              }
+
               <!-- Reviews List -->
-              <div class="space-y-3">
+              <div class="space-y-4">
                 @for (rev of reviews(); track rev.id) {
-                  <div class="p-4 bg-surface-container-low border border-outline-variant/20 rounded-xl space-y-2">
+                  <div class="p-4 bg-surface-container-low border border-outline-variant/20 rounded-xl space-y-2.5">
                     <div class="flex justify-between items-center">
-                      <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container font-bold flex items-center justify-center text-xs">
-                          {{ (rev.student?.name || rev.studentName || 'Student')[0].toUpperCase() }}
-                        </div>
+                      <div class="flex items-center gap-3">
+                        @if (rev.student?.studentProfile?.avatarUrl) {
+                          <img [src]="rev.student?.studentProfile?.avatarUrl" [alt]="rev.student?.name || 'Student'" class="w-9 h-9 rounded-full object-cover border border-outline-variant/20" />
+                        } @else {
+                          <div class="w-9 h-9 rounded-full bg-primary-container text-on-primary-container font-bold flex items-center justify-center text-xs">
+                            {{ (rev.student?.name || rev.studentName || 'Student')[0].toUpperCase() }}
+                          </div>
+                        }
                         <div>
                           <span class="font-bold text-xs text-on-surface block">{{ rev.student?.name || rev.studentName || 'Artisan Student' }}</span>
                           <span class="text-[10px] text-on-surface-variant">{{ rev.createdAt ? (rev.createdAt | date:'mediumDate') : 'Verified Student' }}</span>
@@ -717,6 +750,37 @@ export class CourseLippanComponent implements OnInit {
   reviews = signal<Review[]>([]);
   averageRating = signal<number>(4.9);
   totalReviewsCount = signal<number>(12);
+  filterRating = signal<number | null>(null);
+  breakdown = signal<RatingBreakdown>({ 1: 0, 2: 0, 3: 0, 4: 2, 5: 10 });
+
+  roundRating(rating: number): number {
+    return Math.round(rating || 0);
+  }
+
+  getStarCount(star: number): number {
+    return this.breakdown()[star] || 0;
+  }
+
+  getStarPercentage(star: number): number {
+    const total = this.totalReviewsCount();
+    if (!total || total <= 0) return 0;
+    const count = this.getStarCount(star);
+    return Math.round((count / total) * 100);
+  }
+
+  toggleRatingFilter(star: number): void {
+    if (this.filterRating() === star) {
+      this.clearRatingFilter();
+    } else {
+      this.filterRating.set(star);
+      this.loadReviews(this.course().id, star);
+    }
+  }
+
+  clearRatingFilter(): void {
+    this.filterRating.set(null);
+    this.loadReviews(this.course().id);
+  }
 
   course = signal<Course>({
     id: 'lippan-art',
@@ -748,19 +812,24 @@ export class CourseLippanComponent implements OnInit {
         const id = this.course().id;
         if (id) {
           this.loadCourse(id);
-          this.loadReviews(id);
+          this.loadReviews(id, this.filterRating() || undefined);
         }
       });
     }
   }
 
-  private loadReviews(courseId: string): void {
-    this.reviewService.getCourseReviews(courseId).subscribe({
+  private loadReviews(courseId: string, rating?: number): void {
+    this.reviewService.getCourseReviews(courseId, 1, 20, rating).subscribe({
       next: (res) => {
         if (res.reviews && res.reviews.length > 0) {
           this.reviews.set(res.reviews);
           this.averageRating.set(res.stats?.averageRating || 4.9);
-          this.totalReviewsCount.set(res.total || res.reviews.length);
+          this.totalReviewsCount.set(res.stats?.totalReviews || res.total || res.reviews.length);
+          if (res.stats?.breakdown) {
+            this.breakdown.set(res.stats.breakdown);
+          }
+        } else if (rating) {
+          this.reviews.set([]);
         }
       },
       error: () => {}

@@ -84,12 +84,12 @@ import { Course } from '../../../core/models/course.model';
                 </div>
                 <span class="bg-primary/20 text-primary text-[9px] px-1.5 py-0.5 rounded-full font-bold">Zoom</span>
               </a>
-              <a routerLink="/trainer/resources" class="flex justify-between items-center bg-surface-container-lowest px-2.5 py-1 rounded-lg border border-outline-variant/15 hover:border-outline-variant/30 transition-colors">
+              <a routerLink="/trainer/courses" class="flex justify-between items-center bg-surface-container-lowest px-2.5 py-1 rounded-lg border border-outline-variant/15 hover:border-outline-variant/30 transition-colors">
                 <div class="flex items-center gap-1.5">
-                  <span class="material-symbols-outlined text-on-surface-variant text-sm">folder</span>
-                  <span class="text-[11px] font-medium text-on-surface">Manage Blueprints</span>
+                  <span class="material-symbols-outlined text-on-surface-variant text-sm">school</span>
+                  <span class="text-[11px] font-medium text-on-surface">Manage Curriculum</span>
                 </div>
-                <span class="bg-surface-variant text-on-surface-variant text-[9px] px-1.5 py-0.5 rounded-full font-bold">PDFs</span>
+                <span class="bg-surface-variant text-on-surface-variant text-[9px] px-1.5 py-0.5 rounded-full font-bold">Courses</span>
               </a>
             </div>
           </div>

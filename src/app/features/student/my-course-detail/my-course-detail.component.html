@@ -77,15 +77,6 @@
         Live Zoom Classes
       </button>
       <button 
-        (click)="setTab('resources')"
-        [class.border-b-2]="activeTab() === 'resources'"
-        [class.border-primary]="activeTab() === 'resources'"
-        [class.text-primary]="activeTab() === 'resources'"
-        class="pb-3 text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
-        <span class="material-symbols-outlined text-sm">inventory_2</span>
-        Materials &amp; Blueprints
-      </button>
-      <button 
         (click)="setTab('certificate')"
         [class.border-b-2]="activeTab() === 'certificate'"
         [class.border-primary]="activeTab() === 'certificate'"
@@ -107,7 +98,32 @@
 
     <!-- Tab 1: Course Curriculum (Modules & Lessons) -->
     @if (activeTab() === 'lessons') {
-      <div class="space-y-4">
+      <div class="space-y-5">
+        <!-- Lemon House Craft Official Raw Materials Banner -->
+        <div class="bg-gradient-to-r from-[#FBF8F1] via-[#F5EFE0] to-[#EFE9DC] border border-[#E7E1D3] rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div class="flex items-start gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-[#6E5410] text-white flex items-center justify-center shrink-0 shadow-sm">
+              <span class="material-symbols-outlined text-xl">shopping_bag</span>
+            </div>
+            <div class="space-y-0.5">
+              <h4 class="font-bold text-xs text-[#1C1A17] flex items-center gap-2">
+                Need Raw Materials &amp; Starter Craft Supplies?
+                <span class="px-2 py-0.2 rounded-full text-[8px] font-bold bg-[#6E5410] text-white">Official Store</span>
+              </h4>
+              <p class="text-[11px] text-[#5B5650] max-w-xl leading-relaxed">
+                Order authentic craft raw supplies, laser-cut MDF boards, premium mirrors, clay, moulds, and complete starter kits directly from our official store at <strong>lemonhousecraft.in</strong>.
+              </p>
+            </div>
+          </div>
+          <a 
+            href="https://lemonhousecraft.in" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="px-4 py-2 bg-[#6E5410] hover:bg-[#5c4610] text-white font-bold text-xs rounded-xl transition shadow-xs flex items-center gap-1.5 whitespace-nowrap cursor-pointer">
+            <span>Shop Supplies</span>
+            <span class="material-symbols-outlined text-xs">open_in_new</span>
+          </a>
+        </div>
         @if (modulesLoading()) {
           <div class="text-center py-8 text-on-surface-variant">
             <span class="material-symbols-outlined animate-spin text-xl">progress_activity</span>
@@ -263,71 +279,7 @@
       </div>
     }
 
-    <!-- Tab 3: Materials & Blueprints (Includes lemonhousecraft.in link) -->
-    @if (activeTab() === 'resources') {
-      <div class="space-y-6">
-        <!-- Lemon House Craft Official Raw Materials Banner -->
-        <div class="bg-gradient-to-r from-[#FBF8F1] via-[#F5EFE0] to-[#EFE9DC] border border-[#E7E1D3] rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div class="flex items-start gap-4">
-            <div class="w-12 h-12 rounded-xl bg-[#6E5410] text-white flex items-center justify-center shrink-0 shadow-sm">
-              <span class="material-symbols-outlined text-2xl">shopping_bag</span>
-            </div>
-            <div class="space-y-1">
-              <h4 class="font-bold text-sm text-[#1C1A17] flex items-center gap-2">
-                Need Raw Materials &amp; Starter Craft Kits?
-                <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#6E5410] text-white">Official Store</span>
-              </h4>
-              <p class="text-xs text-[#5B5650] max-w-xl leading-relaxed">
-                Order authentic craft raw supplies, laser-cut MDF boards, premium mirrors, clay, moulds, and complete starter kits directly from our official store at <strong>Lemon House Craft</strong>.
-              </p>
-            </div>
-          </div>
-          <a 
-            href="https://lemonhousecraft.in" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            class="px-5 py-2.5 bg-[#6E5410] hover:bg-[#5c4610] text-white font-bold text-xs rounded-xl transition shadow-xs flex items-center gap-2 whitespace-nowrap cursor-pointer">
-            <span>Visit lemonhousecraft.in</span>
-            <span class="material-symbols-outlined text-sm">open_in_new</span>
-          </a>
-        </div>
-
-        <!-- Downloadable Resources List -->
-        <div>
-          <h4 class="font-bold text-xs text-on-surface mb-3 flex items-center gap-1.5">
-            <span class="material-symbols-outlined text-primary text-base">download</span>
-            Downloadable PDFs, Stencils &amp; Guides
-          </h4>
-
-          @if (resourcesLoading()) {
-            <div class="text-center py-8 text-on-surface-variant">Loading course materials...</div>
-          } @else if (resources().length === 0) {
-            <div class="text-center py-12 text-on-surface-variant bg-surface-container-low rounded-xl">
-              <p>No downloadable PDF attachments currently attached to this course.</p>
-            </div>
-          } @else {
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              @for (res of resources(); track res.id) {
-                <div class="p-4 bg-surface-container-low border border-outline-variant/30 rounded-xl flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-primary text-2xl">description</span>
-                    <div>
-                      <span class="font-bold text-xs text-on-surface">{{ res.title }}</span>
-                      <p class="text-[10px] text-on-surface-variant">{{ res.fileType || res.type || 'Resource' }}</p>
-                    </div>
-                  </div>
-                  <a [href]="res.fileUrl" target="_blank" class="bg-primary/10 text-primary font-semibold px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors text-xs">
-                    Download
-                  </a>
-                </div>
-              }
-            </div>
-          }
-        </div>
-      </div>
-    }
-
-    <!-- Tab 4: Certificate of Completion -->
+    <!-- Tab 3: Certificate of Completion -->
     @if (activeTab() === 'certificate') {
       <div class="text-center py-8 max-w-lg mx-auto space-y-6">
         <div class="border-4 border-double border-primary/40 bg-surface-container-lowest p-8 rounded-2xl shadow-sm space-y-4">
@@ -433,7 +385,19 @@
             </div>
           }
 
-          <div class="flex justify-end">
+          <div class="flex items-center justify-between pt-2">
+            @if (myReview()) {
+              <button 
+                type="button"
+                (click)="deleteMyReview()"
+                class="text-red-600 hover:text-red-700 font-semibold text-xs flex items-center gap-1 cursor-pointer">
+                <span class="material-symbols-outlined text-xs">delete</span>
+                <span>Delete My Review</span>
+              </button>
+            } @else {
+              <div></div>
+            }
+
             <button 
               (click)="submitCourseReview()"
               [disabled]="isSubmittingReview() || !reviewComment().trim()"

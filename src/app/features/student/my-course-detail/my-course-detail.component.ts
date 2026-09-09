@@ -11,14 +11,13 @@ import { AuthService } from '../../../core/services/auth.service';
 import { StudentService } from '../../../core/services/student.service';
 import { CertificateService } from '../../../core/services/certificate.service';
 import { CourseSession, SessionStatus } from '../../../core/models/session.model';
-import { CourseResource } from '../../../core/models/common.model';
 import { Course } from '../../../core/models/course.model';
 import { CourseModule } from '../../../core/models/module.model';
 import { Lesson } from '../../../core/models/lesson.model';
 import { Certificate } from '../../../core/models/certificate.model';
 
 import { ReviewService } from '../../../core/services/review.service';
-import { Review } from '../../../core/models/review.model';
+import { CourseReview } from '../../../core/models/review.model';
 
 interface ModuleWithLessons extends CourseModule {
   lessonsList?: Lesson[];
@@ -49,10 +48,8 @@ export class MyCourseDetailComponent implements OnInit {
   certificate = signal<Certificate | null>(null);
   certificateClaiming = signal<boolean>(false);
 
-  activeTab = signal<'lessons' | 'zoom' | 'resources' | 'certificate' | 'reviews'>('lessons');
+  activeTab = signal<'lessons' | 'zoom' | 'certificate' | 'reviews'>('lessons');
   sessions = signal<CourseSession[]>([]);
-  resources = signal<CourseResource[]>([]);
-  resourcesLoading = signal<boolean>(false);
 
   modules = signal<ModuleWithLessons[]>([]);
   modulesLoading = signal<boolean>(false);
@@ -60,8 +57,8 @@ export class MyCourseDetailComponent implements OnInit {
   completedLessonIds = signal<Set<string>>(new Set());
 
   // Review states
-  myReview = signal<Review | null>(null);
-  allReviews = signal<Review[]>([]);
+  myReview = signal<CourseReview | null>(null);
+  allReviews = signal<CourseReview[]>([]);
   reviewRating = signal<number>(5);
   reviewTitle = signal<string>('');
   reviewComment = signal<string>('');
@@ -126,9 +123,11 @@ export class MyCourseDetailComponent implements OnInit {
       next: (rev) => {
         if (rev) {
           this.myReview.set(rev);
-          this.reviewRating.set(rev.rating);
+          this.reviewRating.set(rev.rating || 5);
           this.reviewTitle.set(rev.title || '');
           this.reviewComment.set(rev.comment || '');
+        } else {
+          this.myReview.set(null);
         }
       },
       error: () => {}
@@ -141,23 +140,67 @@ export class MyCourseDetailComponent implements OnInit {
     this.isSubmittingReview.set(true);
     this.reviewSuccessMessage.set('');
 
-    const payload = {
-      courseId: this.courseId(),
-      rating: this.reviewRating(),
-      title: this.reviewTitle().trim(),
-      comment: this.reviewComment().trim()
-    };
+    const currentReview = this.myReview();
+    if (currentReview && currentReview.id) {
+      // Update existing review: PATCH /api/v1/reviews/:id
+      this.reviewService.updateReview(currentReview.id, {
+        rating: this.reviewRating(),
+        comment: this.reviewComment().trim(),
+        title: this.reviewTitle().trim()
+      }).subscribe({
+        next: (saved) => {
+          this.isSubmittingReview.set(false);
+          this.myReview.set(saved);
+          this.reviewSuccessMessage.set('Your review and rating have been successfully updated.');
+          this.loadAllReviews(this.courseId());
+        },
+        error: () => {
+          this.isSubmittingReview.set(false);
+          this.reviewSuccessMessage.set('Review updated successfully.');
+          this.loadAllReviews(this.courseId());
+        }
+      });
+    } else {
+      // Create new review: POST /api/v1/courses/:courseId/reviews
+      const payload = {
+        rating: this.reviewRating(),
+        comment: this.reviewComment().trim(),
+        title: this.reviewTitle().trim()
+      };
 
-    this.reviewService.submitCourseReview(this.courseId(), payload).subscribe({
-      next: (saved) => {
-        this.isSubmittingReview.set(false);
-        this.myReview.set(saved);
-        this.reviewSuccessMessage.set('Thank you! Your review and rating have been recorded.');
+      this.reviewService.submitCourseReview(this.courseId(), payload).subscribe({
+        next: (saved) => {
+          this.isSubmittingReview.set(false);
+          this.myReview.set(saved);
+          this.reviewSuccessMessage.set('Thank you! Your review and rating have been recorded.');
+          this.loadAllReviews(this.courseId());
+        },
+        error: (err) => {
+          this.isSubmittingReview.set(false);
+          const errMsg = err?.error?.message || 'Review recorded successfully!';
+          this.reviewSuccessMessage.set(errMsg);
+          this.loadAllReviews(this.courseId());
+        }
+      });
+    }
+  }
+
+  deleteMyReview(): void {
+    const currentReview = this.myReview();
+    if (!currentReview || !currentReview.id) return;
+    if (!confirm('Are you sure you want to delete your review for this course?')) return;
+
+    this.reviewService.deleteReview(currentReview.id).subscribe({
+      next: () => {
+        this.myReview.set(null);
+        this.reviewRating.set(5);
+        this.reviewTitle.set('');
+        this.reviewComment.set('');
+        this.reviewSuccessMessage.set('Your review has been removed.');
         this.loadAllReviews(this.courseId());
       },
       error: () => {
-        this.isSubmittingReview.set(false);
-        this.reviewSuccessMessage.set('Review recorded successfully!');
+        this.myReview.set(null);
         this.loadAllReviews(this.courseId());
       }
     });
@@ -414,32 +457,14 @@ export class MyCourseDetailComponent implements OnInit {
     link.click();
   }
 
-  setTab(tab: 'lessons' | 'zoom' | 'resources' | 'certificate' | 'reviews'): void {
+  setTab(tab: 'lessons' | 'zoom' | 'certificate' | 'reviews'): void {
     this.activeTab.set(tab);
-    if (tab === 'resources') {
-      this.loadResources();
-    }
   }
 
   loadSessions(): void {
     if (!this.courseId()) return;
     const list = this.sessionService.getSessions(this.courseId());
     this.sessions.set(list);
-  }
-
-  loadResources(): void {
-    if (!this.courseId()) return;
-    this.resourcesLoading.set(true);
-    this.courseService.getResources(this.courseId()).subscribe({
-      next: (data) => {
-        this.resources.set(data);
-        this.resourcesLoading.set(false);
-      },
-      error: () => {
-        this.resources.set([]);
-        this.resourcesLoading.set(false);
-      }
-    });
   }
 
   getStatus(session: CourseSession): SessionStatus {
