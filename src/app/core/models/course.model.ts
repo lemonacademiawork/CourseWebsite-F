@@ -67,6 +67,7 @@ export interface CreateCoursePayload {
   liveClassLink?: string;
   liveScheduleText?: string;
   youtubePlaylistUrl?: string;
+  isPublished?: boolean;
   trainerId?: string;
   trainer?: string;
   instructor?: string;

@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { switchMap, of } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { CourseService } from '../../../core/services/course.service';
 import { EnrollmentService } from '../../../core/services/enrollment.service';
@@ -837,7 +838,13 @@ export class CourseLippanComponent implements OnInit {
   }
 
   private loadCourse(courseId: string): void {
-    this.courseService.getCourse(courseId).subscribe(found => {
+    this.courseService.getCourse(courseId).pipe(
+      switchMap(found => {
+        if (found) return of(found);
+        // Fallback: try slug-based lookup (handles 'lippan-art', custom slugs, etc.)
+        return this.courseService.getCourseBySlug(courseId);
+      })
+    ).subscribe(found => {
       if (found) {
         this.course.set(found);
         this.checkEnrollmentStatus(found);

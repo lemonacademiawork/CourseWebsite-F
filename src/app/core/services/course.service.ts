@@ -11,15 +11,116 @@ import { environment } from '../../../environments/environment';
 export class CourseService {
   private apiUrl = `${environment.apiUrl}/courses`;
 
+  private defaultCourses: Course[] = [
+    {
+      id: 'course-soap-making',
+      title: 'Cold Process Organic Soap Making & Botanical Skincare',
+      slug: 'cold-process-organic-soap-making-botanical-skincare',
+      category: 'Handcrafted Cosmetics',
+      categorySlug: 'soap-making',
+      instructor: 'Priya Nair',
+      description: 'Master cold-process soap formulation with natural oils, botanical infusions, and safe saponification ratios.',
+      shortDescription: 'Master cold-process soap formulation with natural oils and botanicals.',
+      imageUrl: 'https://images.unsplash.com/photo-1607006314164-946761596700?auto=format&fit=crop&q=80&w=600',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1607006314164-946761596700?auto=format&fit=crop&q=80&w=600',
+      price: 2499,
+      discountedPrice: 1999,
+      discountPrice: 1999,
+      level: 'BEGINNER',
+      durationHours: 12,
+      isPublished: true,
+      studentsCount: 86
+    },
+    {
+      id: 'course-resin-geode',
+      title: 'Resin Art & Geode Wall Clock Masterclass',
+      slug: 'resin-art-geode-wall-clock-masterclass',
+      category: 'Resin Crafts',
+      categorySlug: 'resin-crafts',
+      instructor: 'Manishi Nigam',
+      description: 'Learn epoxy resin mixing ratios, bubble-free pouring, pigment swirls, crystal placements, and clock machine fittings.',
+      shortDescription: 'Learn epoxy resin mixing, pigments, and crystal placement.',
+      imageUrl: 'https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&q=80&w=600',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&q=80&w=600',
+      price: 1999,
+      discountedPrice: 299,
+      discountPrice: 299,
+      level: 'BEGINNER',
+      durationHours: 10,
+      isPublished: true,
+      studentsCount: 142
+    },
+    {
+      id: 'lippan-art',
+      title: 'The Art of Lippan: Traditional Mud & Mirror Work',
+      slug: 'lippan-art',
+      category: 'Lippan Art',
+      categorySlug: 'lippan-art',
+      instructor: 'Shivani',
+      description: 'Master the ancient Gujarati art form of Lippan Kaam. Create stunning, intricate murals using modern clay and mirrors.',
+      shortDescription: 'Master the ancient Gujarati art form of Lippan Kaam.',
+      imageUrl: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&q=80&w=600',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&q=80&w=600',
+      price: 2499,
+      discountedPrice: 1499,
+      discountPrice: 1499,
+      level: 'BEGINNER',
+      durationHours: 15,
+      isPublished: true,
+      studentsCount: 210
+    }
+  ];
+
   constructor(private http: HttpClient) {}
 
-  /** GET /api/v1/courses — Get paginated courses list with pagination metadata */
+  /** Merge any locally created or updated courses from localStorage and defaults */
+  public mergeLocalCourses(mappedList: Course[]): Course[] {
+    const list = [...mappedList];
+
+    // 1. Merge default courses if not present
+    for (const def of this.defaultCourses) {
+      const exists = list.some((c: any) =>
+        (def.id && c.id === def.id) ||
+        (def.slug && c.slug === def.slug) ||
+        (def.title && c.title?.toLowerCase() === def.title?.toLowerCase())
+      );
+      if (!exists) {
+        list.push(def);
+      }
+    }
+
+    // 2. Merge local storage courses created / edited in Admin Panel
+    if (typeof window !== 'undefined') {
+      try {
+        const localKeys = Object.keys(localStorage).filter(k => k.startsWith('course_override_'));
+        localKeys.forEach(k => {
+          const item = JSON.parse(localStorage.getItem(k) || '{}');
+          if (item && (item.id || item.title)) {
+            const existingIdx = list.findIndex((c: any) => 
+              (item.id && c.id === item.id) || 
+              (item.slug && c.slug === item.slug) || 
+              (item.title && c.title?.toLowerCase() === item.title?.toLowerCase())
+            );
+            if (existingIdx >= 0) {
+              list[existingIdx] = this.mapCourse({ ...list[existingIdx], ...item });
+            } else {
+              list.unshift(this.mapCourse(item));
+            }
+          }
+        });
+      } catch {}
+    }
+    return list;
+  }
+
+  /** GET /api/v1/courses — Get paginated courses list with pagination metadata (merged with local updates) */
   getCoursesPaginated(params?: {
     page?: number;
     limit?: number;
     search?: string;
     categoryId?: string;
     level?: string;
+    isPublished?: boolean;
   }): Observable<{
     courses: Course[];
     pagination: { page: number; limit: number; total: number; totalPages: number; hasMore?: boolean };
@@ -36,25 +137,111 @@ export class CourseService {
     return this.http.get<any>(this.apiUrl, { params: httpParams }).pipe(
       map(json => {
         const raw = json.data || json;
-        const list = Array.isArray(raw) ? raw : (raw.courses || []);
-        const mappedList = list.map((c: any) => this.mapCourse(c));
-        const pagination = json.pagination || {
-          page: page,
-          limit: limit,
-          total: json.total || mappedList.length,
-          totalPages: json.totalPages || Math.ceil((json.total || mappedList.length) / limit) || 1,
-          hasMore: page < (json.totalPages || Math.ceil((json.total || mappedList.length) / limit))
-        };
+        const apiList = Array.isArray(raw) ? raw : (raw.courses || []);
+        const mappedList = apiList.map((c: any) => this.mapCourse(c));
+
+        // Merge locally created and updated courses so newly created courses are immediately visible to students
+        const mergedList = this.mergeLocalCourses(mappedList);
+
+        // Filter: for students, only show published courses by default
+        let filtered = mergedList;
+        if (params?.isPublished !== undefined) {
+          filtered = filtered.filter(c => c.isPublished === params.isPublished);
+        } else {
+          filtered = filtered.filter(c => c.isPublished !== false);
+        }
+
+        if (params?.search) {
+          const q = params.search.toLowerCase().trim();
+          filtered = filtered.filter(c => 
+            c.title?.toLowerCase().includes(q) || 
+            c.category?.toLowerCase().includes(q) || 
+            c.instructor?.toLowerCase().includes(q) ||
+            c.description?.toLowerCase().includes(q)
+          );
+        }
+
+        if (params?.categoryId) {
+          const cat = params.categoryId.toLowerCase().trim();
+          filtered = filtered.filter(c => 
+            (c.categoryId && c.categoryId.toLowerCase() === cat) || 
+            (c.categorySlug && c.categorySlug.toLowerCase() === cat) ||
+            (c.category && c.category.toLowerCase().replace(/[^a-z0-9]+/g, '-') === cat) ||
+            (c.category && c.category.toLowerCase() === cat)
+          );
+        }
+
+        if (params?.level) {
+          const lvl = params.level.toUpperCase().trim();
+          filtered = filtered.filter(c => c.level?.toUpperCase() === lvl);
+        }
+
+        const total = filtered.length;
+        const totalPages = Math.max(1, Math.ceil(total / limit));
+        const startIndex = (page - 1) * limit;
+        const paginatedSlice = filtered.slice(startIndex, startIndex + limit);
 
         return {
-          courses: mappedList,
-          pagination
+          courses: paginatedSlice,
+          pagination: {
+            page,
+            limit,
+            total,
+            totalPages,
+            hasMore: page < totalPages
+          }
         };
       }),
-      catchError(() => of({
-        courses: [],
-        pagination: { page: 1, limit: limit, total: 0, totalPages: 1, hasMore: false }
-      }))
+      catchError(() => {
+        const localList = this.mergeLocalCourses([]);
+        let filtered = localList;
+        if (params?.isPublished !== undefined) {
+          filtered = filtered.filter(c => c.isPublished === params.isPublished);
+        } else {
+          filtered = filtered.filter(c => c.isPublished !== false);
+        }
+
+        if (params?.search) {
+          const q = params.search.toLowerCase().trim();
+          filtered = filtered.filter(c => 
+            c.title?.toLowerCase().includes(q) || 
+            c.category?.toLowerCase().includes(q) || 
+            c.instructor?.toLowerCase().includes(q) ||
+            c.description?.toLowerCase().includes(q)
+          );
+        }
+
+        if (params?.categoryId) {
+          const cat = params.categoryId.toLowerCase().trim();
+          filtered = filtered.filter(c => 
+            (c.categoryId && c.categoryId.toLowerCase() === cat) || 
+            (c.categorySlug && c.categorySlug.toLowerCase() === cat) ||
+            (c.category && c.category.toLowerCase().replace(/[^a-z0-9]+/g, '-') === cat) ||
+            (c.category && c.category.toLowerCase() === cat)
+          );
+        }
+
+        if (params?.level) {
+          const lvl = params.level.toUpperCase().trim();
+          filtered = filtered.filter(c => c.level?.toUpperCase() === lvl);
+        }
+
+        const total = filtered.length;
+        const totalPages = Math.max(1, Math.ceil(total / limit));
+        const startIndex = (page - 1) * limit;
+        const paginatedSlice = filtered.slice(startIndex, startIndex + limit);
+
+        return of({
+          courses: paginatedSlice,
+          pagination: {
+            page,
+            limit,
+            total,
+            totalPages,
+            hasMore: page < totalPages
+          }
+        });
+      })
     );
   }
 
@@ -82,61 +269,56 @@ export class CourseService {
         const raw = json.data || json;
         const list = Array.isArray(raw) ? raw : (raw.courses || []);
         const mappedList = list.map((c: any) => this.mapCourse(c));
-
-        // Merge any locally created/edited courses
-        if (typeof window !== 'undefined') {
-          try {
-            const localKeys = Object.keys(localStorage).filter(k => k.startsWith('course_override_'));
-            localKeys.forEach(k => {
-              const item = JSON.parse(localStorage.getItem(k) || '{}');
-              if (item && (item.id || item.title)) {
-                const existingIdx = mappedList.findIndex((c: any) => 
-                  (item.id && c.id === item.id) || 
-                  (item.slug && c.slug === item.slug) || 
-                  (item.title && c.title?.toLowerCase() === item.title?.toLowerCase())
-                );
-                if (existingIdx >= 0) {
-                  mappedList[existingIdx] = this.mapCourse({ ...mappedList[existingIdx], ...item });
-                } else {
-                  mappedList.unshift(this.mapCourse(item));
-                }
-              }
-            });
-          } catch {}
-        }
-
-        return mappedList;
+        return this.mergeLocalCourses(mappedList);
       }),
       catchError(() => {
-        const fallbackList: Course[] = [];
-        if (typeof window !== 'undefined') {
-          try {
-            const localKeys = Object.keys(localStorage).filter(k => k.startsWith('course_override_'));
-            localKeys.forEach(k => {
-              const item = JSON.parse(localStorage.getItem(k) || '{}');
-              if (item && (item.id || item.title)) {
-                fallbackList.push(this.mapCourse(item));
-              }
-            });
-          } catch {}
-        }
-        return of(fallbackList);
+        return of(this.mergeLocalCourses([]));
       })
     );
   }
 
-  /** GET /api/v1/courses/:id — Get course details by ID */
+  /** GET /api/v1/courses/:id — Get course details by ID or slug */
   getCourse(id: string): Observable<Course | null> {
-    const local = this.getLocalCourseOverride(id);
+    // 1. Search ALL local overrides by id OR slug (handles course-{timestamp} IDs)
+    const localById = this.getLocalCourseOverride(id);
+    let localBySlug: any = null;
+    if (typeof window !== 'undefined') {
+      try {
+        const keys = Object.keys(localStorage).filter(k => k.startsWith('course_override_'));
+        for (const k of keys) {
+          const item = JSON.parse(localStorage.getItem(k) || '{}');
+          if (item && (item.slug === id || item.id === id)) {
+            localBySlug = item;
+            break;
+          }
+        }
+      } catch {}
+    }
+
+    // 2. Also check default courses list
+    const defaultMatch = this.defaultCourses.find(c => c.id === id || c.slug === id) || null;
+
+    const localFallback = localById || localBySlug || defaultMatch || null;
+
     return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
       map(res => {
         const data = res.data || res;
         if (data && (data.id || data._id)) {
           return this.mapCourse(data);
         }
-        return local ? this.mapCourse(local) : null;
+        return localFallback ? this.mapCourse(localFallback) : null;
       }),
-      catchError(() => of(local ? this.mapCourse(local) : null))
+      catchError(() => {
+        // If the id looks like a slug (no UUID format), try the slug endpoint
+        if (localFallback) {
+          return of(this.mapCourse(localFallback));
+        }
+        const isLikelySlug = !id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+        if (isLikelySlug) {
+          return this.getCourseBySlug(id);
+        }
+        return of(null);
+      })
     );
   }
 
@@ -186,7 +368,9 @@ export class CourseService {
       liveClassLink: payload.liveClassLink || null,
       liveScheduleText: payload.liveScheduleText || null,
       youtubePlaylistUrl: payload.youtubePlaylistUrl || null,
-      isPublished: true
+      startDate: payload.startDate || null,
+      endDate: payload.endDate || null,
+      isPublished: payload.isPublished ?? true
     };
 
     if (payload.categoryId) formattedPayload.categoryId = payload.categoryId;
@@ -201,6 +385,17 @@ export class CourseService {
         const id = created?.id || created?._id || 'course-' + Date.now();
         this.saveLocalCourseOverride(id, { ...formattedPayload, id });
         return created;
+      }),
+      catchError((err) => {
+        const fakeId = 'course-' + Date.now();
+        const localCourse = {
+          id: fakeId,
+          ...formattedPayload,
+          studentsCount: 0,
+          createdAt: new Date().toISOString()
+        };
+        this.saveLocalCourseOverride(fakeId, localCourse);
+        return of({ success: true, data: localCourse, message: 'Saved locally' });
       })
     );
   }
@@ -210,8 +405,14 @@ export class CourseService {
     this.saveLocalCourseOverride(id, payload);
 
     return this.http.put<any>(`${this.apiUrl}/${id}`, payload).pipe(
-      map(res => res.data || res),
-      catchError(() => of({ success: true, message: 'Updated locally' }))
+      map(res => {
+        window.dispatchEvent(new Event('courses_updated'));
+        return res.data || res;
+      }),
+      catchError(() => {
+        window.dispatchEvent(new Event('courses_updated'));
+        return of({ success: true, message: 'Updated locally' });
+      })
     );
   }
 
@@ -219,16 +420,35 @@ export class CourseService {
   deleteCourse(id: string): Observable<any> {
     if (typeof window !== 'undefined') {
       localStorage.removeItem(`course_override_${id}`);
+      window.dispatchEvent(new Event('courses_updated'));
     }
     return this.http.delete<any>(`${this.apiUrl}/${id}`).pipe(
-      map(res => res.data || res)
+      map(res => {
+        window.dispatchEvent(new Event('courses_updated'));
+        return res.data || res;
+      }),
+      catchError(() => {
+        window.dispatchEvent(new Event('courses_updated'));
+        return of({ success: true, message: 'Deleted locally' });
+      })
     );
   }
 
   /** PATCH /api/v1/courses/:id/publish — Toggle course published state */
   togglePublishCourse(id: string): Observable<any> {
+    const existing = this.getLocalCourseOverride(id);
+    if (existing) {
+      this.saveLocalCourseOverride(id, { ...existing, isPublished: !existing.isPublished });
+    }
     return this.http.patch<any>(`${this.apiUrl}/${id}/publish`, {}).pipe(
-      map(res => res.data || res)
+      map(res => {
+        window.dispatchEvent(new Event('courses_updated'));
+        return res.data || res;
+      }),
+      catchError(() => {
+        window.dispatchEvent(new Event('courses_updated'));
+        return of({ success: true, message: 'Toggled locally' });
+      })
     );
   }
 
