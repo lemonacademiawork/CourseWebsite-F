@@ -11,6 +11,34 @@ export interface TrainerProfile {
   updatedAt?: string;
 }
 
+export interface CreateTrainerPayload {
+  name: string;
+  email: string;
+  phone?: string;
+  password?: string;
+  expertise?: string;
+  designation?: string;
+  bio?: string;
+  avatarUrl?: string;
+}
+
+export interface AdminTrainerItem {
+  id: string;
+  trainerProfileId?: string;
+  name: string;
+  email: string;
+  phone?: string;
+  avatarUrl?: string | null;
+  bio?: string | null;
+  expertise?: string | null;
+  designation?: string | null;
+  publishedCoursesCount?: number;
+  status?: string;
+  createdAt?: string;
+  plainPassword?: string;
+}
+
+
 export interface TrainerDashboardMetrics {
   totalStudents: number;
   activeCourses: number;

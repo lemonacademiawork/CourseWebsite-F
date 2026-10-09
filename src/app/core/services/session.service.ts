@@ -65,4 +65,15 @@ export class SessionService {
       localStorage.setItem('course_sessions', JSON.stringify(all));
     }
   }
+
+  deleteSessions(courseId: string): void {
+    const all = this.getStoredSessions();
+    if (all[courseId]) {
+      delete all[courseId];
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('course_sessions', JSON.stringify(all));
+      }
+    }
+  }
 }
+

@@ -578,14 +578,25 @@ export class AdminCoursesComponent implements OnInit {
     this.isDeleting.set(true);
     this.errorMessage.set('');
 
-    this.courseService.deleteCourse(course.id).subscribe({
+    const targetCourseId = course.id;
+    const targetCourseTitle = course.title;
+    const targetCourseSlug = course.rawCourse?.slug;
+
+    this.courseService.deleteCourse(targetCourseId, {
+      slug: targetCourseSlug,
+      title: targetCourseTitle
+    }).subscribe({
       next: () => {
         this.isDeleting.set(false);
         this.courseToDelete.set(null);
-        if (this.selectedCourseDetails()?.id === course.id) {
+        if (this.selectedCourseDetails()?.id === targetCourseId) {
           this.selectedCourseDetails.set(null);
         }
-        this.saveSuccess.set(`Course "${course.title}" deleted successfully.`);
+        // Clean up any sessions stored locally for this course
+        this.sessionService.deleteSessions(targetCourseId);
+        // Optimistically remove from list immediately
+        this.courses.update(list => list.filter(c => c.id !== targetCourseId));
+        this.saveSuccess.set(`Course "${targetCourseTitle}" deleted successfully.`);
         this.fetchCourses();
         setTimeout(() => this.saveSuccess.set(''), 3000);
       },
@@ -599,6 +610,13 @@ export class AdminCoursesComponent implements OnInit {
         this.errorMessage.set(msg);
       }
     });
+  }
+
+  restoreDemoCourses(): void {
+    this.courseService.restoreDefaultCourses();
+    this.fetchCourses();
+    this.saveSuccess.set('Demo courses restored successfully.');
+    setTimeout(() => this.saveSuccess.set(''), 3000);
   }
 
   openSessionManager(courseId: string, event?: MouseEvent): void {

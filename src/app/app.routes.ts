@@ -120,6 +120,7 @@ export const routes: Routes = [
       { path: 'students', component: AdminStudentsComponent },
       { path: 'content', component: AdminContentComponent },
       { path: 'content/upload', component: AdminContentUploadComponent },
+      { path: 'trainers', component: AdminApplicationsComponent },
       { path: 'applications', component: AdminApplicationsComponent },
       { path: 'applications/review', component: AdminApplicationsReviewComponent },
       { path: 'applications/review/:id', component: AdminApplicationsReviewComponent },

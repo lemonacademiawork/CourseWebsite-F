@@ -73,12 +73,113 @@ export class CourseService {
 
   constructor(private http: HttpClient) {}
 
+  // --- DELETED COURSES PERSISTENCE HELPERS ---
+  public getDeletedCourseKeys(): string[] {
+    if (typeof window === 'undefined') return [];
+    try {
+      return JSON.parse(localStorage.getItem('lemon_deleted_courses') || '[]');
+    } catch {
+      return [];
+    }
+  }
+
+  public isCourseDeleted(c: { id?: string; slug?: string; title?: string } | null | undefined): boolean {
+    if (!c) return false;
+    const deleted = this.getDeletedCourseKeys();
+    if (!deleted || deleted.length === 0) return false;
+
+    const norm = (s?: string) => (s || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+    const cId = norm(c.id);
+    const cSlug = norm(c.slug);
+    const cTitle = norm(c.title);
+
+    return deleted.some(del => {
+      const dNorm = norm(del);
+      if (!dNorm) return false;
+      return (cId && cId === dNorm) || 
+             (cSlug && cSlug === dNorm) || 
+             (cTitle && cTitle === dNorm);
+    });
+  }
+
+  public recordCourseDeleted(id: string, info?: { slug?: string; title?: string }): void {
+    if (typeof window === 'undefined') return;
+    try {
+      const deleted = this.getDeletedCourseKeys();
+      const toAdd: string[] = [id];
+      if (info?.slug) toAdd.push(info.slug);
+      if (info?.title) toAdd.push(info.title);
+
+      // Check default courses to also add their identifiers so they won't resurface
+      const defMatch = this.defaultCourses.find(d => 
+        d.id === id || 
+        d.slug === id || 
+        (info?.slug && d.slug === info.slug) ||
+        (info?.title && d.title?.toLowerCase() === info.title?.toLowerCase())
+      );
+      if (defMatch) {
+        if (defMatch.id) toAdd.push(defMatch.id);
+        if (defMatch.slug) toAdd.push(defMatch.slug);
+        if (defMatch.title) toAdd.push(defMatch.title);
+      }
+
+      // Check local storage overrides and purge matching entries
+      const keys = Object.keys(localStorage).filter(k => k.startsWith('course_override_'));
+      for (const k of keys) {
+        try {
+          const item = JSON.parse(localStorage.getItem(k) || '{}');
+          if (item.id === id || (info?.slug && item.slug === info.slug) || (info?.title && item.title === info.title)) {
+            localStorage.removeItem(k);
+            if (item.id) toAdd.push(item.id);
+            if (item.slug) toAdd.push(item.slug);
+            if (item.title) toAdd.push(item.title);
+          }
+        } catch {}
+      }
+
+      toAdd.forEach(item => {
+        if (item && !deleted.includes(item)) {
+          deleted.push(item);
+        }
+      });
+
+      localStorage.setItem('lemon_deleted_courses', JSON.stringify(deleted));
+      localStorage.removeItem(`course_override_${id}`);
+      localStorage.removeItem(`course_modules_${id}`);
+    } catch (e) {
+      console.error('Error recording deleted course:', e);
+    }
+  }
+
+  public clearDeletedCourse(idOrSlugOrTitle: string): void {
+    if (typeof window === 'undefined' || !idOrSlugOrTitle) return;
+    try {
+      const deleted = this.getDeletedCourseKeys();
+      const norm = (s?: string) => (s || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+      const target = norm(idOrSlugOrTitle);
+      const filtered = deleted.filter(d => norm(d) !== target);
+      localStorage.setItem('lemon_deleted_courses', JSON.stringify(filtered));
+    } catch {}
+  }
+
+  public restoreDefaultCourses(): void {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.removeItem('lemon_deleted_courses');
+      window.dispatchEvent(new Event('courses_updated'));
+    } catch {}
+  }
+
   /** Merge any locally created or updated courses from localStorage and defaults */
   public mergeLocalCourses(mappedList: Course[]): Course[] {
-    const list = [...mappedList];
+    // 0. Exclude any courses that were marked as deleted
+    let list = mappedList.filter(c => !this.isCourseDeleted(c));
 
-    // 1. Merge default courses if not present
+    // 1. Merge default courses if not present AND not deleted
     for (const def of this.defaultCourses) {
+      if (this.isCourseDeleted(def)) {
+        continue;
+      }
       const exists = list.some((c: any) =>
         (def.id && c.id === def.id) ||
         (def.slug && c.slug === def.slug) ||
@@ -96,6 +197,9 @@ export class CourseService {
         localKeys.forEach(k => {
           const item = JSON.parse(localStorage.getItem(k) || '{}');
           if (item && (item.id || item.title)) {
+            if (this.isCourseDeleted(item)) {
+              return;
+            }
             const existingIdx = list.findIndex((c: any) => 
               (item.id && c.id === item.id) || 
               (item.slug && c.slug === item.slug) || 
@@ -110,8 +214,9 @@ export class CourseService {
         });
       } catch {}
     }
-    return list;
+    return list.filter(c => !this.isCourseDeleted(c));
   }
+
 
   /** GET /api/v1/courses — Get paginated courses list with pagination metadata (merged with local updates) */
   getCoursesPaginated(params?: {
@@ -279,6 +384,10 @@ export class CourseService {
 
   /** GET /api/v1/courses/:id — Get course details by ID or slug */
   getCourse(id: string): Observable<Course | null> {
+    if (this.isCourseDeleted({ id, slug: id })) {
+      return of(null);
+    }
+
     // 1. Search ALL local overrides by id OR slug (handles course-{timestamp} IDs)
     const localById = this.getLocalCourseOverride(id);
     let localBySlug: any = null;
@@ -299,12 +408,16 @@ export class CourseService {
     const defaultMatch = this.defaultCourses.find(c => c.id === id || c.slug === id) || null;
 
     const localFallback = localById || localBySlug || defaultMatch || null;
+    if (localFallback && this.isCourseDeleted(localFallback)) {
+      return of(null);
+    }
 
     return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
       map(res => {
         const data = res.data || res;
         if (data && (data.id || data._id)) {
-          return this.mapCourse(data);
+          const mapped = this.mapCourse(data);
+          return this.isCourseDeleted(mapped) ? null : mapped;
         }
         return localFallback ? this.mapCourse(localFallback) : null;
       }),
@@ -324,6 +437,10 @@ export class CourseService {
 
   /** GET /api/v1/courses/slug/:slug — Get course details by URL slug */
   getCourseBySlug(slug: string): Observable<Course | null> {
+    if (this.isCourseDeleted({ slug, id: slug })) {
+      return of(null);
+    }
+
     let localFound: any = null;
     if (typeof window !== 'undefined') {
       try {
@@ -338,11 +455,16 @@ export class CourseService {
       } catch {}
     }
 
+    if (localFound && this.isCourseDeleted(localFound)) {
+      localFound = null;
+    }
+
     return this.http.get<any>(`${this.apiUrl}/slug/${slug}`).pipe(
       map(res => {
         const data = res.data || res;
         if (data && (data.id || data._id)) {
-          return this.mapCourse(data);
+          const mapped = this.mapCourse(data);
+          return this.isCourseDeleted(mapped) ? null : mapped;
         }
         return localFound ? this.mapCourse(localFound) : null;
       }),
@@ -352,6 +474,8 @@ export class CourseService {
 
   /** POST /api/v1/courses — Create a new course (Trainer / Admin) */
   createCourse(payload: CreateCoursePayload): Observable<any> {
+    if (payload.title) this.clearDeletedCourse(payload.title);
+    if (payload.slug) this.clearDeletedCourse(payload.slug);
     const formattedPayload: any = {
       title: payload.title,
       slug: payload.slug || payload.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
@@ -417,9 +541,11 @@ export class CourseService {
   }
 
   /** DELETE /api/v1/courses/:id — Delete course (Trainer / Admin) */
-  deleteCourse(id: string): Observable<any> {
+  deleteCourse(id: string, info?: { slug?: string; title?: string }): Observable<any> {
+    this.recordCourseDeleted(id, info);
     if (typeof window !== 'undefined') {
       localStorage.removeItem(`course_override_${id}`);
+      localStorage.removeItem(`course_modules_${id}`);
       window.dispatchEvent(new Event('courses_updated'));
     }
     return this.http.delete<any>(`${this.apiUrl}/${id}`).pipe(
@@ -429,7 +555,7 @@ export class CourseService {
       }),
       catchError(() => {
         window.dispatchEvent(new Event('courses_updated'));
-        return of({ success: true, message: 'Deleted locally' });
+        return of({ success: true, message: 'Deleted successfully' });
       })
     );
   }
@@ -563,6 +689,9 @@ export class CourseService {
   public saveLocalCourseOverride(id: string, updates: any): void {
     if (typeof window === 'undefined' || !id) return;
     try {
+      this.clearDeletedCourse(id);
+      if (updates?.slug) this.clearDeletedCourse(updates.slug);
+      if (updates?.title) this.clearDeletedCourse(updates.title);
       const existing = localStorage.getItem(`course_override_${id}`);
       const parsed = existing ? JSON.parse(existing) : {};
       const merged = { ...parsed, ...updates, updatedAt: new Date().toISOString() };
