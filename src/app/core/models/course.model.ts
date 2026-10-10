@@ -1,3 +1,28 @@
+export interface CourseReviewItem {
+  id?: string;
+  name: string;
+  studentName?: string;
+  rating: number;
+  comment: string;
+  title?: string;
+  date?: string;
+  createdAt?: string;
+  avatarUrl?: string;
+}
+
+export interface CourseMaterialItem {
+  name: string;
+  description?: string;
+  included?: boolean;
+}
+
+export interface CourseCurriculumModule {
+  title: string;
+  lessonsCount?: number;
+  duration?: string;
+  lessons?: { title: string; duration: string }[];
+}
+
 export interface Course {
   id: string;
   title: string;
@@ -10,6 +35,7 @@ export interface Course {
   shortDescription?: string;
   imageUrl: string;
   thumbnailUrl?: string;
+  previewImage?: string;
   previewVideoUrl?: string;
   liveClassLink?: string;
   liveScheduleText?: string;
@@ -45,6 +71,16 @@ export interface Course {
   procedures?: any[];
   resources?: any[];
   guidance?: any[];
+
+  // Pure data-driven per-course properties
+  materialsKitTitle?: string;
+  materialsKitDescription?: string;
+  materialsPartnerUrl?: string;
+  materialsPartnerName?: string;
+  materialsList?: CourseMaterialItem[];
+  learningObjectives?: string[];
+  curriculumModules?: CourseCurriculumModule[];
+  reviewsList?: CourseReviewItem[];
 }
 
 export interface CreateCoursePayload {

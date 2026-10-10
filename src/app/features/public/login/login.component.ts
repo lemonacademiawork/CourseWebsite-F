@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { timeout, TimeoutError } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -192,13 +193,19 @@ export class LoginComponent implements OnInit {
     }
 
     this.loading.set(true);
-    this.authService.login({ email: this.email(), password: this.password() }).subscribe({
+    this.authService.login({ email: this.email(), password: this.password() }).pipe(
+      timeout(10000)
+    ).subscribe({
       next: () => {
         this.loading.set(false);
         this.authService.navigateAfterAuth(this.returnUrl());
       },
       error: (err) => {
         this.loading.set(false);
+        if (err instanceof TimeoutError || err?.name === 'TimeoutError') {
+          this.error.set('Server connection timed out after 10 seconds. The server may be waking up; please try again in a few moments.');
+          return;
+        }
         const errData = err?.error || {};
         const msg = errData.message || errData.error || (typeof err?.error === 'string' ? err.error : null) || 'Invalid login credentials. Please try again.';
         this.error.set(msg);

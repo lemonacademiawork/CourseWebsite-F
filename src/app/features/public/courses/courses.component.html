@@ -131,35 +131,94 @@
         }
       </div>
 
-      <!-- Loading State -->
-      @if (loading()) {
+      <!-- Subtle Top Refresh Bar when re-fetching in background -->
+      @if (loading() && courses().length > 0) {
+        <div class="w-full h-1 bg-surface-container-high rounded-full overflow-hidden">
+          <div class="h-full bg-primary animate-pulse w-1/2"></div>
+        </div>
+      }
+
+      <!-- Full Loading State only on initial empty fetch -->
+      @if (loading() && courses().length === 0) {
         <div class="flex flex-col items-center justify-center py-24 space-y-4 bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-8 shadow-sm">
           <div class="relative flex items-center justify-center">
             <div class="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
             <div class="absolute w-12 h-12 rounded-full border border-primary/10 animate-ping"></div>
           </div>
           <div class="text-center space-y-1 max-w-sm">
-            <p class="font-bold text-on-surface text-base">Loading courses...</p>
+            <p class="font-bold text-on-surface text-base">Loading masterclasses...</p>
             <p class="text-xs text-on-surface-variant leading-relaxed">
-              Fetching craft masterclasses and workshops...
+              Curating craft workshops and masterclass studios...
             </p>
           </div>
         </div>
       } @else if (courses().length === 0) {
-        <div class="text-center py-16 text-on-surface-variant bg-surface-container-lowest border border-outline-variant/30 rounded-2xl space-y-3">
-          <span class="material-symbols-outlined text-outline text-4xl">school</span>
-          <p class="font-bold text-base text-on-surface">No courses found</p>
-          <p class="text-xs text-on-surface-variant max-w-sm mx-auto">
-            No courses match the selected search query or category filter.
-          </p>
-          @if (selectedCategory() || selectedLevel() || searchQuery()) {
+        <!-- Guard dead-end navigation: When a category has zero courses, route to engaging pre-registration -->
+        @if (selectedCategory()) {
+          <div class="bg-gradient-to-br from-[#FBF8F1] via-[#F6EFE0] to-[#EFE7D5] border border-[#E5DEC9] rounded-2xl p-8 md:p-12 text-center max-w-2xl mx-auto space-y-6 shadow-sm">
+            <div class="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto shadow-sm">
+              <span class="material-symbols-outlined text-3xl">brush</span>
+            </div>
+
+            <div class="space-y-2">
+              <span class="px-3 py-1 bg-primary text-on-primary text-[10px] font-bold rounded-full uppercase tracking-wider">
+                Workshop In Production
+              </span>
+              <h2 class="text-xl md:text-2xl font-bold text-on-surface">
+                {{ getCategoryDisplayName(selectedCategory()) }} Masterclass Coming Soon!
+              </h2>
+              <p class="text-xs text-on-surface-variant max-w-lg mx-auto leading-relaxed">
+                We are finishing the master artisan syllabus, video recordings, and curated DIY raw material kits for this craft. Pre-register to receive <strong>50% early bird tuition</strong> when enrollment goes live.
+              </p>
+            </div>
+
+            <!-- Waitlist Email Form -->
+            @if (waitlistSubmitted()) {
+              <div class="p-4 bg-green-100/80 border border-green-300 rounded-xl text-green-900 text-xs font-semibold flex items-center justify-center gap-2 max-w-md mx-auto">
+                <span class="material-symbols-outlined text-green-700 text-lg">check_circle</span>
+                <span>You're on the VIP waitlist! We'll notify you first with early-bird access.</span>
+              </div>
+            } @else {
+              <div class="flex flex-col sm:flex-row gap-2.5 max-w-md mx-auto">
+                <input 
+                  type="email" 
+                  [ngModel]="waitlistEmail()" 
+                  (ngModelChange)="waitlistEmail.set($event)"
+                  placeholder="Enter your email for early access"
+                  class="flex-1 px-4 py-2.5 bg-white border border-outline-variant/40 rounded-xl text-xs focus:outline-none focus:border-primary shadow-xs"
+                />
+                <button 
+                  (click)="submitWaitlist(selectedCategory())"
+                  class="px-5 py-2.5 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity text-xs shadow-xs cursor-pointer whitespace-nowrap">
+                  Pre-Register
+                </button>
+              </div>
+            }
+
+            <div class="pt-4 border-t border-[#E5DEC9] flex flex-wrap justify-center gap-3">
+              <button 
+                (click)="onCategorySelect(''); onLevelSelect(''); onSearchInput('')"
+                class="px-4 py-2 bg-white/80 hover:bg-white text-on-surface font-semibold rounded-xl border border-outline-variant/30 text-xs cursor-pointer transition-colors flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">school</span>
+                <span>Browse Available Masterclasses</span>
+              </button>
+            </div>
+          </div>
+        } @else {
+          <!-- Standard No Results -->
+          <div class="text-center py-16 text-on-surface-variant bg-surface-container-lowest border border-outline-variant/30 rounded-2xl space-y-3">
+            <span class="material-symbols-outlined text-outline text-4xl">school</span>
+            <p class="font-bold text-base text-on-surface">No courses found</p>
+            <p class="text-xs text-on-surface-variant max-w-sm mx-auto">
+              No masterclasses match the search query "{{ searchQuery() }}".
+            </p>
             <button 
               (click)="onCategorySelect(''); onLevelSelect(''); onSearchInput('')"
               class="mt-2 bg-primary text-on-primary font-semibold px-4 py-2 rounded-lg hover:opacity-90 cursor-pointer text-xs">
               Clear All Filters
             </button>
-          }
-        </div>
+          </div>
+        }
       } @else {
         <!-- Course Cards Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

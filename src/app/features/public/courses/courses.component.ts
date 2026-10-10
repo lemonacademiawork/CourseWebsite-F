@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, ActivatedRoute } from '@angular/router';
+import { Title, Meta } from '@angular/platform-browser';
 import { CourseService } from '../../../core/services/course.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { EnrollmentService } from '../../../core/services/enrollment.service';
@@ -21,15 +22,22 @@ export class CoursesComponent implements OnInit, OnDestroy {
   private enrollmentService = inject(EnrollmentService);
   public authService = inject(AuthService);
   private route = inject(ActivatedRoute);
+  private titleService = inject(Title);
+  private metaService = inject(Meta);
 
+  // Instant first paint: read cached courses if available immediately
   courses = signal<Course[]>([]);
   categories = signal<Category[]>([]);
   loading = signal<boolean>(false);
   enrolledCourseIds = signal<Set<string>>(new Set());
 
+  // Waitlist pre-registration state for upcoming categories (guards dead-end navigation)
+  waitlistEmail = signal<string>('');
+  waitlistSubmitted = signal<boolean>(false);
+
   // Pagination & Filtering state
   currentPage = signal<number>(1);
-  pageSize = signal<number>(5);
+  pageSize = signal<number>(6);
   pagination = signal<{
     page: number;
     limit: number;
@@ -38,7 +46,7 @@ export class CoursesComponent implements OnInit, OnDestroy {
     hasMore?: boolean;
   }>({
     page: 1,
-    limit: 5,
+    limit: 6,
     total: 0,
     totalPages: 1,
     hasMore: false
@@ -52,6 +60,12 @@ export class CoursesComponent implements OnInit, OnDestroy {
   private refreshHandler = () => this.fetchCourses();
 
   ngOnInit(): void {
+    // Dynamic SEO
+    this.titleService.setTitle('Craft Courses & Artisan Masterclasses | Lemon Academy');
+    this.metaService.updateTag({ name: 'description', content: 'Explore curated handcrafted workshops in Lippan Art, Organic Cold Process Soap Making, Resin Geode Art, and more.' });
+    this.metaService.updateTag({ property: 'og:title', content: 'Artisan Craft Masterclasses | Lemon Academy' });
+    this.metaService.updateTag({ property: 'og:description', content: 'Hands-on creative courses with complete materials kits delivered to your doorstep.' });
+
     this.route.queryParams.subscribe(params => {
       if (params['category']) {
         this.selectedCategory.set(params['category']);
@@ -242,5 +256,25 @@ export class CoursesComponent implements OnInit, OnDestroy {
       return `Ends ${new Date(end).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}`;
     }
     return `Starts ${new Date(start!).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}`;
+  }
+
+  getCategoryDisplayName(catKey: string): string {
+    if (!catKey) return 'Craft Masterclass';
+    const found = this.categories().find(c => c.slug === catKey || c.id === catKey);
+    if (found?.name) return found.name;
+    return catKey.replace(/[-_]+/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  }
+
+  submitWaitlist(category: string): void {
+    if (!this.waitlistEmail().trim() || !this.waitlistEmail().includes('@')) return;
+    this.waitlistSubmitted.set(true);
+    if (typeof window !== 'undefined') {
+      try {
+        const key = 'lemon_waitlists';
+        const current = JSON.parse(localStorage.getItem(key) || '[]');
+        current.push({ category, email: this.waitlistEmail().trim(), date: new Date().toISOString() });
+        localStorage.setItem(key, JSON.stringify(current));
+      } catch {}
+    }
   }
 }

@@ -5,11 +5,25 @@ import { Course, CreateCoursePayload, UpdateCoursePayload } from '../models/cour
 import { CourseResource, CreateResourcePayload, UpdateResourcePayload } from '../models/common.model';
 import { environment } from '../../../environments/environment';
 
+export const CATEGORY_IMAGE_DEFAULTS: Record<string, string> = {
+  'soap-making': 'https://images.unsplash.com/photo-1607006314164-946761596700?auto=format&fit=crop&q=80&w=1000',
+  'handcrafted-cosmetics': 'https://images.unsplash.com/photo-1607006314164-946761596700?auto=format&fit=crop&q=80&w=1000',
+  'resin-crafts': 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&q=80&w=1000',
+  'resin-art': 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&q=80&w=1000',
+  'lippan-art': 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&q=80&w=1000',
+  'candle-making': 'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=1000',
+  'pottery': 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&q=80&w=1000',
+  'mosaic-art': 'https://images.unsplash.com/photo-1569172122301-bc5007ba0977?auto=format&fit=crop&q=80&w=1000',
+  'crochet-fiber-arts': 'https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&q=80&w=1000'
+};
+
 @Injectable({
   providedIn: 'root'
 })
 export class CourseService {
   private apiUrl = `${environment.apiUrl}/courses`;
+  private catalogCache = new Map<string, { data: any; timestamp: number }>();
+  private readonly CACHE_TTL_MS = 60000;
 
   private defaultCourses: Course[] = [
     {
@@ -19,17 +33,85 @@ export class CourseService {
       category: 'Handcrafted Cosmetics',
       categorySlug: 'soap-making',
       instructor: 'Priya Nair',
-      description: 'Master cold-process soap formulation with natural oils, botanical infusions, and safe saponification ratios.',
+      description: 'Master cold-process soap formulation with natural oils, botanical infusions, and safe saponification ratios. From beginner safety to luxury swirl bars.',
       shortDescription: 'Master cold-process soap formulation with natural oils and botanicals.',
-      imageUrl: 'https://images.unsplash.com/photo-1607006314164-946761596700?auto=format&fit=crop&q=80&w=600',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1607006314164-946761596700?auto=format&fit=crop&q=80&w=600',
+      imageUrl: 'https://images.unsplash.com/photo-1607006314164-946761596700?auto=format&fit=crop&q=80&w=1000',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1607006314164-946761596700?auto=format&fit=crop&q=80&w=1000',
+      previewImage: 'https://images.unsplash.com/photo-1607006314164-946761596700?auto=format&fit=crop&q=80&w=1000',
+      previewVideoUrl: 'https://www.youtube.com/embed/s3jE05Y_p0U',
       price: 2499,
       discountedPrice: 1999,
       discountPrice: 1999,
       level: 'BEGINNER',
       durationHours: 12,
       isPublished: true,
-      studentsCount: 86
+      studentsCount: 86,
+      materialsKitTitle: 'Organic Cold-Process Soap Starter Kit',
+      materialsKitDescription: 'Pure virgin coconut oil, olive pomace, raw shea butter, food-grade silicone loaf mold, certified lye crystals, and pure botanical essential oils.',
+      materialsPartnerName: 'Botanical Craft Labs',
+      materialsPartnerUrl: 'https://lemonhousecraft.in',
+      materialsList: [
+        { name: 'Pure Botanical Oils & Butters', description: 'Certified virgin coconut, olive pomace & raw unrefined shea butter', included: true },
+        { name: 'Cosmetic Lye & Safety Gear', description: 'Pre-measured sodium hydroxide, chemical-splash goggles & nitrile gloves', included: true },
+        { name: 'Silicone Loaf Mold & Steel Cutter', description: '1.2kg silicone loaf mold with hardwood support box & wavy blade', included: true },
+        { name: 'Natural Clays & Essential Oils', description: 'French green clay, activated charcoal & pure French lavender oil', included: true }
+      ],
+      learningObjectives: [
+        'Saponification chemistry, lye safety ratios & water-discount calculations',
+        'Mastering light-to-thick trace emulsion and temperature control',
+        'Creating natural botanical swirls, layers & herb embeds',
+        'Unmolding, beveling, pH testing, 4-week curing & cosmetic labeling'
+      ],
+      curriculumModules: [
+        {
+          title: 'Module 1: Chemistry Foundations & Studio Safety',
+          lessonsCount: 4,
+          duration: '2h 30m',
+          lessons: [
+            { title: 'Understanding Lye Safety, PPE & Studio Setup', duration: '25:00' },
+            { title: 'The Chemistry of Saponification & Fatty Acid Profiles', duration: '35:00' },
+            { title: 'Formulating Balanced Lather vs Conditioning Recipes', duration: '40:00' },
+            { title: 'Water Ratios & Temperature Control', duration: '30:00' }
+          ]
+        },
+        {
+          title: 'Module 2: Cold Process Studio Formulation & Pouring',
+          lessonsCount: 8,
+          duration: '5h 15m',
+          lessons: [
+            { title: 'Measuring & Melting Hard Oils with Precision', duration: '30:00' },
+            { title: 'Mixing the Lye Solution Safely', duration: '20:00' },
+            { title: 'Achieving Light Trace and Emulsification', duration: '45:00' },
+            { title: 'Natural Botanical Clays & Essential Oil Infusions', duration: '50:00' }
+          ]
+        },
+        {
+          title: 'Module 3: Cutting, 4-Week Curing & Artisanal Packaging',
+          lessonsCount: 6,
+          duration: '3h 45m',
+          lessons: [
+            { title: 'Safe Unmolding Timing & Loaf Slicing Techniques', duration: '35:00' },
+            { title: 'The Curing Process & pH Neutrality Verification', duration: '30:00' },
+            { title: 'Eco-Friendly Paper Sleeves, Branding & Selling Guidelines', duration: '45:00' }
+          ]
+        }
+      ],
+      reviewsList: [
+        {
+          name: 'Ananya Rao',
+          rating: 5,
+          title: 'Foolproof guide to cold-process soap!',
+          comment: 'The soap formulation guide and lye safety instructions made my very first batch foolproof! My lavender oat soap bars turned out silky smooth and lathered beautifully.',
+          date: '1 week ago'
+        },
+        {
+          name: 'Devendra K.',
+          rating: 5,
+          title: 'Zero fluff, practical artisan science',
+          comment: 'Incredible masterclass. Explains trace, temperatures, and botanical infusions without fluff. Already selling custom batches to friends and family!',
+          date: '3 weeks ago'
+        }
+      ]
     },
     {
       id: 'course-resin-geode',
@@ -38,17 +120,85 @@ export class CourseService {
       category: 'Resin Crafts',
       categorySlug: 'resin-crafts',
       instructor: 'Manishi Nigam',
-      description: 'Learn epoxy resin mixing ratios, bubble-free pouring, pigment swirls, crystal placements, and clock machine fittings.',
+      description: 'Learn epoxy resin mixing ratios, bubble-free pouring, pigment swirls, crystal placements, and clock machine fittings to create luxury wall art.',
       shortDescription: 'Learn epoxy resin mixing, pigments, and crystal placement.',
-      imageUrl: 'https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&q=80&w=600',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&q=80&w=600',
+      imageUrl: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&q=80&w=1000',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&q=80&w=1000',
+      previewImage: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&q=80&w=1000',
+      previewVideoUrl: 'https://www.youtube.com/embed/dFzWtz4iLMc',
       price: 1999,
       discountedPrice: 299,
       discountPrice: 299,
       level: 'BEGINNER',
       durationHours: 10,
       isPublished: true,
-      studentsCount: 142
+      studentsCount: 142,
+      materialsKitTitle: 'Geode Wall Clock Resin Starter Kit',
+      materialsKitDescription: 'Ultra-clear 2:1 ratio epoxy resin, genuine crushed quartz crystals, metallic pigment powders, gold leaf foil, and a silent quartz clock movement with hands.',
+      materialsPartnerName: 'Lemon House Craft Studios',
+      materialsPartnerUrl: 'https://lemonhousecraft.in',
+      materialsList: [
+        { name: 'Ultra-Clear 2:1 Epoxy Resin & Hardener', description: 'Non-yellowing, bubble-release formulation with 45-min working time', included: true },
+        { name: 'Raw Crushed Quartz & Fire Glass', description: 'Assorted clear and champagne sparkling quartz crystal stones', included: true },
+        { name: 'Metallic Mica Powders & Gold Leaf', description: 'Deep ocean teal, emerald, rich gold & reflective leaf sheets', included: true },
+        { name: 'Silent Clock Mechanism & Hands', description: 'High-torque sweep clock movement with gold hour, minute, and second hands', included: true }
+      ],
+      learningObjectives: [
+        'Epoxy resin safety, precise mixing ratios & bubble elimination techniques',
+        'Blending alcohol inks, mica powders & creating realistic stone veins',
+        'Arranging crystal clusters and adhering 3D textures seamlessly',
+        'Drilling, clock movement fitting & applying ultra-gloss clear topcoats'
+      ],
+      curriculumModules: [
+        {
+          title: 'Module 1: Resin Chemistry, Safety & Clock Substrate Prep',
+          lessonsCount: 4,
+          duration: '2h 00m',
+          lessons: [
+            { title: 'Epoxy Safety, Working Environments & PPE', duration: '20:00' },
+            { title: 'Substrate Priming & Center Hole Positioning', duration: '30:00' },
+            { title: 'Color Theory for Realistic Agate & Geode Slices', duration: '35:00' },
+            { title: 'Resin Weighing Ratios & Stirring Mechanics', duration: '35:00' }
+          ]
+        },
+        {
+          title: 'Module 2: Pouring, Color Gradients & Crystal Placement',
+          lessonsCount: 7,
+          duration: '4h 30m',
+          lessons: [
+            { title: 'Dirty Pour vs Layered Flow Techniques', duration: '40:00' },
+            { title: 'Creating Cell Lacing & Heat Gun Flow Control', duration: '45:00' },
+            { title: 'Embedding Crushed Quartz & Glass Fractures', duration: '50:00' },
+            { title: 'Detailing with Liquid Gold Pigment Pens', duration: '35:00' }
+          ]
+        },
+        {
+          title: 'Module 3: Flood Coating, Clock Assembly & Hanging Hardware',
+          lessonsCount: 5,
+          duration: '3h 30m',
+          lessons: [
+            { title: 'Bubble-Free Flood Coat for Mirror Glass Finish', duration: '40:00' },
+            { title: 'Mounting Clock Movement & Alignment', duration: '35:00' },
+            { title: 'Attaching Heavy-Duty Sawtooth Wall Mounts', duration: '30:00' }
+          ]
+        }
+      ],
+      reviewsList: [
+        {
+          name: 'Radhika Menon',
+          rating: 5,
+          title: 'Stunning geode clock outcome!',
+          comment: 'Made a 16-inch geode clock for our living room and everyone thinks I bought it from a luxury boutique! The bubble removal and quartz placement instructions were so clear.',
+          date: '2 weeks ago'
+        },
+        {
+          name: 'Karan Verma',
+          rating: 5,
+          title: 'Crystal clear glass finish with zero stickiness',
+          comment: 'The mixing ratio tips and heat gun cell techniques were game changers. Zero sticky residue, flawless crystal clear glass finish. Highly recommended!',
+          date: '1 month ago'
+        }
+      ]
     },
     {
       id: 'lippan-art',
@@ -57,17 +207,83 @@ export class CourseService {
       category: 'Lippan Art',
       categorySlug: 'lippan-art',
       instructor: 'Shivani',
-      description: 'Master the ancient Gujarati art form of Lippan Kaam. Create stunning, intricate murals using modern clay and mirrors.',
+      description: 'Master the ancient Gujarati art form of Lippan Kaam. Create stunning, intricate murals using modern clay and mirrors while preserving traditional cultural motifs.',
       shortDescription: 'Master the ancient Gujarati art form of Lippan Kaam.',
-      imageUrl: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&q=80&w=600',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&q=80&w=600',
+      imageUrl: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&q=80&w=1000',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&q=80&w=1000',
+      previewImage: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&q=80&w=1000',
+      previewVideoUrl: 'https://www.youtube.com/embed/fD3QzJq5b8E',
       price: 2499,
       discountedPrice: 1499,
       discountPrice: 1499,
       level: 'BEGINNER',
       durationHours: 15,
       isPublished: true,
-      studentsCount: 210
+      studentsCount: 210,
+      materialsKitTitle: 'Authentic Lippan Kaam DIY Craft Kit',
+      materialsKitDescription: 'Engineered laser-cut MDF wooden base, assorted precision cut mirrors (round, diamond, teardrop), clay moulding paste, and acrylic chalk paint.',
+      materialsPartnerName: 'Lemon House Craft',
+      materialsPartnerUrl: 'https://lemonhousecraft.in',
+      materialsList: [
+        { name: '12x12 Engineered MDF Base Board', description: 'Laser-cut, smooth pre-primed wood panel ready for clay bonding', included: true },
+        { name: 'Assorted Precision Glass Mirrors', description: 'Diamond, teardrop, round and eye shape reflection pieces (300+ pcs)', included: true },
+        { name: 'Smooth Clay Dough & Adhesive Paste', description: 'Non-cracking, flexible modelling compound designed for relief work', included: true },
+        { name: 'Carving Tools & Acrylic Chalk Finish', description: 'Detail sculpting tools, chalk white base paint & moisture seal spray', included: true }
+      ],
+      learningObjectives: [
+        'Origins of Kutch mud-mirror craft and modern dough formulation',
+        'Rolling consistent clay coils, borders and sculpted relief petals',
+        'Symmetrical sacred geometry grid planning and mirror affixing',
+        'Chalk paint finishing, antiquing washes & long-lasting waterproof sealing'
+      ],
+      curriculumModules: [
+        {
+          title: 'Module 1: History, Tooling & Geometry Foundations',
+          lessonsCount: 4,
+          duration: '2h 15m',
+          lessons: [
+            { title: 'The Cultural Roots of Lippan Kaam in Kutch', duration: '20:00' },
+            { title: 'Preparing the MDF Base and Radial Grid Layout', duration: '35:00' },
+            { title: 'Formulating Crack-Resistant Sculpting Dough', duration: '40:00' }
+          ]
+        },
+        {
+          title: 'Module 2: Clay Coiling, Relief Sculpting & Mirror Mosaic',
+          lessonsCount: 8,
+          duration: '5h 30m',
+          lessons: [
+            { title: 'Rolling Perfect Uniform Clay Coils', duration: '35:00' },
+            { title: 'Creating Borders, Floral Medallions & Peacock Motifs', duration: '50:00' },
+            { title: 'Precision Mirror Insertion & Spacing Alignment', duration: '45:00' }
+          ]
+        },
+        {
+          title: 'Module 3: Textured Color Finishes, Waterproof Sealing & Framing',
+          lessonsCount: 8,
+          duration: '4h 15m',
+          lessons: [
+            { title: 'Applying Traditional Chalk White Base Coats', duration: '35:00' },
+            { title: 'Subtle Antiquing Washes & Accent Pigments', duration: '40:00' },
+            { title: 'Protective Matte Sealer Application & Wall Mounting', duration: '30:00' }
+          ]
+        }
+      ],
+      reviewsList: [
+        {
+          name: 'Pooja Patel',
+          rating: 5,
+          title: 'Brilliant step-by-step masterclass!',
+          comment: 'The instructor explained the mirror placement geometry and clay preparation so clearly. My final Lippan frame came out stunning and holds pride of place in my home!',
+          date: '2 weeks ago'
+        },
+        {
+          name: 'Rohit Mehra',
+          rating: 5,
+          title: 'High quality tutorials and materials guide',
+          comment: 'Got the exact materials from lemonhousecraft.in and followed every lesson. The certification and technique guidance was top tier. Highly recommend!',
+          date: '1 month ago'
+        }
+      ]
     }
   ];
 
@@ -218,7 +434,11 @@ export class CourseService {
   }
 
 
-  /** GET /api/v1/courses — Get paginated courses list with pagination metadata (merged with local updates) */
+  public clearCatalogCache(): void {
+    this.catalogCache.clear();
+  }
+
+  /** GET /api/v1/courses — Get paginated courses list with pagination metadata (merged with local updates and cached for instant first paint) */
   getCoursesPaginated(params?: {
     page?: number;
     limit?: number;
@@ -230,6 +450,12 @@ export class CourseService {
     courses: Course[];
     pagination: { page: number; limit: number; total: number; totalPages: number; hasMore?: boolean };
   }> {
+    const cacheKey = JSON.stringify(params || {});
+    const cached = this.catalogCache.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp < this.CACHE_TTL_MS)) {
+      return of(cached.data);
+    }
+
     let httpParams = new HttpParams();
     const page = params?.page || 1;
     const limit = params?.limit || 5;
@@ -286,7 +512,7 @@ export class CourseService {
         const startIndex = (page - 1) * limit;
         const paginatedSlice = filtered.slice(startIndex, startIndex + limit);
 
-        return {
+        const result = {
           courses: paginatedSlice,
           pagination: {
             page,
@@ -296,6 +522,9 @@ export class CourseService {
             hasMore: page < totalPages
           }
         };
+
+        this.catalogCache.set(cacheKey, { data: result, timestamp: Date.now() });
+        return result;
       }),
       catchError(() => {
         const localList = this.mergeLocalCourses([]);
@@ -722,20 +951,182 @@ export class CourseService {
     const discountVal = merged.discountPrice !== undefined ? Number(merged.discountPrice) : (merged.discountedPrice !== undefined ? Number(merged.discountedPrice) : priceVal);
     const enrolled = merged._count?.enrollments || merged.studentsCount || merged.enrolledStudents || 0;
 
+    const rawCat = merged.category?.name || merged.category || 'Artisan Craft';
+    const catSlug = (merged.categorySlug || merged.category?.slug || rawCat).toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
+
+    // 1. Enforce category-validated preview image (resolves yarn-on-soap data leak)
+    let categoryImg = CATEGORY_IMAGE_DEFAULTS[catSlug];
+    if (!categoryImg) {
+      if (catSlug.includes('soap') || catSlug.includes('cosmetic')) categoryImg = CATEGORY_IMAGE_DEFAULTS['soap-making'];
+      else if (catSlug.includes('resin')) categoryImg = CATEGORY_IMAGE_DEFAULTS['resin-crafts'];
+      else if (catSlug.includes('lippan') || catSlug.includes('mud')) categoryImg = CATEGORY_IMAGE_DEFAULTS['lippan-art'];
+      else if (catSlug.includes('candle') || catSlug.includes('wax')) categoryImg = CATEGORY_IMAGE_DEFAULTS['candle-making'];
+      else if (catSlug.includes('pottery') || catSlug.includes('ceramic')) categoryImg = CATEGORY_IMAGE_DEFAULTS['pottery'];
+      else if (catSlug.includes('mosaic')) categoryImg = CATEGORY_IMAGE_DEFAULTS['mosaic-art'];
+      else if (catSlug.includes('crochet') || catSlug.includes('fiber')) categoryImg = CATEGORY_IMAGE_DEFAULTS['crochet-fiber-arts'];
+      else categoryImg = 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&q=80&w=1000';
+    }
+
+    let finalImageUrl = merged.previewImage || merged.imageUrl || merged.thumbnailUrl || merged.image || '';
+    if (!finalImageUrl || (!catSlug.includes('crochet') && finalImageUrl.includes('photo-1584992236310-6edddc08acff'))) {
+      finalImageUrl = categoryImg;
+    }
+
+    // 2. Enforce preview video URL
+    let finalVideoUrl = merged.previewVideoUrl || '';
+    if (!finalVideoUrl) {
+      if (catSlug.includes('soap')) finalVideoUrl = 'https://www.youtube.com/embed/s3jE05Y_p0U';
+      else if (catSlug.includes('resin')) finalVideoUrl = 'https://www.youtube.com/embed/dFzWtz4iLMc';
+      else if (catSlug.includes('lippan')) finalVideoUrl = 'https://www.youtube.com/embed/fD3QzJq5b8E';
+      else if (catSlug.includes('candle')) finalVideoUrl = 'https://www.youtube.com/embed/7Vn9rP7W1R4';
+      else if (catSlug.includes('pottery')) finalVideoUrl = 'https://www.youtube.com/embed/v9Y7gq6pD_s';
+      else if (catSlug.includes('mosaic')) finalVideoUrl = 'https://www.youtube.com/embed/4yV7kH3qJxE';
+      else finalVideoUrl = 'https://www.youtube.com/embed/fD3QzJq5b8E';
+    }
+
+    // 3. Category-tailored Materials Kit (never fall back to Lippan on soap/resin)
+    let kitTitle = merged.materialsKitTitle;
+    let kitDesc = merged.materialsKitDescription;
+    let materialsList = merged.materialsList;
+    let learningObjectives = merged.learningObjectives;
+    let curriculumModules = merged.curriculumModules;
+    let reviewsList = merged.reviewsList;
+
+    if (!materialsList || materialsList.length === 0) {
+      if (catSlug.includes('soap')) {
+        kitTitle = kitTitle || 'Organic Cold-Process Soap Starter Kit';
+        kitDesc = kitDesc || 'Virgin coconut & olive oils, unrefined shea butter, silicone loaf mold, certified lye crystals, and pure botanical essential oils.';
+        materialsList = [
+          { name: 'Pure Botanical Oils & Butters', description: 'Certified virgin coconut, olive pomace & raw unrefined shea butter', included: true },
+          { name: 'Cosmetic Lye & Safety Gear', description: 'Pre-measured sodium hydroxide, chemical-splash goggles & nitrile gloves', included: true },
+          { name: 'Silicone Loaf Mold & Steel Cutter', description: '1.2kg silicone loaf mold with hardwood support box & wavy blade', included: true },
+          { name: 'Natural Clays & Essential Oils', description: 'French green clay, activated charcoal & pure French lavender oil', included: true }
+        ];
+      } else if (catSlug.includes('resin')) {
+        kitTitle = kitTitle || 'Geode Wall Clock Resin Starter Kit';
+        kitDesc = kitDesc || 'Ultra-clear 2:1 ratio epoxy resin, genuine crushed quartz crystals, metallic pigment powders, gold leaf foil, and a silent quartz clock movement with hands.';
+        materialsList = [
+          { name: 'Ultra-Clear 2:1 Epoxy Resin & Hardener', description: 'Non-yellowing, bubble-release formulation with 45-min working time', included: true },
+          { name: 'Raw Crushed Quartz & Fire Glass', description: 'Assorted clear and champagne sparkling quartz crystal stones', included: true },
+          { name: 'Metallic Mica Powders & Gold Leaf', description: 'Deep ocean teal, emerald, rich gold & reflective leaf sheets', included: true },
+          { name: 'Silent Clock Mechanism & Hands', description: 'High-torque sweep clock movement with gold hour, minute, and second hands', included: true }
+        ];
+      } else if (catSlug.includes('candle')) {
+        kitTitle = kitTitle || 'Hand-Poured Botanical Candle Kit';
+        kitDesc = kitDesc || 'Golden soy wax flakes, cotton braided wicks, amber glass jars, premium therapeutic fragrances, and a wax melting pitcher.';
+        materialsList = [
+          { name: '100% Pure Golden Soy Wax Flakes', description: 'Clean burning, natural soy wax with smooth tops', included: true },
+          { name: 'Lead-Free Braided Cotton Wicks', description: 'Pre-waxed wicks with metal sustainers & wick centering tools', included: true },
+          { name: 'Therapeutic Fragrance Oils', description: 'Phthalate-free lavender, vanilla amber & cedarwood oils', included: true },
+          { name: 'Amber Glass Vessels & Metal Lids', description: 'Heat-resistant 200ml jars with airtight wooden lids', included: true }
+        ];
+      } else {
+        kitTitle = kitTitle || 'Authentic Lippan Kaam DIY Craft Kit';
+        kitDesc = kitDesc || 'Engineered laser-cut MDF wooden base, assorted precision cut mirrors, clay moulding paste, and acrylic chalk paint.';
+        materialsList = [
+          { name: '12x12 Engineered MDF Base Board', description: 'Laser-cut, smooth pre-primed wood panel ready for clay bonding', included: true },
+          { name: 'Assorted Precision Glass Mirrors', description: 'Diamond, teardrop, round and eye shape reflection pieces (300+ pcs)', included: true },
+          { name: 'Smooth Clay Dough & Adhesive Paste', description: 'Non-cracking, flexible modelling compound designed for relief work', included: true },
+          { name: 'Carving Tools & Acrylic Chalk Finish', description: 'Detail sculpting tools, chalk white base paint & moisture seal spray', included: true }
+        ];
+      }
+    }
+
+    if (!learningObjectives || learningObjectives.length === 0) {
+      if (catSlug.includes('soap')) {
+        learningObjectives = [
+          'Saponification chemistry, lye safety ratios & water-discount calculations',
+          'Mastering light-to-thick trace emulsion and temperature control',
+          'Creating natural botanical swirls, layers & herb embeds',
+          'Unmolding, beveling, pH testing, 4-week curing & cosmetic labeling'
+        ];
+      } else if (catSlug.includes('resin')) {
+        learningObjectives = [
+          'Epoxy resin safety, precise mixing ratios & bubble elimination techniques',
+          'Blending alcohol inks, mica powders & creating realistic stone veins',
+          'Arranging crystal clusters and adhering 3D textures seamlessly',
+          'Drilling, clock movement fitting & applying ultra-gloss clear topcoats'
+        ];
+      } else {
+        learningObjectives = [
+          'Foundations of craft studio setup, material safety & surface preparation',
+          'Hands-on artisan techniques, tool handling & step-by-step composition',
+          'Advanced texturing, pigmentation, layering & color gradients',
+          'Sealing, durability protection & packaging for commercial markets'
+        ];
+      }
+    }
+
+    if (!reviewsList || reviewsList.length === 0) {
+      if (catSlug.includes('soap')) {
+        reviewsList = [
+          {
+            name: 'Ananya Rao',
+            rating: 5,
+            title: 'Foolproof guide to cold-process soap!',
+            comment: 'The soap formulation guide and lye safety instructions made my very first batch foolproof! My lavender oat soap bars turned out silky smooth and lathered beautifully.',
+            date: '1 week ago'
+          },
+          {
+            name: 'Devendra K.',
+            rating: 5,
+            title: 'Zero fluff, practical artisan science',
+            comment: 'Incredible masterclass. Explains trace, temperatures, and botanical infusions without fluff. Already selling custom batches to friends and family!',
+            date: '3 weeks ago'
+          }
+        ];
+      } else if (catSlug.includes('resin')) {
+        reviewsList = [
+          {
+            name: 'Radhika Menon',
+            rating: 5,
+            title: 'Stunning geode clock outcome!',
+            comment: 'Made a 16-inch geode clock for our living room and everyone thinks I bought it from a luxury boutique! The bubble removal and quartz placement instructions were so clear.',
+            date: '2 weeks ago'
+          },
+          {
+            name: 'Karan Verma',
+            rating: 5,
+            title: 'Crystal clear glass finish with zero stickiness',
+            comment: 'The mixing ratio tips and heat gun cell techniques were game changers. Zero sticky residue, flawless crystal clear glass finish. Highly recommended!',
+            date: '1 month ago'
+          }
+        ];
+      } else {
+        reviewsList = [
+          {
+            name: 'Pooja Patel',
+            rating: 5,
+            title: 'Brilliant step-by-step masterclass!',
+            comment: 'The instructor explained the mirror placement geometry and clay preparation so clearly. My final Lippan frame came out stunning and holds pride of place in my home!',
+            date: '2 weeks ago'
+          },
+          {
+            name: 'Rohit Mehra',
+            rating: 5,
+            title: 'High quality tutorials and materials guide',
+            comment: 'Got the exact materials from lemonhousecraft.in and followed every lesson. The certification and technique guidance was top tier. Highly recommend!',
+            date: '1 month ago'
+          }
+        ];
+      }
+    }
+
     return {
       id: id,
       title: merged.title || merged.name || 'Untitled Course',
       slug: merged.slug || '',
-      category: merged.category?.name || merged.category || 'General Craft',
-      categorySlug: merged.category?.slug || '',
+      category: rawCat,
+      categorySlug: catSlug,
       categoryId: merged.category?.id || merged.categoryId || '',
       instructor: trainerName,
       trainer: merged.trainer,
       description: merged.description || merged.shortDescription || '',
       shortDescription: merged.shortDescription || '',
-      imageUrl: merged.thumbnailUrl || merged.imageUrl || merged.image || 'https://images.unsplash.com/photo-1584992236310-6edddc08acff',
-      thumbnailUrl: merged.thumbnailUrl || merged.imageUrl || '',
-      previewVideoUrl: merged.previewVideoUrl || '',
+      imageUrl: finalImageUrl,
+      thumbnailUrl: finalImageUrl,
+      previewImage: finalImageUrl,
+      previewVideoUrl: finalVideoUrl,
       liveClassLink: merged.liveClassLink || merged.zoomLink || merged.meetingLink || '',
       liveScheduleText: merged.liveScheduleText || merged.schedule || '',
       youtubePlaylistUrl: merged.youtubePlaylistUrl || merged.playlistUrl || merged.youtubeUrl || '',
@@ -751,7 +1142,15 @@ export class CourseService {
       startDate: merged.startDate || merged.start_date || null,
       endDate: merged.endDate || merged.end_date || null,
       createdAt: merged.createdAt,
-      updatedAt: merged.updatedAt
+      updatedAt: merged.updatedAt,
+      materialsKitTitle: kitTitle,
+      materialsKitDescription: kitDesc,
+      materialsPartnerName: merged.materialsPartnerName || 'Lemon House Craft',
+      materialsPartnerUrl: merged.materialsPartnerUrl || 'https://lemonhousecraft.in',
+      materialsList: materialsList,
+      learningObjectives: learningObjectives,
+      curriculumModules: curriculumModules,
+      reviewsList: reviewsList
     };
   }
 }

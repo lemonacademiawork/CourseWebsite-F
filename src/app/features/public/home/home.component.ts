@@ -2,6 +2,9 @@ import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { Title, Meta } from '@angular/platform-browser';
+import { AuthService } from '../../../core/services/auth.service';
+import { EnrollmentService } from '../../../core/services/enrollment.service';
 import { environment } from '../../../../environments/environment';
 
 export interface CarouselSlide {
@@ -22,56 +25,53 @@ export type HeroSlide = CarouselSlide;
 
 export const HERO_SLIDES: CarouselSlide[] = [
   {
-    title: "Learn. Create. Inspire.",
-    tagline: "Master the art of Lippan Mirror Work",
-    description: "Explore mirror & clay magic. Discover traditional Indian craft techniques in our modern online studio classes.",
+    title: "The Art of Lippan: Traditional Mud & Mirror Work",
+    tagline: "Live Masterclass • Enrolling Now",
+    description: "Explore sacred geometry and clay relief murals. Master authentic Kutch craft techniques with complete DIY mirror kits delivered home.",
     imageUrl: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&q=80&w=1600&h=600",
-    route: "/courses",
+    route: "/courses/lippan-art",
     category: "lippan-art",
     order: 1,
     active: true,
-    isActive: true,
-    queryParams: { category: "lippan-art" }
+    isActive: true
+  },
+  {
+    title: "Cold Process Organic Soap Making & Botanical Skincare",
+    tagline: "Bestselling Studio Workshop",
+    description: "Formulate plant-based nourishing soap bars with raw botanical oils, natural herbal clays, and certified lye safety ratios.",
+    imageUrl: "https://images.unsplash.com/photo-1607006314164-946761596700?auto=format&fit=crop&q=80&w=1600&h=600",
+    route: "/courses/course-soap-making",
+    category: "soap-making",
+    order: 2,
+    active: true,
+    isActive: true
+  },
+  {
+    title: "Resin Art & Geode Wall Clock Masterclass",
+    tagline: "Luxury Home Decor Studio",
+    description: "Pour glossy ocean effects, blend metallic mica veins, and embed genuine crushed quartz crystals into working wall clock art.",
+    imageUrl: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&q=80&w=1600&h=600",
+    route: "/courses/course-resin-geode",
+    category: "resin-crafts",
+    order: 3,
+    active: true,
+    isActive: true
   },
   {
     title: "Soothe. Pour. Relax.",
-    tagline: "Hand-poured Soy Candle Making",
+    tagline: "Coming Soon • Pre-Register",
     description: "Create premium organic botanical candles with rich, calming custom aroma profiles and clean burning wax.",
     imageUrl: "https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=1600&h=600",
     route: "/courses",
     category: "candle-making",
-    order: 2,
+    order: 4,
     active: true,
     isActive: true,
     queryParams: { category: "candle-making" }
   },
   {
-    title: "Pour. Swirl. Glow.",
-    tagline: "Ocean Resin Art & Liquid Glass",
-    description: "Create ultra-glossy ocean tables, trays, and coaster sets with multi-layer pigment swirls and cell lacing.",
-    imageUrl: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&q=80&w=1600&h=600",
-    route: "/courses",
-    category: "resin-art",
-    order: 3,
-    active: true,
-    isActive: true,
-    queryParams: { category: "resin-art" }
-  },
-  {
-    title: "Craft. Design. Innovate.",
-    tagline: "Modern Mosaic Art Techniques",
-    description: "Assemble colorful ceramic and glass tiles into elegant designs under expert guidance.",
-    imageUrl: "https://images.unsplash.com/photo-1569172122301-bc5007ba0977?auto=format&fit=crop&q=80&w=1600&h=600",
-    route: "/courses",
-    category: "mosaic-art",
-    order: 4,
-    active: true,
-    isActive: true,
-    queryParams: { category: "mosaic-art" }
-  },
-  {
     title: "Shape. Mold. Sculpt.",
-    tagline: "Wheel & Hand Pottery Masterclass",
+    tagline: "Coming Soon • Pre-Register",
     description: "Learn hand-building, wheel throwing, and organic terracotta sculpting methods to craft timeless vessels.",
     imageUrl: "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&q=80&w=1600&h=600",
     route: "/courses",
@@ -80,18 +80,6 @@ export const HERO_SLIDES: CarouselSlide[] = [
     active: true,
     isActive: true,
     queryParams: { category: "pottery" }
-  },
-  {
-    title: "Knit. Weave. Express.",
-    tagline: "Artisan Crochet & Fiber Crafts",
-    description: "Master intricate stitch patterns, amigurumi forms, and tactile macramé knots with step-by-step guidance.",
-    imageUrl: "https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&q=80&w=1600&h=600",
-    route: "/courses",
-    category: "crochet-fiber-arts",
-    order: 6,
-    active: true,
-    isActive: true,
-    queryParams: { category: "crochet-fiber-arts" }
   }
 ];
 
@@ -104,11 +92,16 @@ export const HERO_SLIDES: CarouselSlide[] = [
 export class HomeComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private http = inject(HttpClient);
+  public authService = inject(AuthService);
+  private enrollmentService = inject(EnrollmentService);
+  private titleService = inject(Title);
+  private metaService = inject(Meta);
 
   heroSlides = HERO_SLIDES;
   slides = signal<CarouselSlide[]>(HERO_SLIDES);
   currentSlide = signal<number>(0);
   isLoadingCarousel = signal<boolean>(false);
+  enrolledCourses = signal<any[]>([]);
   private timer: any;
   private hasLoadedFromStorage = false;
 
@@ -116,10 +109,30 @@ export class HomeComponent implements OnInit, OnDestroy {
   private localReloadHandler = () => this.applyLocalStorageSlides();
 
   ngOnInit(): void {
+    // Dynamic SEO
+    this.titleService.setTitle('Lemon Academy | Learn Artisan Crafts, Lippan Art & Soap Making');
+    this.metaService.updateTag({ name: 'description', content: 'Lemon Academy is the premier craft academy for artisan masterclasses in Lippan Kaam, Cold-Process Soap Making, and Epoxy Resin Art.' });
+    this.metaService.updateTag({ property: 'og:title', content: 'Lemon Academy — Artisan Craft Masterclasses' });
+    this.metaService.updateTag({ property: 'og:description', content: 'Learn hands-on craft skills from master instructors with full physical DIY materials kits.' });
+
     this.loadCarousel();
+    this.loadEnrolledCourses();
+
     if (typeof window !== 'undefined') {
       window.addEventListener('carousel_updated', this.localReloadHandler);
       window.addEventListener('storage', this.localReloadHandler);
+      window.addEventListener('auth_state_changed', () => this.loadEnrolledCourses());
+    }
+  }
+
+  loadEnrolledCourses(): void {
+    if (this.authService.isLoggedIn()) {
+      this.enrollmentService.getEnrollments().subscribe({
+        next: (list) => this.enrolledCourses.set(list || []),
+        error: () => this.enrolledCourses.set([])
+      });
+    } else {
+      this.enrolledCourses.set([]);
     }
   }
 

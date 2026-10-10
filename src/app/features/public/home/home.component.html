@@ -90,6 +90,32 @@
     </div>
   </section>
 
+  <!-- Logged-in Student Continue Learning Widget -->
+  @if (authService.isLoggedIn()) {
+    <section class="max-w-[1440px] w-[92%] mx-auto my-6 p-5 sm:p-6 bg-surface-container-lowest border border-primary/25 rounded-2xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-5 animate-fadeIn">
+      <div class="flex items-center gap-4 text-center sm:text-left">
+        <div class="w-12 h-12 rounded-xl bg-primary text-on-primary flex items-center justify-center shrink-0 shadow-xs">
+          <span class="material-symbols-outlined text-2xl">school</span>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold text-primary uppercase tracking-widest">Active Student Portal</span>
+          <h2 class="text-base sm:text-lg font-bold text-on-surface">Welcome back, {{ authService.userName() }}!</h2>
+          <p class="text-xs text-on-surface-variant leading-relaxed">
+            {{ enrolledCourses().length > 0 ? ('You have ' + enrolledCourses().length + ' active craft masterclasses enrolled. Pick up right where you left off.') : 'Resume your video modules, study material kits, and live studio workshops.' }}
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 shrink-0 w-full sm:w-auto">
+        <a 
+          routerLink="/my-courses" 
+          class="w-full sm:w-auto text-center px-6 py-3 bg-primary text-on-primary font-bold text-xs rounded-xl shadow-xs hover:bg-primary/90 transition-all flex items-center justify-center gap-2 cursor-pointer">
+          <span class="material-symbols-outlined text-base">play_circle</span>
+          <span>Open My Classroom</span>
+        </a>
+      </div>
+    </section>
+  }
+
   <!-- Quick Explore Bar -->
   <section class="bg-[#F3EDE2] border-y border-outline-variant/15 py-4 px-margin-mobile md:px-margin-desktop">
     <div class="max-w-container-max mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
