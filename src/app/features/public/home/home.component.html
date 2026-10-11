@@ -59,6 +59,15 @@
         </div>
       }
 
+      @if (slides().length === 0) {
+        <div class="w-full h-full flex items-center justify-center bg-surface-container-high/60">
+          <div class="flex flex-col items-center gap-3">
+            <div class="w-8 h-8 border-3 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+            <span class="text-xs text-on-surface-variant font-medium">Curating masterclasses...</span>
+          </div>
+        </div>
+      }
+
       <!-- Arrow Controls -->
       @if (slides().length > 1) {
         <button 

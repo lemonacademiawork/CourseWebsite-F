@@ -545,22 +545,8 @@ export class AdminCoursesComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to create course on server:', err);
-        const fakeId = 'course-' + Date.now();
-        this.courseService.saveLocalCourseOverride(fakeId, {
-          id: fakeId,
-          ...payload,
-          isPublished: true,
-          studentsCount: 0,
-          createdAt: new Date().toISOString()
-        });
-        this.fetchCourses();
-        this.isCreating.set(false);
-        this.title.set('');
-        this.liveClassLink.set('');
-        this.youtubePlaylistUrl.set('');
-        this.imageUrl.set('');
-        this.saveSuccess.set(`Course "${payload.title}" created successfully!`);
-        setTimeout(() => this.saveSuccess.set(''), 3500);
+        const backendMsg = err?.error?.message || err?.error?.error || '';
+        this.errorMessage.set(backendMsg || 'Failed to create course on server. Please check all fields and try again.');
       }
     });
   }
@@ -612,12 +598,6 @@ export class AdminCoursesComponent implements OnInit {
     });
   }
 
-  restoreDemoCourses(): void {
-    this.courseService.restoreDefaultCourses();
-    this.fetchCourses();
-    this.saveSuccess.set('Demo courses restored successfully.');
-    setTimeout(() => this.saveSuccess.set(''), 3000);
-  }
 
   openSessionManager(courseId: string, event?: MouseEvent): void {
     if (event) event.stopPropagation();

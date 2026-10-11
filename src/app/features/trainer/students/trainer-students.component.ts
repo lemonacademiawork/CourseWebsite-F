@@ -358,51 +358,7 @@ export class TrainerStudentsComponent implements OnInit {
           });
         }
 
-        // Fallback demo students if database is empty for rich display
-        if (results.length === 0) {
-          const sampleCourses = activeTrainerCourses.length > 0 ? activeTrainerCourses : courses;
-          const c1 = sampleCourses[0]?.title || 'The Art of Lippan: Traditional Mud & Mirror Work';
-          const c2 = sampleCourses[1]?.title || 'Hand-Poured Botanical Candle Making Masterclass';
 
-          results.push(
-            {
-              id: 'st-demo-1',
-              name: 'Ananya Sharma',
-              email: 'ananya.sharma@example.com',
-              phone: '+91 98765 43210',
-              courseId: sampleCourses[0]?.id || 'lippan-art',
-              courseTitle: c1,
-              courseCategory: 'Lippan Art',
-              progress: 85,
-              status: 'Active',
-              enrolledAt: new Date(Date.now() - 14 * 86400000).toISOString()
-            },
-            {
-              id: 'st-demo-2',
-              name: 'Rohan Verma',
-              email: 'rohan.verma@example.com',
-              phone: '+91 98111 22334',
-              courseId: sampleCourses[0]?.id || 'lippan-art',
-              courseTitle: c1,
-              courseCategory: 'Lippan Art',
-              progress: 40,
-              status: 'Active',
-              enrolledAt: new Date(Date.now() - 7 * 86400000).toISOString()
-            },
-            {
-              id: 'st-demo-3',
-              name: 'Pooja Patel',
-              email: 'pooja.patel@example.com',
-              phone: '+91 99222 33445',
-              courseId: sampleCourses[1]?.id || 'candle-making',
-              courseTitle: c2,
-              courseCategory: 'Candle Making',
-              progress: 100,
-              status: 'Completed',
-              enrolledAt: new Date(Date.now() - 25 * 86400000).toISOString()
-            }
-          );
-        }
 
         this.students.set(results);
         this.isLoading.set(false);

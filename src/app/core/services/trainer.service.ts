@@ -102,49 +102,6 @@ export class TrainerService {
       }
     });
 
-    // Default sample trainers if list is completely empty
-    if (mapped.length === 0) {
-      const defaults: AdminTrainerItem[] = [
-        {
-          id: 'trainer-shivani',
-          name: 'Shivani',
-          email: 'lemonacademiawork@gmail.com',
-          phone: '+91 98200 12345',
-          expertise: 'Lippan Mirror Art & Traditional Crafts',
-          designation: 'Master Artisan & Lippan Specialist',
-          bio: 'Gujarati traditional mud and mirror craft master with over 10 years of artisan studio experience.',
-          publishedCoursesCount: 1,
-          status: 'Active',
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: 'trainer-manishi',
-          name: 'Manishi Nigam',
-          email: 'manishi@lemonacademia.com',
-          phone: '+91 98200 67890',
-          expertise: 'Botanical Candle & Resin Arts',
-          designation: 'Lead Resin Craft Instructor',
-          bio: 'Specialist in crystal geode resin pouring, bubble-free finishing, and organic botanical candles.',
-          publishedCoursesCount: 1,
-          status: 'Active',
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: 'trainer-priya',
-          name: 'Priya Nair',
-          email: 'priya@lemonacademia.com',
-          phone: '+91 98200 54321',
-          expertise: 'Cold Process Soap & Botanical Skincare',
-          designation: 'Certified Cosmetic Formulator',
-          bio: 'Expert in cold-process soap formulation with natural cold-pressed oils and plant extracts.',
-          publishedCoursesCount: 1,
-          status: 'Active',
-          createdAt: new Date().toISOString()
-        }
-      ];
-      mapped.push(...defaults);
-    }
-
     // Filter deleted
     let filtered = mapped.filter(t => !deleted.includes(t.id) && (!t.email || !deleted.includes(t.email)));
 

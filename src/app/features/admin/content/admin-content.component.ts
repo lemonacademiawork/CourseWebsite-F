@@ -520,7 +520,7 @@ export class AdminContentComponent implements OnInit {
   }
 
   resetToDefaults(showNotification = true): void {
-    const defaultSlides: AdminCarouselSlide[] = HERO_SLIDES.map((slide, index) => ({
+    const defaultSlides: AdminCarouselSlide[] = HERO_SLIDES.map((slide: any, index: number) => ({
       id: String(index + 1),
       title: slide.title || 'Masterclass',
       tagline: slide.tagline || '',

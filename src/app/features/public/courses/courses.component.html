@@ -208,9 +208,13 @@
           <!-- Standard No Results -->
           <div class="text-center py-16 text-on-surface-variant bg-surface-container-lowest border border-outline-variant/30 rounded-2xl space-y-3">
             <span class="material-symbols-outlined text-outline text-4xl">school</span>
-            <p class="font-bold text-base text-on-surface">No courses found</p>
+            <p class="font-bold text-base text-on-surface">No courses available yet</p>
             <p class="text-xs text-on-surface-variant max-w-sm mx-auto">
-              No masterclasses match the search query "{{ searchQuery() }}".
+              @if (searchQuery()) {
+                No masterclasses match the search query "{{ searchQuery() }}".
+              } @else {
+                Our master artisans are preparing upcoming courses. Check back soon!
+              }
             </p>
             <button 
               (click)="onCategorySelect(''); onLevelSelect(''); onSearchInput('')"

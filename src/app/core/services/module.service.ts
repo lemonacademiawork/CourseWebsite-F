@@ -41,51 +41,10 @@ export class ModuleService {
           } catch {}
         }
 
-        if (mappedList.length === 0) {
-          // Provide default module so admin can immediately add lessons to any course
-          const defMod: CourseModule = {
-            id: `mod-${courseId}-1`,
-            title: 'Curriculum & Workshops',
-            description: 'Core hands-on masterclass lessons',
-            orderIndex: 1,
-            isPublished: true,
-            courseId: courseId
-          };
-          this.saveLocalModule(courseId, defMod);
-          return [defMod];
-        }
-
         return mappedList.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
       }),
       catchError(() => {
-        const fallbackList: CourseModule[] = [];
-        if (typeof window !== 'undefined') {
-          try {
-            const localKey = `course_modules_${courseId}`;
-            const stored = localStorage.getItem(localKey);
-            if (stored) {
-              const localList: CourseModule[] = JSON.parse(stored);
-              if (Array.isArray(localList)) {
-                fallbackList.push(...localList);
-              }
-            }
-          } catch {}
-        }
-
-        if (fallbackList.length === 0) {
-          const defMod: CourseModule = {
-            id: `mod-${courseId}-1`,
-            title: 'Curriculum & Workshops',
-            description: 'Core hands-on masterclass lessons',
-            orderIndex: 1,
-            isPublished: true,
-            courseId: courseId
-          };
-          this.saveLocalModule(courseId, defMod);
-          return of([defMod]);
-        }
-
-        return of(fallbackList.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0)));
+        return of([]);
       })
     );
   }
