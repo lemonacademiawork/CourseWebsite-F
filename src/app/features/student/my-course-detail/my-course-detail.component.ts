@@ -72,7 +72,7 @@ export class MyCourseDetailComponent implements OnInit {
 
   totalLessonsCount = computed(() => {
     const list = this.allLessons();
-    return list.length > 0 ? list.length : (this.course()?.totalLessons || 4);
+    return list.length > 0 ? list.length : (this.course()?.totalLessons || 0);
   });
 
   completedCount = computed(() => {
@@ -260,6 +260,19 @@ export class MyCourseDetailComponent implements OnInit {
       next: (c) => {
         this.course.set(c);
         this.courseLoading.set(false);
+        if (this.modules().length === 0 && c?.modules && c.modules.length > 0) {
+          const initialMods: ModuleWithLessons[] = c.modules.map((m: any) => ({
+            id: m.id,
+            courseId: m.courseId || courseId,
+            title: m.title,
+            description: m.description,
+            orderIndex: m.orderIndex,
+            isPublished: m.isPublished,
+            lessonsList: m.lessons || [],
+            loadingLessons: false
+          }));
+          this.modules.set(initialMods);
+        }
       },
       error: () => {
         this.courseLoading.set(false);
@@ -271,7 +284,19 @@ export class MyCourseDetailComponent implements OnInit {
     this.modulesLoading.set(true);
     this.moduleService.getModules(courseId).subscribe({
       next: (mods) => {
-        const enriched: ModuleWithLessons[] = (mods || []).map(m => ({ ...m, lessonsList: [], loadingLessons: true }));
+        const courseMods = this.course()?.modules || [];
+        const enriched: ModuleWithLessons[] = (mods || []).map(m => {
+          const match = courseMods.find((cm: any) => cm.id === m.id);
+          const initialLessons = (match?.lessons && match.lessons.length > 0)
+            ? match.lessons
+            : ((m as any).lessons || []);
+          return {
+            ...m,
+            lessonsList: initialLessons,
+            loadingLessons: initialLessons.length === 0
+          };
+        });
+
         this.modules.set(enriched);
         this.modulesLoading.set(false);
 
@@ -281,7 +306,11 @@ export class MyCourseDetailComponent implements OnInit {
               this.modules.update(current => {
                 const copy = [...current];
                 if (copy[idx]) {
-                  copy[idx] = { ...copy[idx], lessonsList: lessons || [], loadingLessons: false };
+                  copy[idx] = {
+                    ...copy[idx],
+                    lessonsList: (lessons && lessons.length > 0) ? lessons : copy[idx].lessonsList || [],
+                    loadingLessons: false
+                  };
                 }
                 return copy;
               });
@@ -290,7 +319,7 @@ export class MyCourseDetailComponent implements OnInit {
               this.modules.update(current => {
                 const copy = [...current];
                 if (copy[idx]) {
-                  copy[idx] = { ...copy[idx], lessonsList: [], loadingLessons: false };
+                  copy[idx] = { ...copy[idx], loadingLessons: false };
                 }
                 return copy;
               });
@@ -299,7 +328,22 @@ export class MyCourseDetailComponent implements OnInit {
         });
       },
       error: () => {
-        this.modules.set([]);
+        const courseMods = this.course()?.modules || [];
+        if (courseMods.length > 0) {
+          const fallback: ModuleWithLessons[] = courseMods.map((m: any) => ({
+            id: m.id,
+            courseId: m.courseId || courseId,
+            title: m.title,
+            description: m.description,
+            orderIndex: m.orderIndex,
+            isPublished: m.isPublished,
+            lessonsList: m.lessons || [],
+            loadingLessons: false
+          }));
+          this.modules.set(fallback);
+        } else {
+          this.modules.set([]);
+        }
         this.modulesLoading.set(false);
       }
     });

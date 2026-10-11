@@ -404,13 +404,23 @@ export class CourseService {
       endDate: c.endDate || c.end_date || null,
       createdAt: c.createdAt,
       updatedAt: c.updatedAt,
+      modules: c.modules || [],
+      procedures: c.procedures || [],
       materialsKitTitle: c.materialsKitTitle,
       materialsKitDescription: c.materialsKitDescription,
       materialsPartnerName: c.materialsPartnerName || 'Lemon House Craft',
       materialsPartnerUrl: c.materialsPartnerUrl || 'https://lemonhousecraft.in',
       materialsList: c.materialsList || [],
       learningObjectives: c.learningObjectives || [],
-      curriculumModules: c.curriculumModules || [],
+      curriculumModules: c.curriculumModules || (c.modules ? c.modules.map((m: any) => ({
+        title: m.title,
+        lessonsCount: m.lessons?.length || 0,
+        duration: m.description || '',
+        lessons: (m.lessons || []).map((l: any) => ({
+          title: l.title,
+          duration: l.durationSeconds ? `${Math.round(l.durationSeconds / 60)} min` : (l.duration || '')
+        }))
+      })) : []),
       reviewsList: c.reviewsList || []
     };
   }

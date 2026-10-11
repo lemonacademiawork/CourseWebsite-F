@@ -781,9 +781,10 @@ export class AdminCoursesComponent implements OnInit {
           this.loadLessonsForModule(modId);
           setTimeout(() => this.saveSuccess.set(''), 3500);
         },
-        error: () => {
+        error: (err) => {
           this.isSavingLesson.set(false);
-          this.isLessonFormModalOpen.set(false);
+          const msg = err?.error?.message || err?.error?.error || 'Failed to update lesson on backend server.';
+          this.errorMessage.set(msg);
           this.loadLessonsForModule(modId);
         }
       });
@@ -796,9 +797,10 @@ export class AdminCoursesComponent implements OnInit {
           this.loadLessonsForModule(modId);
           setTimeout(() => this.saveSuccess.set(''), 3500);
         },
-        error: () => {
+        error: (err) => {
           this.isSavingLesson.set(false);
-          this.isLessonFormModalOpen.set(false);
+          const msg = err?.error?.message || err?.error?.error || 'Failed to save lesson on backend server. Please check your credentials or network.';
+          this.errorMessage.set(msg);
           this.loadLessonsForModule(modId);
         }
       });

@@ -359,9 +359,10 @@ export class AdminCurriculumComponent implements OnInit, OnDestroy {
           this.loadLessonsForModule(mod.id);
           setTimeout(() => this.saveSuccess.set(''), 3500);
         },
-        error: () => {
+        error: (err) => {
           this.isSavingLesson.set(false);
-          this.isLessonModalOpen.set(false);
+          const msg = err?.error?.message || err?.error?.error || 'Failed to update lesson on backend server.';
+          alert(`Server Error: ${msg}`);
           this.loadLessonsForModule(mod.id);
         }
       });
@@ -374,9 +375,10 @@ export class AdminCurriculumComponent implements OnInit, OnDestroy {
           this.loadLessonsForModule(mod.id);
           setTimeout(() => this.saveSuccess.set(''), 3500);
         },
-        error: () => {
+        error: (err) => {
           this.isSavingLesson.set(false);
-          this.isLessonModalOpen.set(false);
+          const msg = err?.error?.message || err?.error?.error || 'Failed to save lesson on backend server. Please check your credentials or network.';
+          alert(`Server Error: ${msg}`);
           this.loadLessonsForModule(mod.id);
         }
       });
