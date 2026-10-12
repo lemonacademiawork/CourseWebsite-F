@@ -1,10 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import * as XLSX from 'xlsx';
 import { AdminService } from '../../../core/services/admin.service';
 import { CourseService } from '../../../core/services/course.service';
+import { ClassProgressService } from '../../../core/services/class-progress.service';
 import { AdminUser, AdminEnrollment } from '../../../core/models/admin.model';
 import { Course } from '../../../core/models/course.model';
 
@@ -19,6 +20,10 @@ interface StudentItem {
   coursesCount: number;
   joinDate: string;
   status: 'Paid' | 'Pending';
+  progress?: number;
+  completedClassesCount?: number;
+  totalClassesCount?: number;
+  certificateStatus?: 'IN_PROGRESS' | 'ELIGIBLE';
 }
 
 @Component({
@@ -146,17 +151,19 @@ interface StudentItem {
         <div class="w-full overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-surface-container-low border-b border-outline-variant text-on-surface-variant font-semibold">
+              <tr class="bg-surface-container-low border-b border-outline-variant text-on-surface-variant font-semibold text-[11px]">
                 <th class="py-3.5 px-4">Student</th>
                 <th class="py-3.5 px-4">Student ID</th>
                 <th class="py-3.5 px-4">Contact</th>
                 <th class="py-3.5 px-4">Registered Course</th>
-                <th class="py-3.5 px-4 text-center">Enrolled Count</th>
+                <th class="py-3.5 px-4">Classes Progress</th>
+                <th class="py-3.5 px-4">Certificate Status</th>
+                <th class="py-3.5 px-4 text-center">Courses</th>
                 <th class="py-3.5 px-4">Joined Date</th>
                 <th class="py-3.5 px-4">Status</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-outline-variant/15">
+            <tbody class="divide-y divide-outline-variant/15 text-xs">
               @for (st of students(); track st.id) {
                 <tr class="hover:bg-surface-container-low/50 transition-colors">
                   <td class="py-3.5 px-4 font-semibold text-on-surface">{{ st.name }}</td>
@@ -168,28 +175,61 @@ interface StudentItem {
                     }
                   </td>
                   <td class="py-3 px-4">
-                  @if (st.courseName) {
-                    <span class="font-medium text-on-surface bg-surface-container-high px-2 py-0.5 rounded text-[11px] border border-outline-variant/30">
-                      {{ st.courseName }}
+                    @if (st.courseName) {
+                      <span class="font-medium text-on-surface bg-surface-container-high px-2 py-0.5 rounded text-[11px] border border-outline-variant/30">
+                        {{ st.courseName }}
+                      </span>
+                    } @else {
+                      <span class="text-on-surface-variant/60 italic font-mono">-</span>
+                    }
+                  </td>
+                  <!-- Classes Progress -->
+                  <td class="py-3.5 px-4">
+                    <div class="w-32 space-y-1">
+                      <div class="flex justify-between items-center text-[10px]">
+                        <span class="font-bold text-on-surface">{{ st.completedClassesCount || 0 }}/{{ st.totalClassesCount || 4 }} Classes</span>
+                        <span class="font-bold" [class.text-emerald-700]="(st.progress || 0) >= 100" [class.text-primary]="(st.progress || 0) < 100">
+                          {{ st.progress || 0 }}%
+                        </span>
+                      </div>
+                      <div class="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+                        <div 
+                          class="h-full rounded-full transition-all"
+                          [class.bg-emerald-600]="(st.progress || 0) >= 100"
+                          [class.bg-primary]="(st.progress || 0) < 100"
+                          [style.width.%]="st.progress || 0">
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <!-- Certificate Eligibility Status -->
+                  <td class="py-3.5 px-4">
+                    @if ((st.progress || 0) >= 100) {
+                      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        <span class="material-symbols-outlined text-xs">workspace_premium</span>
+                        100% Eligible
+                      </span>
+                    } @else {
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-800 border border-amber-200">
+                        <span class="material-symbols-outlined text-xs">pending</span>
+                        In Progress
+                      </span>
+                    }
+                  </td>
+                  <td class="py-3 px-4 text-center font-bold text-primary">{{ st.coursesCount }}</td>
+                  <td class="py-3 px-4 text-on-surface-variant">{{ st.joinDate }}</td>
+                  <td class="py-3 px-4">
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold"
+                          [class]="st.status === 'Paid' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'">
+                      {{ st.status }}
                     </span>
-                  } @else {
-                    <span class="text-on-surface-variant/60 italic font-mono">-</span>
-                  }
-                </td>
-                <td class="py-3 px-4 text-center font-bold text-primary">{{ st.coursesCount }}</td>
-                <td class="py-3 px-4 text-on-surface-variant">{{ st.joinDate }}</td>
-                <td class="py-3 px-4">
-                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold"
-                        [class]="st.status === 'Paid' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'">
-                    {{ st.status }}
-                  </span>
-                </td>
+                  </td>
                 </tr>
               }
 
               @if (students().length === 0 && !isLoading()) {
                 <tr>
-                  <td colspan="7" class="text-center py-10 text-on-surface-variant">
+                  <td colspan="9" class="text-center py-10 text-on-surface-variant">
                     No students registered yet. Click <strong>Import Excel</strong> or <strong>Add Student</strong> above.
                   </td>
                 </tr>
@@ -201,9 +241,10 @@ interface StudentItem {
     </main>
   `
 })
-export class AdminStudentsComponent implements OnInit {
+export class AdminStudentsComponent implements OnInit, OnDestroy {
   private adminService = inject(AdminService);
   private courseService = inject(CourseService);
+  private classProgressService = inject(ClassProgressService);
 
   students = signal<StudentItem[]>([]);
   availableCourses = signal<Course[]>([]);
@@ -219,8 +260,19 @@ export class AdminStudentsComponent implements OnInit {
   importMessage = signal<string | null>(null);
   isImportError = signal<boolean>(false);
 
+  private syncListener = () => this.loadData();
+
   ngOnInit(): void {
     this.loadData();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('class_completion_updated', this.syncListener);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('class_completion_updated', this.syncListener);
+    }
   }
 
   loadData(): void {
@@ -235,7 +287,11 @@ export class AdminStudentsComponent implements OnInit {
         this.availableCourses.set(courses || []);
 
         const courseTitleMap = new Map<string, string>();
-        courses.forEach(c => courseTitleMap.set(c.id, c.title));
+        const courseByTitleMap = new Map<string, Course>();
+        courses.forEach(c => {
+          courseTitleMap.set(c.id, c.title);
+          courseByTitleMap.set(c.title.toLowerCase().trim(), c);
+        });
 
         const studentCoursesMap = new Map<string, string[]>();
 
@@ -266,6 +322,16 @@ export class AdminStudentsComponent implements OnInit {
 
             const courseName = registered.length > 0 ? registered.join(', ') : null;
 
+            // Compute authoritative progress based on matched course
+            const firstTitle = (registered[0] || u.courseName || '').toLowerCase().trim();
+            const matchedCourse = courseByTitleMap.get(firstTitle) || (courses.length > 0 ? courses[0] : null);
+            const courseId = matchedCourse ? matchedCourse.id : 'lippan-art';
+            const totalClasses = matchedCourse?.totalLessons || (matchedCourse?.modules ? matchedCourse.modules.length : 4);
+            const completedClassIds = this.classProgressService.getCompletedClassIds(courseId);
+            const completedCount = Math.min(completedClassIds.length, totalClasses);
+            const progress = this.classProgressService.calculateProgress(totalClasses, completedCount);
+            const certificateStatus = progress >= 100 ? 'ELIGIBLE' : 'IN_PROGRESS';
+
             return {
               id: u.id || i + 1,
               name: u.name || 'Student',
@@ -275,6 +341,10 @@ export class AdminStudentsComponent implements OnInit {
               courseName: courseName,
               coursesList: registered,
               coursesCount: registered.length || u.coursesCount || u.enrollmentsCount || 0,
+              progress,
+              completedClassesCount: completedCount,
+              totalClassesCount: totalClasses,
+              certificateStatus,
               joinDate: u.createdAt
                 ? new Date(u.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
                 : 'Sep 08, 2026',
@@ -308,6 +378,10 @@ export class AdminStudentsComponent implements OnInit {
       courseName: chosenCourse,
       coursesList: chosenCourse ? [chosenCourse] : [],
       coursesCount: chosenCourse ? 1 : 0,
+      progress: 0,
+      completedClassesCount: 0,
+      totalClassesCount: 4,
+      certificateStatus: 'IN_PROGRESS',
       joinDate: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
       status: this.status()
     };

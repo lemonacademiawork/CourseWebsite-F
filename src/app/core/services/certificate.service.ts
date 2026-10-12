@@ -13,10 +13,9 @@ export class CertificateService {
   constructor(private http: HttpClient) {}
 
   /** POST /api/v1/certificates — Claim / generate certificate for course */
-  claimCertificate(courseId: string): Observable<Certificate | null> {
+  claimCertificate(courseId: string): Observable<Certificate> {
     return this.http.post<any>(`${this.apiUrl}`, { courseId }).pipe(
-      map(res => res.data || res),
-      catchError(() => of(null))
+      map(res => (res.data || res) as Certificate)
     );
   }
 

@@ -22,6 +22,9 @@ export class SessionService {
   }
 
   getSessionStatus(session: CourseSession): SessionStatus {
+    if (session.isCompleted) {
+      return 'COMPLETED';
+    }
     const now = new Date();
     const start = this.parseSessionDateTime(session.sessionDate, session.startTime);
     const end = this.parseSessionDateTime(session.sessionDate, session.endTime);
@@ -37,6 +40,23 @@ export class SessionService {
         return 'COMPLETED';
       }
     }
+  }
+
+  markSessionComplete(courseId: string, sessionId: string, completedBy?: string): boolean {
+    const all = this.getStoredSessions();
+    const list = all[courseId] || [];
+    const idx = list.findIndex(s => s.id === sessionId);
+    if (idx >= 0) {
+      list[idx] = {
+        ...list[idx],
+        isCompleted: true,
+        completedAt: new Date().toISOString(),
+        completedBy: completedBy || 'Authorized Trainer'
+      };
+      this.saveSessions(courseId, list);
+      return true;
+    }
+    return false;
   }
 
   getStoredSessions(): Record<string, CourseSession[]> {

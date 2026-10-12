@@ -1,7 +1,14 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StudentService } from '../../../core/services/student.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ClassProgressService } from '../../../core/services/class-progress.service';
+
+interface LearningModule {
+  id: number;
+  title: string;
+  description: string;
+}
 
 @Component({
   selector: 'app-course-learning',
@@ -33,6 +40,10 @@ import { AuthService } from '../../../core/services/auth.service';
           <!-- Main Content -->
           <div class="lg:col-span-2 space-y-6">
             <div>
+              <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary font-semibold text-[11px] mb-2.5">
+                <span class="material-symbols-outlined text-xs">verified</span>
+                Verified Workshop Curriculum
+              </div>
               <h1 class="font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface mb-3 font-bold">
                 The Art of Lippan - Learning Studio
               </h1>
@@ -63,102 +74,96 @@ import { AuthService } from '../../../core/services/auth.service';
               </a>
             </div>
 
-            <!-- Module List -->
+            <!-- Read-only Info Banner for Students -->
+            <div class="bg-surface-container-low border border-outline-variant/30 rounded-xl p-3.5 flex items-center gap-3 text-on-surface-variant">
+              <span class="material-symbols-outlined text-primary text-lg shrink-0">info</span>
+              <p class="text-[11px] leading-tight">
+                Class completion is verified and updated authoritatively by your certified Trainer upon session completion. Students cannot manually alter progress.
+              </p>
+            </div>
+
+            <!-- Module List with Read-Only Status Indicators -->
             <div class="space-y-3">
-              <div class="bg-primary-container/20 border border-primary/20 rounded-xl p-4 flex items-center justify-between gap-4">
-                <div class="flex items-center gap-3.5">
-                  <div class="w-9 h-9 bg-primary text-on-primary rounded-full flex items-center justify-center font-bold text-xs shrink-0">1</div>
-                  <div>
-                    <h3 class="font-bold text-xs text-on-surface">Introduction &amp; Materials Guide</h3>
-                    <p class="text-[11px] text-on-surface-variant">History, workspace setup &amp; MDF base selection</p>
+              @for (module of modulesList; track module.id) {
+                <div 
+                  class="rounded-xl p-4 flex items-center justify-between gap-4 transition-all"
+                  [ngClass]="isModuleDone(module.id) 
+                    ? 'bg-primary-container/15 border border-primary/20' 
+                    : 'bg-surface-container-lowest border border-outline-variant/20'">
+                  <div class="flex items-center gap-3.5">
+                    <div 
+                      class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0"
+                      [ngClass]="isModuleDone(module.id) ? 'bg-primary text-on-primary' : 'bg-surface-container-high text-on-surface'">
+                      {{ module.id }}
+                    </div>
+                    <div>
+                      <h3 class="font-bold text-xs text-on-surface">{{ module.title }}</h3>
+                      <p class="text-[11px] text-on-surface-variant">{{ module.description }}</p>
+                    </div>
                   </div>
-                </div>
-                <button 
-                  (click)="toggleModuleCompletion(1)"
-                  class="px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors"
-                  [class]="isModuleDone(1) ? 'bg-green-100 text-green-800' : 'bg-primary text-on-primary'">
-                  {{ isModuleDone(1) ? '✓ Completed' : 'Mark Complete' }}
-                </button>
-              </div>
 
-              <div class="bg-surface-container-lowest border border-outline-variant/20 rounded-xl p-4 flex items-center justify-between gap-4">
-                <div class="flex items-center gap-3.5">
-                  <div class="w-9 h-9 bg-surface-container-high text-on-surface rounded-full flex items-center justify-center font-bold text-xs shrink-0">2</div>
+                  <!-- Read-only status indicator badge -->
                   <div>
-                    <h3 class="font-bold text-xs text-on-surface">Clay Dough &amp; Base Preparation</h3>
-                    <p class="text-[11px] text-on-surface-variant">Creating the perfect smooth clay mixture</p>
+                    @if (isModuleDone(module.id)) {
+                      <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        <span class="material-symbols-outlined text-xs">check_circle</span>
+                        Completed
+                      </span>
+                    } @else if (module.id === nextPendingModuleId()) {
+                      <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+                        <span class="material-symbols-outlined text-xs">pending</span>
+                        Pending
+                      </span>
+                    } @else {
+                      <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-medium bg-surface-container-high text-on-surface-variant border border-outline-variant/30">
+                        <span class="material-symbols-outlined text-xs">schedule</span>
+                        Upcoming
+                      </span>
+                    }
                   </div>
                 </div>
-                <button 
-                  (click)="toggleModuleCompletion(2)"
-                  class="px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors"
-                  [class]="isModuleDone(2) ? 'bg-green-100 text-green-800' : 'bg-surface-container-high text-on-surface hover:bg-surface-container-highest'">
-                  {{ isModuleDone(2) ? '✓ Completed' : 'Mark Complete' }}
-                </button>
-              </div>
-
-              <div class="bg-surface-container-lowest border border-outline-variant/20 rounded-xl p-4 flex items-center justify-between gap-4">
-                <div class="flex items-center gap-3.5">
-                  <div class="w-9 h-9 bg-surface-container-high text-on-surface rounded-full flex items-center justify-center font-bold text-xs shrink-0">3</div>
-                  <div>
-                    <h3 class="font-bold text-xs text-on-surface">Mirror Placement &amp; Geometric Patterns</h3>
-                    <p class="text-[11px] text-on-surface-variant">Patterns, spacing, symmetry &amp; adhesion</p>
-                  </div>
-                </div>
-                <button 
-                  (click)="toggleModuleCompletion(3)"
-                  class="px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors"
-                  [class]="isModuleDone(3) ? 'bg-green-100 text-green-800' : 'bg-surface-container-high text-on-surface hover:bg-surface-container-highest'">
-                  {{ isModuleDone(3) ? '✓ Completed' : 'Mark Complete' }}
-                </button>
-              </div>
-
-              <div class="bg-surface-container-lowest border border-outline-variant/20 rounded-xl p-4 flex items-center justify-between gap-4">
-                <div class="flex items-center gap-3.5">
-                  <div class="w-9 h-9 bg-surface-container-high text-on-surface rounded-full flex items-center justify-center font-bold text-xs shrink-0">4</div>
-                  <div>
-                    <h3 class="font-bold text-xs text-on-surface">Curing, Acrylic Painting &amp; Sealing</h3>
-                    <p class="text-[11px] text-on-surface-variant">Varnish, moisture resistance &amp; wall mounting</p>
-                  </div>
-                </div>
-                <button 
-                  (click)="toggleModuleCompletion(4)"
-                  class="px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors"
-                  [class]="isModuleDone(4) ? 'bg-green-100 text-green-800' : 'bg-surface-container-high text-on-surface hover:bg-surface-container-highest'">
-                  {{ isModuleDone(4) ? '✓ Completed' : 'Mark Complete' }}
-                </button>
-              </div>
+              }
             </div>
           </div>
 
           <!-- Sidebar with Dynamic Progress -->
           <div class="space-y-6">
-            <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/20 shadow-xs space-y-3">
+            <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/20 shadow-xs space-y-4">
               <h3 class="font-bold text-sm text-on-surface flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary text-base">trending_up</span>
-                Dynamic Course Progress
+                Authoritative Course Progress
               </h3>
+
               <div class="w-full bg-surface-container-high rounded-full h-3 overflow-hidden">
                 <div class="bg-primary h-3 rounded-full transition-all duration-500" [style.width.%]="progressPercent()"></div>
               </div>
+
               <div class="flex justify-between items-center text-xs font-medium text-on-surface-variant">
-                <span>{{ completedModules().size }} of 4 modules done</span>
+                <span>{{ completedModules().size }} of {{ modulesList.length }} classes completed</span>
                 <span class="font-bold text-primary">{{ progressPercent() }}%</span>
               </div>
+
               @if (progressPercent() === 100) {
-                <div class="p-2.5 bg-green-50 text-green-800 rounded-xl text-center text-xs font-bold border border-green-200">
-                  🎉 Course Completed! Claim your certificate on My Courses.
+                <div class="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold border border-emerald-200 flex items-center gap-2">
+                  <span class="material-symbols-outlined text-emerald-600 text-base">verified</span>
+                  <span>100% Completed! Your certificate is unlocked and ready on My Courses.</span>
+                </div>
+              } @else {
+                <div class="p-3 bg-amber-50 text-amber-800 rounded-xl text-xs font-medium border border-amber-200 flex items-center gap-2">
+                  <span class="material-symbols-outlined text-amber-600 text-base">lock</span>
+                  <span>Complete all {{ modulesList.length }} classes with your trainer to unlock your certificate.</span>
                 </div>
               }
             </div>
 
             <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/20 shadow-xs">
-              <h3 class="font-bold text-sm text-on-surface mb-3">Master Instructor</h3>
+              <h3 class="font-bold text-sm text-on-surface mb-3">Assigned Master Trainer</h3>
               <div class="flex items-center gap-3">
                 <div class="w-11 h-11 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center font-bold text-sm">AS</div>
                 <div>
                   <p class="font-bold text-xs text-on-surface">Aisha Sharma</p>
-                  <p class="text-[11px] text-on-surface-variant">Master Artisan • Lemon Academia</p>
+                  <p class="text-[11px] text-on-surface-variant">Certified Master Artisan • Lemon Academia</p>
+                  <p class="text-[10px] text-primary mt-0.5">Authorizes Class Completion &amp; Attendance</p>
                 </div>
               </div>
             </div>
@@ -168,41 +173,69 @@ import { AuthService } from '../../../core/services/auth.service';
     </main>
   `
 })
-export class CourseLearningComponent implements OnInit {
+export class CourseLearningComponent implements OnInit, OnDestroy {
   private studentService = inject(StudentService);
   public authService = inject(AuthService);
+  private classProgressService = inject(ClassProgressService);
+
+  readonly modulesList: LearningModule[] = [
+    { id: 1, title: 'Introduction & Materials Guide', description: 'History, workspace setup & MDF base selection' },
+    { id: 2, title: 'Clay Dough & Base Preparation', description: 'Creating the perfect smooth clay mixture' },
+    { id: 3, title: 'Mirror Placement & Geometric Patterns', description: 'Patterns, spacing, symmetry & adhesion' },
+    { id: 4, title: 'Curing, Acrylic Painting & Sealing', description: 'Varnish, moisture resistance & wall mounting' }
+  ];
 
   completedModules = signal<Set<number>>(new Set([1]));
 
   progressPercent = computed(() => {
-    return Math.round((this.completedModules().size / 4) * 100);
+    return this.classProgressService.calculateProgress(this.modulesList.length, this.completedModules().size);
   });
 
+  nextPendingModuleId = computed<number | null>(() => {
+    const done = this.completedModules();
+    for (const m of this.modulesList) {
+      if (!done.has(m.id)) return m.id;
+    }
+    return null;
+  });
+
+  private syncListener = () => this.loadAuthoritativeProgress();
+
   ngOnInit(): void {
+    this.loadAuthoritativeProgress();
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('lippan_learning_progress');
-      if (saved) {
-        try {
-          const list = JSON.parse(saved);
-          if (Array.isArray(list)) this.completedModules.set(new Set(list));
-        } catch (e) {}
+      window.addEventListener('class_completion_updated', this.syncListener);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('class_completion_updated', this.syncListener);
+    }
+  }
+
+  private loadAuthoritativeProgress(): void {
+    // Check both general lippan course and standard completions in classProgressService
+    const courseKeys = ['lippan', 'course-lippan', '660000000000000000000001'];
+    const completedSet = new Set<number>();
+
+    for (const key of courseKeys) {
+      const classIds = this.classProgressService.getCompletedClassIds(key);
+      for (const id of classIds) {
+        const num = parseInt(id.replace(/\D/g, ''), 10);
+        if (!isNaN(num) && num >= 1 && num <= this.modulesList.length) {
+          completedSet.add(num);
+        }
       }
+    }
+
+    // Default to at least module 1 completed if none found, or load authoritative set
+    if (completedSet.size > 0) {
+      this.completedModules.set(completedSet);
     }
   }
 
   isModuleDone(num: number): boolean {
     return this.completedModules().has(num);
-  }
-
-  toggleModuleCompletion(num: number): void {
-    this.completedModules.update(set => {
-      const next = new Set(set);
-      if (next.has(num)) next.delete(num);
-      else next.add(num);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('lippan_learning_progress', JSON.stringify(Array.from(next)));
-      }
-      return next;
-    });
   }
 }

@@ -7,6 +7,11 @@ export interface CourseSession {
   endTime: string; // HH:MM AM/PM
   zoomLink: string;
   recordingLink: string;
+  isCompleted?: boolean;
+  completedAt?: string;
+  completedBy?: string;
+  courseId?: string;
+  batchName?: string;
 }
 
 export type SessionStatus = 'UPCOMING' | 'LIVE' | 'COMPLETED' | 'RECORDING_AVAILABLE';

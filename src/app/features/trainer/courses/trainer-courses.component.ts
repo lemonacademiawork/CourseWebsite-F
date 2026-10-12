@@ -10,6 +10,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { Course } from '../../../core/models/course.model';
 import { CourseModule } from '../../../core/models/module.model';
 import { Lesson } from '../../../core/models/lesson.model';
+import { ClassProgressService } from '../../../core/services/class-progress.service';
 
 @Component({
   selector: 'app-trainer-courses',
@@ -266,10 +267,31 @@ import { Lesson } from '../../../core/models/lesson.model';
 
             <!-- Curriculum Modules & Lessons -->
             <div class="space-y-3">
-              <h4 class="font-bold text-xs text-on-surface flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-primary text-sm">video_library</span>
-                Curriculum Modules &amp; Video Lessons ({{ courseModules().length }} Modules)
-              </h4>
+              <div class="flex justify-between items-center">
+                <h4 class="font-bold text-xs text-on-surface flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-primary text-sm">video_library</span>
+                  Curriculum Modules &amp; Video Lessons ({{ courseModules().length }} Modules)
+                </h4>
+                @if (selectedCourseForCurriculum()) {
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                    Course Progress: {{ getCurriculumProgress(selectedCourseForCurriculum()!.id) }}%
+                  </span>
+                }
+              </div>
+
+              @if (drawerSuccess()) {
+                <div class="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs flex items-center gap-2 animate-fadeIn">
+                  <span class="material-symbols-outlined text-sm">check_circle</span>
+                  <span>{{ drawerSuccess() }}</span>
+                </div>
+              }
+
+              @if (drawerError()) {
+                <div class="p-2.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs flex items-center gap-2 animate-fadeIn">
+                  <span class="material-symbols-outlined text-sm">error</span>
+                  <span>{{ drawerError() }}</span>
+                </div>
+              }
 
               @if (isLoadingCurriculum()) {
                 <div class="py-8 flex flex-col items-center justify-center space-y-1">
@@ -296,12 +318,37 @@ import { Lesson } from '../../../core/models/lesson.model';
 
                       <div class="space-y-1.5 pl-2 border-l-2 border-primary/30">
                         @for (les of (moduleLessonsMap()[mod.id] || []); track les.id) {
-                          <div class="flex items-center justify-between text-[11px] py-1 text-on-surface-variant">
-                            <span class="font-medium text-on-surface flex items-center gap-1">
-                              <span class="material-symbols-outlined text-xs text-primary">play_circle</span>
-                              {{ les.orderIndex || 1 }}. {{ les.title }}
-                            </span>
-                            <span class="text-[10px] font-mono">{{ formatDuration(les.durationSeconds) }}</span>
+                          <div class="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] py-2 px-2.5 rounded-lg border border-outline-variant/15 bg-surface-container-lowest gap-2">
+                            <div class="flex items-center gap-2 min-w-0">
+                              <span class="material-symbols-outlined text-xs text-primary shrink-0">play_circle</span>
+                              <span class="font-medium text-on-surface truncate">{{ les.orderIndex || 1 }}. {{ les.title }}</span>
+                              <span class="text-[10px] font-mono text-on-surface-variant shrink-0">({{ formatDuration(les.durationSeconds) }})</span>
+                            </div>
+
+                            <div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                              @if (isLessonCompleted(selectedCourseForCurriculum()!.id, les.id)) {
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                  <span class="material-symbols-outlined text-xs">check_circle</span>
+                                  Completed
+                                </span>
+                              } @else {
+                                @if (isAssignedToMe(selectedCourseForCurriculum()!)) {
+                                  <button 
+                                    (click)="promptLessonCompletion(selectedCourseForCurriculum()!, les)"
+                                    [disabled]="isCompletingLesson(les.id)"
+                                    class="px-2.5 py-1 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 text-[10px] flex items-center gap-1 cursor-pointer shadow-2xs transition disabled:opacity-50">
+                                    @if (isCompletingLesson(les.id)) {
+                                      <span class="material-symbols-outlined text-xs animate-spin">progress_activity</span>
+                                    } @else {
+                                      <span class="material-symbols-outlined text-xs">task_alt</span>
+                                    }
+                                    <span>Mark Class Complete</span>
+                                  </button>
+                                } @else {
+                                  <span class="text-[10px] text-on-surface-variant font-medium">Pending</span>
+                                }
+                              }
+                            </div>
                           </div>
                         }
                         @if ((moduleLessonsMap()[mod.id] || []).length === 0) {
@@ -326,6 +373,57 @@ import { Lesson } from '../../../core/models/lesson.model';
         </div>
       }
 
+      <!-- Confirmation Modal in Drawer -->
+      @if (pendingLessonToComplete()) {
+        <div class="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 z-60 animate-fadeIn">
+          <div class="bg-surface-container-lowest rounded-2xl max-w-md w-full border border-outline-variant/30 shadow-2xl p-6 space-y-4 text-xs">
+            <div class="flex items-start gap-3">
+              <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-xl">help</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-sm text-on-surface">Confirm Class Completion</h3>
+                <p class="text-xs text-on-surface-variant mt-0.5">Authorize student attendance and progress update</p>
+              </div>
+            </div>
+
+            <div class="p-3 bg-surface-container-low rounded-xl border border-outline-variant/20 space-y-2 text-xs">
+              <p class="text-on-surface">
+                Are you sure you want to mark <strong>"{{ pendingLessonToComplete()?.lesson?.title }}"</strong> as completed?
+              </p>
+              <div class="p-2 bg-primary/5 rounded-lg border border-primary/15 text-[11px] text-on-surface-variant space-y-0.5">
+                <p><strong>Course:</strong> {{ pendingLessonToComplete()?.course?.title }}</p>
+                <p><strong>Trainer:</strong> {{ authService.userName() || 'Trainer' }}</p>
+              </div>
+              <p class="text-[11px] text-on-surface-variant">
+                This will authoritatively advance student progress across this course.
+              </p>
+            </div>
+
+            <div class="flex items-center justify-end gap-2.5 pt-2">
+              <button 
+                (click)="pendingLessonToComplete.set(null)"
+                [disabled]="isSubmittingModal()"
+                class="px-4 py-2 border border-outline-variant/40 rounded-xl font-bold text-on-surface hover:bg-surface-container-high cursor-pointer disabled:opacity-50">
+                Cancel
+              </button>
+              <button 
+                (click)="confirmLessonCompletion()"
+                [disabled]="isSubmittingModal()"
+                class="px-4 py-2 bg-primary hover:bg-primary/90 text-on-primary rounded-xl font-bold flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50">
+                @if (isSubmittingModal()) {
+                  <span class="material-symbols-outlined text-xs animate-spin">progress_activity</span>
+                  <span>Saving...</span>
+                } @else {
+                  <span class="material-symbols-outlined text-xs">check</span>
+                  <span>Confirm Completion</span>
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
     </main>
   `
 })
@@ -334,6 +432,7 @@ export class TrainerCoursesComponent implements OnInit, OnDestroy {
   private courseService = inject(CourseService);
   private moduleService = inject(ModuleService);
   private lessonService = inject(LessonService);
+  private classProgressService = inject(ClassProgressService);
   authService = inject(AuthService);
 
   allCourses = signal<Course[]>([]);
@@ -345,6 +444,13 @@ export class TrainerCoursesComponent implements OnInit, OnDestroy {
   courseModules = signal<CourseModule[]>([]);
   moduleLessonsMap = signal<Record<string, Lesson[]>>({});
   isLoadingCurriculum = signal<boolean>(false);
+
+  // Lesson Completion Action states
+  drawerSuccess = signal<string>('');
+  drawerError = signal<string>('');
+  pendingLessonToComplete = signal<{ course: Course; lesson: Lesson } | null>(null);
+  completingLessonId = signal<string | null>(null);
+  isSubmittingModal = signal<boolean>(false);
 
   private refreshHandler = () => this.loadCourses();
 
@@ -459,6 +565,59 @@ export class TrainerCoursesComponent implements OnInit, OnDestroy {
 
   closeCurriculumDrawer(): void {
     this.selectedCourseForCurriculum.set(null);
+  }
+
+  isLessonCompleted(courseId: string, lessonId: string): boolean {
+    return this.classProgressService.isClassCompleted(courseId, lessonId);
+  }
+
+  getCurriculumProgress(courseId: string): number {
+    const modules = this.courseModules();
+    const allLessonIds: string[] = [];
+    modules.forEach(m => {
+      const list = this.moduleLessonsMap()[m.id] || [];
+      list.forEach(l => allLessonIds.push(l.id));
+    });
+    if (allLessonIds.length === 0) return 0;
+    const completed = allLessonIds.filter(id => this.isLessonCompleted(courseId, id)).length;
+    return this.classProgressService.calculateProgress(allLessonIds.length, completed);
+  }
+
+  isCompletingLesson(lessonId: string): boolean {
+    return this.completingLessonId() === lessonId;
+  }
+
+  promptLessonCompletion(course: Course, lesson: Lesson): void {
+    if (this.isLessonCompleted(course.id, lesson.id)) return;
+    this.pendingLessonToComplete.set({ course, lesson });
+    this.drawerSuccess.set('');
+    this.drawerError.set('');
+  }
+
+  confirmLessonCompletion(): void {
+    const item = this.pendingLessonToComplete();
+    if (!item) return;
+
+    this.isSubmittingModal.set(true);
+    this.completingLessonId.set(item.lesson.id);
+
+    this.classProgressService.markClassComplete(item.course.id, item.lesson.id, {
+      classTitle: item.lesson.title,
+      batchName: 'Workshop Batch'
+    }).subscribe({
+      next: (res) => {
+        this.isSubmittingModal.set(false);
+        this.completingLessonId.set(null);
+        this.pendingLessonToComplete.set(null);
+        this.drawerSuccess.set(res.message || `Class "${item.lesson.title}" marked as completed.`);
+      },
+      error: (err) => {
+        this.isSubmittingModal.set(false);
+        this.completingLessonId.set(null);
+        this.pendingLessonToComplete.set(null);
+        this.drawerError.set(err?.message || 'Failed to complete class on server.');
+      }
+    });
   }
 
   formatDuration(seconds?: number): string {

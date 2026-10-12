@@ -87,6 +87,23 @@
             <p class="text-[11px] text-on-surface-variant truncate">
               Instructor: <strong>{{ selectedCourse()?.instructor }}</strong> • Price: <strong>Rs. {{ selectedCourse()?.price }}</strong> • Total Modules: <strong>{{ modules().length }}</strong>
             </p>
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+              <span class="text-[10px] font-semibold text-on-surface-variant">Class Progress:</span>
+              <span class="font-bold text-xs" [class.text-emerald-700]="getCourseCompletionProgress() >= 100" [class.text-primary]="getCourseCompletionProgress() < 100">
+                {{ getCourseCompletionProgress() }}% ({{ getCompletedLessonsCount() }}/{{ getTotalLessonsCount() }} Classes Completed)
+              </span>
+              @if (getCourseCompletionProgress() >= 100 && getTotalLessonsCount() > 0) {
+                <span class="inline-flex items-center gap-1 px-2 py-0.2 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  <span class="material-symbols-outlined text-[11px]">workspace_premium</span>
+                  100% Ready for Certificate Issuance
+                </span>
+              } @else {
+                <span class="inline-flex items-center gap-1 px-2 py-0.2 rounded-full text-[9px] font-medium bg-amber-50 text-amber-800 border border-amber-200">
+                  <span class="material-symbols-outlined text-[11px]">pending</span>
+                  {{ getTotalLessonsCount() - getCompletedLessonsCount() }} Classes Incomplete
+                </span>
+              }
+            </div>
           </div>
         </div>
 
@@ -289,7 +306,28 @@
                       </div>
 
                       <!-- Lesson Actions -->
-                      <div class="flex items-center gap-1 shrink-0 self-end sm:self-center">
+                      <div class="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
+                        <!-- Class Completion Status Action -->
+                        @if (isLessonCompleted(selectedCourse()!.id, lesson.id)) {
+                          <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200" title="Authoritatively completed">
+                            <span class="material-symbols-outlined text-xs">check_circle</span>
+                            <span>Completed</span>
+                          </span>
+                        } @else {
+                          <button 
+                            (click)="promptAdminLessonCompletion(selectedCourse()!, lesson)"
+                            [disabled]="isCompletingLesson(lesson.id)"
+                            class="px-2.5 py-1 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 text-[10px] flex items-center gap-1 cursor-pointer shadow-2xs transition disabled:opacity-50"
+                            title="Authoritatively mark class complete for all enrolled students">
+                            @if (isCompletingLesson(lesson.id)) {
+                              <span class="material-symbols-outlined text-xs animate-spin">progress_activity</span>
+                            } @else {
+                              <span class="material-symbols-outlined text-xs">task_alt</span>
+                            }
+                            <span>Mark Complete</span>
+                          </button>
+                        }
+
                         <!-- Toggle Publish -->
                         <button 
                           (click)="toggleLessonPublish(lesson, mod.id)"
@@ -614,4 +652,60 @@
       </div>
     </div>
   }
+
+  <!-- ============================================================== -->
+  <!-- MODAL: CONFIRM ADMIN CLASS COMPLETION                           -->
+  <!-- ============================================================== -->
+  @if (adminPendingLesson()) {
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-60 animate-fadeIn">
+      <div class="bg-surface-container-lowest rounded-2xl max-w-md w-full border border-outline-variant/30 shadow-2xl p-6 space-y-4 text-xs">
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-xl">admin_panel_settings</span>
+          </div>
+          <div>
+            <h3 class="font-bold text-sm text-on-surface">Confirm Administrative Class Completion</h3>
+            <p class="text-[11px] text-on-surface-variant mt-0.5">Authorize class progress across all enrolled students</p>
+          </div>
+        </div>
+
+        <div class="p-3 bg-surface-container-low rounded-xl border border-outline-variant/20 space-y-2 text-xs">
+          <p class="text-on-surface leading-relaxed">
+            As an Administrator, marking this class complete will authoritatively update the progress of all enrolled learners in 
+            <strong>{{ adminPendingLesson()?.course?.title }}</strong>.
+          </p>
+          <div class="p-2.5 bg-primary/5 rounded-lg border border-primary/15 text-[11px] text-on-surface-variant space-y-1">
+            <p><strong>Class:</strong> {{ adminPendingLesson()?.lesson?.title }}</p>
+            <p><strong>Course:</strong> {{ adminPendingLesson()?.course?.title }}</p>
+            <p><strong>Authorized By:</strong> Administrator ({{ authService.userName() || 'Admin' }})</p>
+          </div>
+          <p class="text-[11px] text-on-surface-variant">
+            When all required classes reach 100% completion, students in this course will become eligible to claim and download their certificates.
+          </p>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-2">
+          <button 
+            (click)="cancelAdminCompletion()"
+            [disabled]="isSubmittingAdminCompletion()"
+            class="px-4 py-2 border border-outline-variant/40 rounded-xl font-bold text-on-surface hover:bg-surface-container-high cursor-pointer disabled:opacity-50">
+            Cancel
+          </button>
+          <button 
+            (click)="confirmAdminLessonCompletion()"
+            [disabled]="isSubmittingAdminCompletion()"
+            class="px-4 py-2 bg-primary hover:bg-primary/90 text-on-primary rounded-xl font-bold flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50">
+            @if (isSubmittingAdminCompletion()) {
+              <span class="material-symbols-outlined text-xs animate-spin">progress_activity</span>
+              <span>Recording Completion...</span>
+            } @else {
+              <span class="material-symbols-outlined text-xs">check</span>
+              <span>Confirm &amp; Mark Complete</span>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 </div>
+

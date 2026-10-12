@@ -10,6 +10,8 @@ import { UploadService } from '../../../core/services/upload.service';
 import { Course } from '../../../core/models/course.model';
 import { CourseModule, CreateModulePayload, UpdateModulePayload } from '../../../core/models/module.model';
 import { Lesson, CreateLessonPayload, UpdateLessonPayload } from '../../../core/models/lesson.model';
+import { AuthService } from '../../../core/services/auth.service';
+import { ClassProgressService } from '../../../core/services/class-progress.service';
 
 @Component({
   selector: 'app-admin-curriculum',
@@ -23,6 +25,8 @@ export class AdminCurriculumComponent implements OnInit, OnDestroy {
   private lessonService = inject(LessonService);
   private uploadService = inject(UploadService);
   private route = inject(ActivatedRoute);
+  public authService = inject(AuthService);
+  private classProgressService = inject(ClassProgressService);
 
   courses = signal<Course[]>([]);
   selectedCourse = signal<Course | null>(null);
@@ -34,6 +38,11 @@ export class AdminCurriculumComponent implements OnInit, OnDestroy {
   isLoadingLessons = signal<boolean>(false);
   saveSuccess = signal<string>('');
   errorMessage = signal<string>('');
+
+  // Admin Class Completion Action States
+  adminPendingLesson = signal<{ course: Course; lesson: Lesson } | null>(null);
+  isSubmittingAdminCompletion = signal<boolean>(false);
+  completingLessonId = signal<string | null>(null);
 
   // Module Modal States
   isModuleModalOpen = signal<boolean>(false);
@@ -78,6 +87,7 @@ export class AdminCurriculumComponent implements OnInit, OnDestroy {
     if (typeof window !== 'undefined') {
       window.addEventListener('modules_updated', this.refreshHandler);
       window.addEventListener('lessons_updated', this.refreshHandler);
+      window.addEventListener('class_completion_updated', this.refreshHandler);
     }
   }
 
@@ -85,6 +95,7 @@ export class AdminCurriculumComponent implements OnInit, OnDestroy {
     if (typeof window !== 'undefined') {
       window.removeEventListener('modules_updated', this.refreshHandler);
       window.removeEventListener('lessons_updated', this.refreshHandler);
+      window.removeEventListener('class_completion_updated', this.refreshHandler);
     }
   }
 
@@ -469,6 +480,82 @@ export class AdminCurriculumComponent implements OnInit, OnDestroy {
     this.previewingLesson.set(null);
   }
 
+  isLessonCompleted(courseId: string, lessonId: string): boolean {
+    return this.classProgressService.isClassCompleted(courseId, lessonId);
+  }
+
+  getAllLessonIds(): string[] {
+    const mods = this.modules();
+    const ids: string[] = [];
+    mods.forEach(m => {
+      const lessons = this.lessonsMap()[m.id] || [];
+      lessons.forEach(l => ids.push(l.id));
+    });
+    return ids;
+  }
+
+  getTotalLessonsCount(): number {
+    const list = this.getAllLessonIds();
+    return list.length > 0 ? list.length : (this.selectedCourse()?.totalLessons || 0);
+  }
+
+  getCompletedLessonsCount(): number {
+    const course = this.selectedCourse();
+    if (!course) return 0;
+    const allIds = this.getAllLessonIds();
+    if (allIds.length > 0) {
+      return allIds.filter(id => this.isLessonCompleted(course.id, id)).length;
+    }
+    return this.classProgressService.getCompletedClassIds(course.id).length;
+  }
+
+  getCourseCompletionProgress(): number {
+    const total = this.getTotalLessonsCount();
+    const completed = this.getCompletedLessonsCount();
+    return this.classProgressService.calculateProgress(total, completed);
+  }
+
+  isCompletingLesson(lessonId: string): boolean {
+    return this.completingLessonId() === lessonId;
+  }
+
+  promptAdminLessonCompletion(course: Course, lesson: Lesson): void {
+    if (this.isLessonCompleted(course.id, lesson.id)) return;
+    this.adminPendingLesson.set({ course, lesson });
+  }
+
+  cancelAdminCompletion(): void {
+    this.adminPendingLesson.set(null);
+  }
+
+  confirmAdminLessonCompletion(): void {
+    const item = this.adminPendingLesson();
+    if (!item) return;
+
+    this.isSubmittingAdminCompletion.set(true);
+    this.completingLessonId.set(item.lesson.id);
+
+    this.classProgressService.markClassComplete(item.course.id, item.lesson.id, {
+      classTitle: item.lesson.title,
+      batchName: 'Admin Masterclass Batch'
+    }).subscribe({
+      next: (res) => {
+        this.isSubmittingAdminCompletion.set(false);
+        this.completingLessonId.set(null);
+        this.adminPendingLesson.set(null);
+        this.saveSuccess.set(res.message || `Class "${item.lesson.title}" marked as completed.`);
+        setTimeout(() => this.saveSuccess.set(''), 4000);
+      },
+      error: (err) => {
+        this.isSubmittingAdminCompletion.set(false);
+        this.completingLessonId.set(null);
+        this.adminPendingLesson.set(null);
+        this.errorMessage.set(err?.message || 'Failed to complete class on server.');
+        setTimeout(() => this.errorMessage.set(''), 4000);
+      }
+    });
+  }
+
   formatDuration(seconds?: number): string {
     if (!seconds || seconds <= 0) return '0 min';
     const mins = Math.floor(seconds / 60);
@@ -477,3 +564,4 @@ export class AdminCurriculumComponent implements OnInit, OnDestroy {
     return `${mins}m ${secs}s`;
   }
 }
+

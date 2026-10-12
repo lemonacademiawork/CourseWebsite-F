@@ -68,8 +68,8 @@
           </button>
         } @else {
           <span class="text-[11px] text-on-surface-variant font-medium flex items-center gap-1">
-            <span class="material-symbols-outlined text-xs text-primary">check_circle</span>
-            Check off lessons to advance progress
+            <span class="material-symbols-outlined text-xs text-primary">verified</span>
+            Class completion verified by your instructor
           </span>
         }
       </div>
@@ -145,15 +145,20 @@
                   <div class="p-3 space-y-2">
                     @for (les of (mod.lessons || mod.topics || []); track $index) {
                       <div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-lowest border border-outline-variant/20 hover:border-primary/40 transition-all">
-                        <div class="flex items-center gap-3">
-                          <input 
-                            type="checkbox" 
-                            [checked]="isLessonCompleted(les.id)"
-                            (change)="toggleLesson(les.id)"
-                            class="w-4 h-4 rounded text-primary focus:ring-primary cursor-pointer"
-                          />
+                        <div class="flex items-center gap-2.5">
+                          @if (isLessonCompleted(les.id)) {
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-800 border border-green-200" title="Completed by instructor">
+                              <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                              Completed
+                            </span>
+                          } @else {
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-surface-container-high text-on-surface-variant border border-outline-variant/30" title="Pending class completion">
+                              <span class="material-symbols-outlined text-[12px]">schedule</span>
+                              Pending
+                            </span>
+                          }
                           <div>
-                            <span class="font-medium text-xs text-on-surface" [class.line-through]="isLessonCompleted(les.id)">{{ les.title }}</span>
+                            <span class="font-medium text-xs text-on-surface">{{ les.title }}</span>
                             <span class="text-[10px] text-on-surface-variant block">{{ les.duration }} min</span>
                           </div>
                         </div>
@@ -196,15 +201,20 @@
                   } @else {
                     @for (les of mod.lessonsList; track les.id) {
                       <div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-lowest border border-outline-variant/20 hover:border-primary/40 transition-all">
-                        <div class="flex items-center gap-3">
-                          <input 
-                            type="checkbox" 
-                            [checked]="isLessonCompleted(les.id)"
-                            (change)="toggleLesson(les.id)"
-                            class="w-4 h-4 rounded text-primary focus:ring-primary cursor-pointer"
-                          />
+                        <div class="flex items-center gap-2.5">
+                          @if (isLessonCompleted(les.id)) {
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-800 border border-green-200" title="Completed by instructor">
+                              <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                              Completed
+                            </span>
+                          } @else {
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-surface-container-high text-on-surface-variant border border-outline-variant/30" title="Pending class completion">
+                              <span class="material-symbols-outlined text-[12px]">schedule</span>
+                              Pending
+                            </span>
+                          }
                           <div>
-                            <span class="font-semibold text-xs text-on-surface block" [class.line-through]="isLessonCompleted(les.id)">{{ les.title }}</span>
+                            <span class="font-semibold text-xs text-on-surface block">{{ les.title }}</span>
                             <div class="flex items-center gap-2 text-[10px] text-on-surface-variant mt-0.5">
                               <span>{{ les.duration ? les.duration + ' mins' : 'Video Lesson' }}</span>
                               @if (les.isPreview) {
@@ -287,24 +297,47 @@
       <div class="text-center py-4 max-w-3xl mx-auto space-y-6">
         
         <!-- Status Alert / Guidance Card -->
-        @if (certificateLockReason() === 'INCOMPLETE') {
-          <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-200 text-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
-                <span class="material-symbols-outlined text-amber-700 text-lg">lock</span>
-              </div>
+        @if (certificateErrorMessage()) {
+          <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-700 dark:text-red-300 text-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+            <div class="flex items-center gap-2.5">
+              <span class="material-symbols-outlined text-red-600 text-xl">error</span>
               <div>
-                <h4 class="font-bold text-xs">Certificate Locked: Incomplete Progress</h4>
-                <p class="text-[11px] text-on-surface-variant mt-0.5">
-                  You have completed <strong>{{ completedCount() }} of {{ totalLessonsCount() }}</strong> lessons ({{ progressPercentage() }}%). Please complete all lessons to earn your certificate.
-                </p>
+                <h4 class="font-bold text-xs">Certificate Generation Issue</h4>
+                <p class="text-[11px] text-on-surface-variant mt-0.5">{{ certificateErrorMessage() }}</p>
               </div>
             </div>
-            <button (click)="setTab('lessons')" class="px-3.5 py-1.5 bg-primary text-on-primary font-semibold rounded-lg text-xs hover:opacity-90 whitespace-nowrap cursor-pointer">
-              Go to Lessons
+            <button (click)="claimCertificate()" class="px-3.5 py-1.5 bg-red-600 text-white font-bold rounded-lg text-xs hover:bg-red-700 whitespace-nowrap cursor-pointer">
+              Retry Claiming
             </button>
           </div>
-        } @else if (certificateLockReason() === 'TIMELINE_ACTIVE') {
+        } @else if (certificate() || certificateUiState() === 'GENERATED') {
+          <div class="p-3.5 rounded-xl bg-green-500/10 border border-green-500/30 text-green-800 dark:text-green-200 text-xs flex items-center gap-3 text-left">
+            <div class="w-9 h-9 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-green-700 text-lg">verified</span>
+            </div>
+            <div>
+              <h4 class="font-bold text-xs">Official Certificate Issued</h4>
+              <p class="text-[11px] text-on-surface-variant">
+                Certificate ID: <strong class="font-mono text-primary">{{ certificate()?.certificateNumber || certificate()?.id }}</strong>
+                @if (certificate()?.verificationCode) {
+                  • Verification Code: <strong class="font-mono">{{ certificate()?.verificationCode }}</strong>
+                }
+              </p>
+            </div>
+          </div>
+        } @else if (isCourseCompleted() && isCertificateUnlocked()) {
+          <div class="p-3.5 rounded-xl bg-green-500/10 border border-green-500/30 text-green-800 dark:text-green-200 text-xs flex items-center gap-3 text-left">
+            <div class="w-9 h-9 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-green-700 text-lg">workspace_premium</span>
+            </div>
+            <div>
+              <h4 class="font-bold text-xs">100% Completion Verified: Certificate Ready to Claim!</h4>
+              <p class="text-[11px] text-on-surface-variant">
+                Congratulations! Your instructor has marked all required classes as complete. You are eligible to claim your official certificate.
+              </p>
+            </div>
+          </div>
+        } @else if (isCourseCompleted() && !isCourseTimelineEnded()) {
           <div class="p-4 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-800 dark:text-blue-200 text-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
             <div class="flex items-center gap-3">
               <div class="w-9 h-9 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
@@ -313,22 +346,27 @@
               <div>
                 <h4 class="font-bold text-xs">Course Schedule Active (Unlocks on {{ certificateUnlockDateFormatted() }})</h4>
                 <p class="text-[11px] text-on-surface-variant mt-0.5">
-                  You completed 100% of all lessons! Your official verified certificate will unlock on <strong>{{ certificateUnlockDateFormatted() }}</strong> once the scheduled workshop batch concludes.
+                  You have completed 100% of all required classes! Your official certificate will be available to claim on <strong>{{ certificateUnlockDateFormatted() }}</strong> once the scheduled workshop batch concludes.
                 </p>
               </div>
             </div>
           </div>
         } @else {
-          <div class="p-3.5 rounded-xl bg-green-500/10 border border-green-500/30 text-green-800 dark:text-green-200 text-xs flex items-center gap-3 text-left">
-            <div class="w-9 h-9 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined text-green-700 text-lg">verified</span>
+          <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-200 text-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-amber-700 text-lg">lock</span>
+              </div>
+              <div>
+                <h4 class="font-bold text-xs">Certificate Locked: Incomplete Progress</h4>
+                <p class="text-[11px] text-on-surface-variant mt-0.5">
+                  You have completed <strong>{{ completedCount() }} of {{ totalLessonsCount() }}</strong> required classes ({{ progressPercentage() }}%). Complete all required classes to unlock your certificate.
+                </p>
+              </div>
             </div>
-            <div>
-              <h4 class="font-bold text-xs">Certificate Unlocked &amp; Ready</h4>
-              <p class="text-[11px] text-on-surface-variant">
-                Congratulations! You have completed all curriculum modules and the course schedule has completed.
-              </p>
-            </div>
+            <button (click)="setTab('lessons')" class="px-3.5 py-1.5 bg-primary text-on-primary font-semibold rounded-lg text-xs hover:opacity-90 whitespace-nowrap cursor-pointer">
+              View Classes
+            </button>
           </div>
         }
 
@@ -343,22 +381,38 @@
           />
           
           <!-- Overlay Student Name in blank space above gold divider -->
-          <div class="absolute inset-x-0 top-[38.5%] sm:top-[39.5%] md:top-[40.5%] flex items-center justify-center pointer-events-none px-6">
+          <div class="absolute inset-x-0 top-[39.5%] sm:top-[40.5%] md:top-[41.5%] flex items-center justify-center pointer-events-none px-6">
             <span class="font-serif font-bold text-base sm:text-2xl md:text-3xl lg:text-4xl text-[#1E170C] tracking-wide">
-              {{ authService.userName() || 'Artisan Scholar' }}
+              {{ authService.userName() || certificate()?.studentName || 'Artisan Scholar' }}
             </span>
           </div>
 
-          <!-- Overlay Beautiful Narrative Paragraph with Dynamic Course Name on plain template -->
-          <div class="absolute inset-x-[12%] sm:inset-x-[14%] md:inset-x-[16%] top-[53%] sm:top-[53.5%] md:top-[54%] bottom-[22%] flex flex-col justify-start items-center text-center px-2 pointer-events-none">
-            <p class="text-[9px] sm:text-[13px] md:text-[15px] lg:text-[16px] leading-relaxed text-[#2B2317] font-medium max-w-2xl">
+          <!-- Overlay Narrative Paragraph with Dynamic Course Title and Category -->
+          <div class="absolute inset-x-[11%] sm:inset-x-[13%] md:inset-x-[15%] top-[53.5%] sm:top-[54%] md:top-[54.5%] bottom-[21%] flex flex-col justify-start items-center text-center px-2 pointer-events-none">
+            <p class="text-[8px] sm:text-[11px] md:text-[13px] lg:text-[14px] leading-relaxed text-[#2B2317] font-medium max-w-2xl">
               Has successfully completed the 
               <span class="font-bold text-[#6E5410] font-serif tracking-wide underline decoration-[#6E5410]/40 decoration-1 underline-offset-2">
-                {{ course()?.title || 'Masterclass Workshop' }}
+                {{ course()?.title || certificate()?.courseTitle || 'Masterclass Workshop' }}
               </span> 
-              and has demonstrated exceptional skills in class. We congratulate you on your outstanding achievement and look forward to seeing their continued growth and success.
+              Class. and has demonstrated exceptional skills in 
+              <span class="font-bold text-[#6E5410] font-serif tracking-wide underline decoration-[#6E5410]/40 decoration-1 underline-offset-2">
+                {{ getCourseCategory() }}
+              </span>. 
+              We congratulate you on your outstanding achievement and look forward to seeing their continued growth and success.
             </p>
           </div>
+
+          <!-- Overlay Authentic Verification Code / Certificate ID above signatures -->
+          @if (certificate()?.certificateNumber || certificate()?.id) {
+            <div class="absolute inset-x-0 bottom-[27%] sm:bottom-[27.5%] flex items-center justify-center pointer-events-none px-4">
+              <span class="font-sans text-[7px] sm:text-[9px] md:text-[10px] font-bold text-[#6E5410] tracking-wider">
+                Certificate ID: {{ certificate()?.certificateNumber || certificate()?.id }}
+                @if (certificate()?.verificationCode) {
+                  &nbsp;|&nbsp; Verification Code: {{ certificate()?.verificationCode }}
+                }
+              </span>
+            </div>
+          }
 
           <!-- Lock Watermark Overlay when Locked -->
           @if (!isCertificateUnlocked()) {
@@ -373,14 +427,34 @@
           }
         </div>
 
-        <!-- Action Button with Dual-Condition Rules -->
+        <!-- Action Button with Authoritative Rules -->
         <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
-          @if (isCertificateUnlocked()) {
+          @if (certificate() || certificateUiState() === 'GENERATED') {
             <button 
               (click)="downloadCertificatePDF()" 
               class="bg-primary text-on-primary px-7 py-3 rounded-xl font-bold shadow-md hover:opacity-95 hover:scale-[1.02] transition-all cursor-pointer flex items-center gap-2 text-xs">
-              <span class="material-symbols-outlined text-base">school</span>
-              Download Certificate (High-Res Image)
+              <span class="material-symbols-outlined text-base">download</span>
+              Download Certificate
+            </button>
+          } @else if (isCourseCompleted() && isCertificateUnlocked()) {
+            <button 
+              (click)="claimCertificate()" 
+              [disabled]="certificateClaiming()"
+              class="bg-green-700 hover:bg-green-800 text-white px-7 py-3 rounded-xl font-bold shadow-md hover:scale-[1.02] transition-all cursor-pointer flex items-center gap-2 text-xs disabled:opacity-50">
+              @if (certificateClaiming()) {
+                <span class="material-symbols-outlined text-base animate-spin">progress_activity</span>
+                <span>Issuing Certificate...</span>
+              } @else {
+                <span class="material-symbols-outlined text-base">workspace_premium</span>
+                <span>Claim Certificate of Completion</span>
+              }
+            </button>
+          } @else if (certificateErrorMessage()) {
+            <button 
+              (click)="claimCertificate()" 
+              class="bg-amber-600 hover:bg-amber-700 text-white px-7 py-3 rounded-xl font-bold shadow-md transition-all cursor-pointer flex items-center gap-2 text-xs">
+              <span class="material-symbols-outlined text-base">refresh</span>
+              <span>Retry Certificate Issuance</span>
             </button>
           } @else if (certificateLockReason() === 'TIMELINE_ACTIVE') {
             <button 
@@ -393,10 +467,10 @@
           } @else {
             <button 
               disabled 
-              title="Complete all lessons to earn your certificate."
+              title="Complete all required classes to earn your certificate."
               class="bg-surface-variant text-on-surface-variant/70 border border-outline-variant/40 px-6 py-3 rounded-xl font-bold cursor-not-allowed flex items-center gap-2 text-xs shadow-2xs">
               <span class="material-symbols-outlined text-base">lock</span>
-              Certificate Locked ({{ completedCount() }}/{{ totalLessonsCount() }} Lessons Completed)
+              Certificate Locked ({{ completedCount() }}/{{ totalLessonsCount() }} Classes Completed)
             </button>
           }
         </div>

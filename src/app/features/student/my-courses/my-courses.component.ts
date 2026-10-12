@@ -1,9 +1,10 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { EnrollmentService } from '../../../core/services/enrollment.service';
 import { CourseService } from '../../../core/services/course.service';
 import { StudentService } from '../../../core/services/student.service';
+import { ClassProgressService } from '../../../core/services/class-progress.service';
 import { Course } from '../../../core/models/course.model';
 import { Enrollment } from '../../../core/models/enrollment.model';
 
@@ -95,16 +96,28 @@ import { Enrollment } from '../../../core/models/enrollment.model';
     </main>
   `
 })
-export class MyCoursesComponent implements OnInit {
+export class MyCoursesComponent implements OnInit, OnDestroy {
   private enrollmentService = inject(EnrollmentService);
   private courseService = inject(CourseService);
   private studentService = inject(StudentService);
+  private classProgressService = inject(ClassProgressService);
 
   courses = signal<Course[]>([]);
   isLoading = signal<boolean>(true);
 
+  private syncListener = () => this.loadEnrolledCourses();
+
   ngOnInit(): void {
     this.loadEnrolledCourses();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('class_completion_updated', this.syncListener);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('class_completion_updated', this.syncListener);
+    }
   }
 
   loadEnrolledCourses(): void {
@@ -118,6 +131,12 @@ export class MyCoursesComponent implements OnInit {
             if (c) {
               const category = typeof c.category === 'string' ? c.category : c.category?.name || 'General Craft';
               const instructor = typeof c.trainer === 'string' ? c.trainer : c.trainer?.name || 'Instructor';
+              const totalLessons = (c as any).totalLessons || ((c as any).modules ? (c as any).modules.length : 0);
+              const authCompleted = this.classProgressService.getCompletedClassIds(c.id).length;
+              const backendCompleted = (c as any).lessonsCompleted || 0;
+              const completed = Math.max(backendCompleted, authCompleted);
+              const progress = this.classProgressService.calculateProgress(totalLessons, completed);
+
               return {
                 id: c.id,
                 title: c.title || 'Untitled Course',
@@ -131,9 +150,9 @@ export class MyCoursesComponent implements OnInit {
                 discountedPrice: c.discountedPrice || 0,
                 startDate: c.startDate || c.start_date || null,
                 endDate: c.endDate || c.end_date || null,
-                totalLessons: (c as any).totalLessons || ((c as any).modules ? (c as any).modules.length : 0),
-                lessonsCompleted: (c as any).lessonsCompleted || 0,
-                progress: (c as any).progress || 0
+                totalLessons,
+                lessonsCompleted: completed,
+                progress
               } as Course;
             }
             return { id: e.courseId, title: 'Loading...', category: '', instructor: '', description: '', imageUrl: '', price: 0 } as Course;
@@ -145,15 +164,16 @@ export class MyCoursesComponent implements OnInit {
         this.studentService.getStudentProgress().subscribe({
           next: (progressList) => {
             if (progressList && Array.isArray(progressList)) {
-              const completedCount = progressList.filter(p => p.isCompleted).length;
               this.courses.update(list => list.map(c => {
                 const total = c.totalLessons || 0;
-                const completed = Math.min(completedCount, total);
-                const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+                const studentServiceDone = progressList.filter(p => p.isCompleted).length;
+                const authDone = this.classProgressService.getCompletedClassIds(c.id).length;
+                const completed = Math.min(Math.max(studentServiceDone, authDone, c.lessonsCompleted || 0), total);
+                const progress = this.classProgressService.calculateProgress(total, completed);
                 return {
                   ...c,
                   lessonsCompleted: completed,
-                  progress: progress
+                  progress
                 };
               }));
             }
@@ -199,3 +219,4 @@ export class MyCoursesComponent implements OnInit {
     return `Starts ${new Date(start!).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}`;
   }
 }
+
