@@ -62,7 +62,7 @@ import { Enrollment } from '../../../core/models/enrollment.model';
                   
                   <div class="mt-4 space-y-1.5">
                     <div class="flex justify-between text-[10px] text-on-surface-variant">
-                      <span>Progress: {{ course.lessonsCompleted || 0 }}/{{ course.totalLessons || 4 }} Lessons</span>
+                      <span>Progress: {{ course.lessonsCompleted || 0 }}/{{ course.totalLessons || 0 }} Lessons</span>
                       <span class="font-bold text-primary">{{ course.progress || 0 }}%</span>
                     </div>
                     <div class="w-full bg-surface-variant h-2 rounded-full overflow-hidden">
@@ -131,7 +131,7 @@ export class MyCoursesComponent implements OnInit {
                 discountedPrice: c.discountedPrice || 0,
                 startDate: c.startDate || c.start_date || null,
                 endDate: c.endDate || c.end_date || null,
-                totalLessons: (c as any).totalLessons || 4,
+                totalLessons: (c as any).totalLessons || ((c as any).modules ? (c as any).modules.length : 0),
                 lessonsCompleted: (c as any).lessonsCompleted || 0,
                 progress: (c as any).progress || 0
               } as Course;
@@ -147,7 +147,7 @@ export class MyCoursesComponent implements OnInit {
             if (progressList && Array.isArray(progressList)) {
               const completedCount = progressList.filter(p => p.isCompleted).length;
               this.courses.update(list => list.map(c => {
-                const total = c.totalLessons || 4;
+                const total = c.totalLessons || 0;
                 const completed = Math.min(completedCount, total);
                 const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
                 return {

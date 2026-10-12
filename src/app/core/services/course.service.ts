@@ -346,14 +346,22 @@ export class CourseService {
 
   /** POST /api/v1/trainer-requests */
   applyTrainer(data: any): Observable<any> {
+    const craft = data.craftSubject || data.course || data.expertise || 'Artisan Craft';
+    const expNum = parseInt(String(data.experienceYears || data.yearsOfExperience || data.experience || 1).replace(/\D/g, ''), 10) || 1;
+    const sched = data.proposedSchedule || data.runningDates || 'Flexible Schedule';
     const payload = {
       name: data.name || data.fullName,
       email: data.email,
       phone: data.phone || '+910000000000',
-      course: data.course || data.expertise || 'Artisan Craft',
-      experience: String(data.experience || '1'),
-      runningDates: data.runningDates || 'Flexible Schedule',
-      bio: data.bio || `Trainer application for ${data.course || 'Craft'}`
+      craftSubject: craft,
+      course: craft,
+      expertise: craft,
+      experience: String(data.experience || expNum),
+      experienceYears: expNum,
+      yearsOfExperience: expNum,
+      proposedSchedule: sched,
+      runningDates: sched,
+      bio: data.bio || `Trainer application for ${craft}`
     };
     return this.http.post(`${environment.apiUrl}/trainer-requests`, payload);
   }
