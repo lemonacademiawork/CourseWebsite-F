@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { TimeoutError } from 'rxjs';
 import { CourseService } from '../../../core/services/course.service';
 import { SessionService } from '../../../core/services/session.service';
 import { CategoryService } from '../../../core/services/category.service';
@@ -742,6 +743,7 @@ export class AdminCoursesComponent implements OnInit {
   closeLessonFormModal(): void {
     this.isLessonFormModalOpen.set(false);
     this.editingLessonId.set('');
+    this.isSavingLesson.set(false);
   }
 
   handleSaveLesson(): void {
@@ -783,7 +785,10 @@ export class AdminCoursesComponent implements OnInit {
         },
         error: (err) => {
           this.isSavingLesson.set(false);
-          const msg = err?.error?.message || err?.error?.error || 'Failed to update lesson on backend server.';
+          const isTimeout = err?.name === 'TimeoutError' || err instanceof TimeoutError;
+          const msg = isTimeout
+            ? 'Backend request timed out after 15s. The server is currently hanging or unresponsive.'
+            : (err?.error?.message || err?.error?.error || 'Failed to update lesson on backend server.');
           this.errorMessage.set(msg);
           this.loadLessonsForModule(modId);
         }
@@ -799,7 +804,10 @@ export class AdminCoursesComponent implements OnInit {
         },
         error: (err) => {
           this.isSavingLesson.set(false);
-          const msg = err?.error?.message || err?.error?.error || 'Failed to save lesson on backend server. Please check your credentials or network.';
+          const isTimeout = err?.name === 'TimeoutError' || err instanceof TimeoutError;
+          const msg = isTimeout
+            ? 'Backend request timed out after 15s. The server is currently hanging or unresponsive.'
+            : (err?.error?.message || err?.error?.error || 'Failed to save lesson on backend server. Please check your credentials or network.');
           this.errorMessage.set(msg);
           this.loadLessonsForModule(modId);
         }

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, catchError, of } from 'rxjs';
+import { Observable, map, catchError, of, timeout } from 'rxjs';
 import { Lesson, CreateLessonPayload, UpdateLessonPayload } from '../models/lesson.model';
 import { environment } from '../../../environments/environment';
 
@@ -15,6 +15,7 @@ export class LessonService {
   /** GET /api/v1/modules/:moduleId/lessons */
   getLessons(moduleId: string): Observable<Lesson[]> {
     return this.http.get<any>(`${this.apiUrl}/modules/${moduleId}/lessons`).pipe(
+      timeout(10000),
       map(res => {
         const data = res.data || res;
         const list = Array.isArray(data) ? data : (data.lessons || []);
@@ -42,6 +43,7 @@ export class LessonService {
     };
 
     return this.http.post<any>(`${this.apiUrl}/modules/${moduleId}/lessons`, formattedPayload).pipe(
+      timeout(15000),
       map(res => res.data || res)
     );
   }
@@ -49,6 +51,7 @@ export class LessonService {
   /** PATCH /api/v1/modules/:moduleId/lessons/:lessonId */
   updateLesson(moduleId: string, lessonId: string, payload: UpdateLessonPayload): Observable<any> {
     return this.http.patch<any>(`${this.apiUrl}/modules/${moduleId}/lessons/${lessonId}`, payload).pipe(
+      timeout(15000),
       map(res => res.data || res)
     );
   }
@@ -56,6 +59,7 @@ export class LessonService {
   /** DELETE /api/v1/modules/:moduleId/lessons/:lessonId */
   deleteLesson(moduleId: string, lessonId: string): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/modules/${moduleId}/lessons/${lessonId}`).pipe(
+      timeout(15000),
       map(res => res.data || res)
     );
   }

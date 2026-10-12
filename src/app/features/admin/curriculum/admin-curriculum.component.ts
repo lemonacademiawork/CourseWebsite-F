@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, ActivatedRoute } from '@angular/router';
+import { TimeoutError } from 'rxjs';
 import { CourseService } from '../../../core/services/course.service';
 import { ModuleService } from '../../../core/services/module.service';
 import { LessonService } from '../../../core/services/lesson.service';
@@ -194,6 +195,7 @@ export class AdminCurriculumComponent implements OnInit, OnDestroy {
   closeModuleModal(): void {
     this.isModuleModalOpen.set(false);
     this.editingModuleId.set('');
+    this.isSavingModule.set(false);
   }
 
   handleSaveModule(): void {
@@ -218,9 +220,14 @@ export class AdminCurriculumComponent implements OnInit, OnDestroy {
           this.loadModules(course.id, this.editingModuleId());
           setTimeout(() => this.saveSuccess.set(''), 3500);
         },
-        error: () => {
+        error: (err) => {
           this.isSavingModule.set(false);
           this.isModuleModalOpen.set(false);
+          const isTimeout = err?.name === 'TimeoutError' || err instanceof TimeoutError;
+          const msg = isTimeout 
+            ? 'The backend server timed out after 15s. The server may be unresponsive or deadlocked.' 
+            : (err?.error?.message || err?.error?.error || 'Failed to update module.');
+          alert(`Server Error: ${msg}`);
           this.loadModules(course.id);
         }
       });
@@ -240,9 +247,14 @@ export class AdminCurriculumComponent implements OnInit, OnDestroy {
           this.loadModules(course.id, created?.id || created?.data?.id);
           setTimeout(() => this.saveSuccess.set(''), 3500);
         },
-        error: () => {
+        error: (err) => {
           this.isSavingModule.set(false);
           this.isModuleModalOpen.set(false);
+          const isTimeout = err?.name === 'TimeoutError' || err instanceof TimeoutError;
+          const msg = isTimeout 
+            ? 'The backend server timed out after 15s. The server may be unresponsive or deadlocked.' 
+            : (err?.error?.message || err?.error?.error || 'Failed to create module.');
+          alert(`Server Error: ${msg}`);
           this.loadModules(course.id);
         }
       });
@@ -324,6 +336,7 @@ export class AdminCurriculumComponent implements OnInit, OnDestroy {
     this.isLessonModalOpen.set(false);
     this.targetModuleForLesson.set(null);
     this.editingLessonId.set('');
+    this.isSavingLesson.set(false);
   }
 
   handleSaveLesson(): void {
@@ -361,7 +374,10 @@ export class AdminCurriculumComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.isSavingLesson.set(false);
-          const msg = err?.error?.message || err?.error?.error || 'Failed to update lesson on backend server.';
+          const isTimeout = err?.name === 'TimeoutError' || err instanceof TimeoutError;
+          const msg = isTimeout
+            ? 'The backend server took too long to respond (timed out after 15s). The backend service may be hanging or deadlocked.'
+            : (err?.error?.message || err?.error?.error || 'Failed to update lesson on backend server.');
           alert(`Server Error: ${msg}`);
           this.loadLessonsForModule(mod.id);
         }
@@ -377,7 +393,10 @@ export class AdminCurriculumComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.isSavingLesson.set(false);
-          const msg = err?.error?.message || err?.error?.error || 'Failed to save lesson on backend server. Please check your credentials or network.';
+          const isTimeout = err?.name === 'TimeoutError' || err instanceof TimeoutError;
+          const msg = isTimeout
+            ? 'The backend server took too long to respond (timed out after 15s). The backend service may be hanging or deadlocked.'
+            : (err?.error?.message || err?.error?.error || 'Failed to save lesson on backend server. Please check your credentials or network.');
           alert(`Server Error: ${msg}`);
           this.loadLessonsForModule(mod.id);
         }
