@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map, catchError, of } from 'rxjs';
+import { Observable, map, catchError, of, timeout } from 'rxjs';
 import { Course, CreateCoursePayload, UpdateCoursePayload } from '../models/course.model';
 import { CourseResource, CreateResourcePayload, UpdateResourcePayload } from '../models/common.model';
 import { environment } from '../../../environments/environment';
@@ -206,6 +206,7 @@ export class CourseService {
     if (payload.instructor) formattedPayload.instructor = payload.instructor;
 
     return this.http.post<any>(this.apiUrl, formattedPayload).pipe(
+      timeout(20000),
       map(res => {
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new Event('courses_updated'));
@@ -218,6 +219,7 @@ export class CourseService {
   /** PUT /api/v1/courses/:id — Update existing course */
   updateCourse(id: string, payload: UpdateCoursePayload): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/${id}`, payload).pipe(
+      timeout(20000),
       map(res => {
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new Event('courses_updated'));
@@ -230,6 +232,7 @@ export class CourseService {
   /** DELETE /api/v1/courses/:id — Delete course */
   deleteCourse(id: string, info?: { slug?: string; title?: string }): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/${id}`).pipe(
+      timeout(20000),
       map(res => {
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new Event('courses_updated'));
@@ -242,6 +245,7 @@ export class CourseService {
   /** PATCH /api/v1/courses/:id/publish — Toggle course published state */
   togglePublishCourse(id: string): Observable<any> {
     return this.http.patch<any>(`${this.apiUrl}/${id}/publish`, {}).pipe(
+      timeout(20000),
       map(res => {
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new Event('courses_updated'));

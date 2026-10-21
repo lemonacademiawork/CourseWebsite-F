@@ -55,6 +55,7 @@ export class AdminCoursesComponent implements OnInit {
   categories = signal<Category[]>([]);
   trainers = signal<TrainerOption[]>([]);
   isCreating = signal<boolean>(false);
+  isSubmittingCourse = signal<boolean>(false);
   isEditing = signal<boolean>(false);
 
   // Form states for creating course
@@ -531,8 +532,12 @@ export class AdminCoursesComponent implements OnInit {
       instructor: trainerName
     };
 
+    this.isSubmittingCourse.set(true);
+    this.errorMessage.set('');
+
     this.courseService.createCourse(payload).subscribe({
       next: () => {
+        this.isSubmittingCourse.set(false);
         this.fetchCourses();
         this.isCreating.set(false);
         this.title.set('');
@@ -545,8 +550,12 @@ export class AdminCoursesComponent implements OnInit {
         setTimeout(() => this.saveSuccess.set(''), 3500);
       },
       error: (err) => {
+        this.isSubmittingCourse.set(false);
         console.error('Failed to create course on server:', err);
-        const backendMsg = err?.error?.message || err?.error?.error || '';
+        const isTimeout = err?.name === 'TimeoutError' || err instanceof TimeoutError;
+        const backendMsg = isTimeout
+          ? 'Backend request timed out after 20s. The server is taking too long to respond. Please check Render logs.'
+          : (err?.error?.message || err?.error?.error || '');
         this.errorMessage.set(backendMsg || 'Failed to create course on server. Please check all fields and try again.');
       }
     });

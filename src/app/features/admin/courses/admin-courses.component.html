@@ -970,8 +970,9 @@
           </button>
           <button 
             (click)="handleCreateCourse()"
-            class="px-4 py-2 rounded-lg bg-primary text-on-primary font-semibold hover:opacity-90 cursor-pointer shadow-sm">
-            Publish Course
+            [disabled]="isSubmittingCourse()"
+            class="px-4 py-2 rounded-lg bg-primary text-on-primary font-semibold hover:opacity-90 cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+            {{ isSubmittingCourse() ? 'Publishing...' : 'Publish Course' }}
           </button>
         </div>
       </div>
