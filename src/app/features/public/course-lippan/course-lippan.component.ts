@@ -11,7 +11,7 @@ import { OrderService } from '../../../core/services/order.service';
 import { PaymentService } from '../../../core/services/payment.service';
 import { CouponService } from '../../../core/services/coupon.service';
 import { ReviewService } from '../../../core/services/review.service';
-import { Course } from '../../../core/models/course.model';
+import { Course, CourseCurriculumModule } from '../../../core/models/course.model';
 import { Review, RatingBreakdown } from '../../../core/models/review.model';
 
 @Component({
@@ -98,47 +98,62 @@ import { Review, RatingBreakdown } from '../../../core/models/review.model';
                   class="bg-cover bg-center w-full h-full transition-transform duration-700 group-hover:scale-105" 
                   [style.backgroundImage]="'url(' + (course()!.previewImage || course()!.imageUrl) + ')'">
                 </div>
-                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent flex flex-col justify-between p-6">
-                  <div class="flex justify-between items-center">
-                    <span class="bg-black/50 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full border border-white/20">
-                      Masterclass Workshop Preview
-                    </span>
-                    <span class="bg-black/50 backdrop-blur-md text-white text-[10px] font-semibold px-2.5 py-1 rounded-full border border-white/20">
-                      HD • 1080p
-                    </span>
-                  </div>
+                @if (hasPreviewVideo()) {
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent flex flex-col justify-between p-6">
+                    <div class="flex justify-between items-center">
+                      <span class="bg-black/50 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full border border-white/20">
+                        Masterclass Workshop Preview
+                      </span>
+                      <span class="bg-black/50 backdrop-blur-md text-white text-[10px] font-semibold px-2.5 py-1 rounded-full border border-white/20">
+                        HD • 1080p
+                      </span>
+                    </div>
 
-                  <!-- Interactive Play Button wired to Video Preview Modal -->
-                  <div class="flex items-center justify-center">
-                    <button 
-                      (click)="openVideoModal()"
-                      aria-label="Play Workshop Preview Video"
-                      class="w-16 h-16 bg-white/95 hover:bg-white rounded-full flex items-center justify-center text-primary shadow-2xl hover:scale-110 active:scale-95 transition-all cursor-pointer">
-                      <span class="material-symbols-outlined text-3xl ml-1 filled text-primary">play_arrow</span>
-                    </button>
-                  </div>
+                    <!-- Interactive Play Button wired to Video Preview Modal -->
+                    <div class="flex items-center justify-center">
+                      <button 
+                        (click)="openVideoModal()"
+                        aria-label="Play Workshop Preview Video"
+                        class="w-16 h-16 bg-white/95 hover:bg-white rounded-full flex items-center justify-center text-primary shadow-2xl hover:scale-110 active:scale-95 transition-all cursor-pointer">
+                        <span class="material-symbols-outlined text-3xl ml-1 filled text-primary">play_arrow</span>
+                      </button>
+                    </div>
 
-                  <div class="text-white text-[11px] font-medium drop-shadow-sm flex items-center justify-between">
-                    <span class="flex items-center gap-1.5">
-                      <span class="material-symbols-outlined text-sm">ondemand_video</span>
-                      Click to watch introductory craft preview
-                    </span>
-                    <button 
-                      (click)="openVideoModal()" 
-                      class="underline hover:text-primary-fixed cursor-pointer text-[11px] font-semibold">
-                      Watch Video
-                    </button>
+                    <div class="text-white text-[11px] font-medium drop-shadow-sm flex items-center justify-between">
+                      <span class="flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-sm">ondemand_video</span>
+                        Click to watch introductory craft preview
+                      </span>
+                      <button 
+                        (click)="openVideoModal()" 
+                        class="underline hover:text-primary-fixed cursor-pointer text-[11px] font-semibold">
+                        Watch Video
+                      </button>
+                    </div>
                   </div>
-                </div>
+                }
               </div>
 
-              <!-- Live Sessions & YouTube Video Tutorials (Visible to Everyone) -->
+              <!-- Live Sessions & YouTube Video Tutorials -->
               @if (course()!.liveClassLink || course()!.youtubePlaylistUrl) {
                 <section class="bg-surface-container-lowest rounded-2xl p-6 sm:p-8 border border-outline-variant/30 shadow-sm space-y-4 animate-fadeIn">
-                  <h2 class="text-base sm:text-lg font-bold text-on-surface flex items-center gap-2">
-                    <span class="material-symbols-outlined text-primary text-xl">sensors</span>
-                    Live Studio Workshops &amp; Video Playlist
-                  </h2>
+                  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-outline-variant/20 pb-3">
+                    <h2 class="text-base sm:text-lg font-bold text-on-surface flex items-center gap-2">
+                      <span class="material-symbols-outlined text-primary text-xl">sensors</span>
+                      Live Studio Workshops &amp; Video Playlist
+                    </h2>
+                    @if (enrolled()) {
+                      <span class="text-green-700 font-bold text-xs bg-green-50 border border-green-200 px-3 py-1 rounded-full flex items-center gap-1 w-fit">
+                        <span class="material-symbols-outlined text-sm">lock_open</span>
+                        Active Access Unlocked
+                      </span>
+                    } @else {
+                      <span class="text-amber-700 font-bold text-xs bg-amber-50 border border-amber-200 px-3 py-1 rounded-full flex items-center gap-1 w-fit">
+                        <span class="material-symbols-outlined text-sm">lock</span>
+                        Enrolled Students Only
+                      </span>
+                    }
+                  </div>
 
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Live Class Card -->
@@ -159,14 +174,24 @@ import { Review, RatingBreakdown } from '../../../core/models/review.model';
                         </div>
 
                         <div>
-                          <a 
-                            [href]="course()!.liveClassLink" 
-                            target="_blank" 
-                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors">
-                            <span class="material-symbols-outlined text-sm">videocam</span>
-                            <span>Join Live Class Room</span>
-                            <span class="material-symbols-outlined text-xs">open_in_new</span>
-                          </a>
+                          @if (enrolled()) {
+                            <a 
+                              [href]="course()!.liveClassLink" 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors">
+                              <span class="material-symbols-outlined text-sm">videocam</span>
+                              <span>Join Live Zoom Class Room</span>
+                              <span class="material-symbols-outlined text-xs">open_in_new</span>
+                            </a>
+                          } @else {
+                            <button 
+                              (click)="handleLockedLessonClick()" 
+                              class="inline-flex items-center gap-2 px-4 py-2.5 bg-surface-container-high border border-blue-300 text-blue-950 hover:bg-blue-100 font-bold text-xs rounded-xl transition-colors cursor-pointer">
+                              <span class="material-symbols-outlined text-sm text-blue-700">lock</span>
+                              <span>Enroll to Access Zoom Link</span>
+                            </button>
+                          }
                         </div>
                       </div>
                     }
@@ -189,14 +214,24 @@ import { Review, RatingBreakdown } from '../../../core/models/review.model';
                         </div>
 
                         <div>
-                          <a 
-                            [href]="course()!.youtubePlaylistUrl" 
-                            target="_blank" 
-                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors">
-                            <span class="material-symbols-outlined text-sm">play_arrow</span>
-                            <span>Watch Full YouTube Playlist</span>
-                            <span class="material-symbols-outlined text-xs">open_in_new</span>
-                          </a>
+                          @if (enrolled()) {
+                            <a 
+                              [href]="course()!.youtubePlaylistUrl" 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              class="inline-flex items-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors">
+                              <span class="material-symbols-outlined text-sm">play_arrow</span>
+                              <span>Watch Full YouTube Playlist</span>
+                              <span class="material-symbols-outlined text-xs">open_in_new</span>
+                            </a>
+                          } @else {
+                            <button 
+                              (click)="handleLockedLessonClick()" 
+                              class="inline-flex items-center gap-2 px-4 py-2.5 bg-surface-container-high border border-red-300 text-red-950 hover:bg-red-100 font-bold text-xs rounded-xl transition-colors cursor-pointer">
+                              <span class="material-symbols-outlined text-sm text-red-700">lock</span>
+                              <span>Enroll to Access Playlist</span>
+                            </button>
+                          }
                         </div>
                       </div>
                     }
@@ -232,28 +267,100 @@ import { Review, RatingBreakdown } from '../../../core/models/review.model';
                       {{ (course()!.curriculumModules?.length || 3) }} Comprehensive Modules • {{ course()!.durationHours || 12 }} Hours Total Studio Content
                     </p>
                   </div>
-                  <span class="text-primary font-bold text-xs bg-primary/10 px-3 py-1 rounded-full">Self-Paced Lifetime Access</span>
+                  @if (enrolled()) {
+                    <span class="text-green-700 font-bold text-xs bg-green-50 border border-green-200 px-3 py-1 rounded-full flex items-center gap-1.5 w-fit">
+                      <span class="material-symbols-outlined text-sm">lock_open</span>
+                      Unlocked • Enrolled
+                    </span>
+                  } @else {
+                    <span class="text-primary font-bold text-xs bg-primary/10 px-3 py-1 rounded-full w-fit">
+                      Self-Paced Lifetime Access
+                    </span>
+                  }
                 </div>
+
+                <!-- Prompt Banner when unenrolled user attempts to access locked lessons -->
+                @if (!enrolled() && lockedPrompt()) {
+                  <div class="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-950 text-xs animate-fadeIn">
+                    <div class="flex items-center gap-2">
+                      <span class="material-symbols-outlined text-amber-600 text-lg">lock</span>
+                      <span class="font-semibold">{{ lockedPrompt() }}</span>
+                    </div>
+                    <button 
+                      (click)="openCheckoutModal()" 
+                      class="px-3.5 py-1.5 bg-primary text-on-primary font-bold rounded-lg text-xs hover:opacity-90 transition-opacity shrink-0 cursor-pointer shadow-xs">
+                      Enroll Now
+                    </button>
+                  </div>
+                }
 
                 <div class="space-y-3">
                   @for (mod of (course()!.curriculumModules || defaultCurriculum); track $index) {
                     <div class="border border-outline-variant/30 rounded-xl overflow-hidden bg-surface-container-low">
                       <div class="p-3.5 bg-surface-container font-bold text-xs text-on-surface flex justify-between items-center">
-                        <span>{{ mod.title }}</span>
+                        <span class="flex items-center gap-1.5">
+                          @if (!enrolled()) {
+                            <span class="material-symbols-outlined text-outline text-xs">folder</span>
+                          } @else {
+                            <span class="material-symbols-outlined text-primary text-xs">folder_open</span>
+                          }
+                          {{ mod.title }}
+                        </span>
                         <span class="text-[10px] text-on-surface-variant font-normal">
-                          {{ mod.lessonsCount || 4 }} Lessons • {{ mod.duration || '2h 30m' }}
+                          {{ mod.lessonsCount || (mod.lessons?.length || 4) }} Lessons • {{ mod.duration || '2h 30m' }}
                         </span>
                       </div>
                       @if (mod.lessons && mod.lessons.length > 0) {
                         <div class="p-3 space-y-2 text-[11px] text-on-surface-variant divide-y divide-outline-variant/15">
                           @for (lesson of mod.lessons; track lesson.title) {
-                            <div class="flex items-center justify-between pt-1.5">
-                              <span class="flex items-center gap-2">
-                                <span class="material-symbols-outlined text-primary text-sm">play_circle</span>
-                                {{ lesson.title }}
-                              </span>
-                              <span>{{ lesson.duration }}</span>
-                            </div>
+                            @if (enrolled()) {
+                              <!-- Enrolled: Lesson is unlocked & Video Link Icon is visible -->
+                              <div class="flex items-center justify-between pt-1.5 py-1">
+                                <span class="flex items-center gap-2 text-on-surface font-medium">
+                                  <span class="material-symbols-outlined text-primary text-sm">play_circle</span>
+                                  {{ lesson.title }}
+                                </span>
+                                <div class="flex items-center gap-2.5">
+                                  <span class="text-[10px] text-on-surface-variant">{{ lesson.duration }}</span>
+                                  @if (lesson.videoUrl || course()!.youtubePlaylistUrl) {
+                                    <a 
+                                      [href]="lesson.videoUrl || course()!.youtubePlaylistUrl" 
+                                      target="_blank" 
+                                      rel="noopener noreferrer" 
+                                      class="inline-flex items-center gap-1 px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md text-[10px] font-bold shadow-xs transition-colors cursor-pointer"
+                                      title="Watch Lesson Video">
+                                      <span class="material-symbols-outlined text-xs">smart_display</span>
+                                      <span>Watch</span>
+                                      <span class="material-symbols-outlined text-[10px]">open_in_new</span>
+                                    </a>
+                                  } @else {
+                                    <a 
+                                      [routerLink]="['/my-courses', course()!.id]" 
+                                      class="inline-flex items-center gap-1 px-2.5 py-1 bg-primary hover:opacity-90 text-on-primary rounded-md text-[10px] font-bold shadow-xs transition-opacity cursor-pointer">
+                                      <span class="material-symbols-outlined text-xs">play_arrow</span>
+                                      <span>Classroom</span>
+                                    </a>
+                                  }
+                                </div>
+                              </div>
+                            } @else {
+                              <!-- Unenrolled: Lesson titles remain visible, but show 🔒 Lock badge & prompts on click -->
+                              <div 
+                                (click)="handleLockedLessonClick(lesson)"
+                                class="flex items-center justify-between pt-1.5 py-1.5 cursor-pointer hover:bg-surface-container/70 px-2 rounded-lg transition-colors group">
+                                <span class="flex items-center gap-2 text-on-surface-variant group-hover:text-primary transition-colors">
+                                  <span class="material-symbols-outlined text-outline group-hover:text-amber-700 text-sm">lock</span>
+                                  <span class="font-normal group-hover:font-medium">{{ lesson.title }}</span>
+                                </span>
+                                <div class="flex items-center gap-2">
+                                  <span class="text-[10px] text-on-surface-variant/80">{{ lesson.duration }}</span>
+                                  <span class="inline-flex items-center gap-1 text-[10px] font-semibold bg-surface-container-high px-2 py-0.5 rounded text-outline group-hover:text-amber-700 group-hover:bg-amber-50 group-hover:border-amber-300 border border-outline-variant/30 transition-all">
+                                    <span class="material-symbols-outlined text-[11px]">lock</span>
+                                    Locked
+                                  </span>
+                                </div>
+                              </div>
+                            }
                           }
                         </div>
                       }
@@ -546,7 +653,7 @@ import { Review, RatingBreakdown } from '../../../core/models/review.model';
       }
 
       <!-- 3. Preview Video Modal Player (Fixes dead play button) -->
-      @if (showVideoModal()) {
+      @if (showVideoModal() && hasPreviewVideo()) {
         <div 
           (click)="closeVideoModal()"
           class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
@@ -798,6 +905,24 @@ import { Review, RatingBreakdown } from '../../../core/models/review.model';
           </div>
         </div>
       }
+
+      <!-- Floating Toast Notification for Locked Actions -->
+      @if (toastMessage()) {
+        <div class="fixed bottom-6 right-6 z-50 bg-neutral-900/95 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-white/10 text-xs animate-in slide-in-from-bottom-3 duration-200 backdrop-blur-md">
+          <span class="material-symbols-outlined text-amber-400 text-lg">lock</span>
+          <span class="font-medium">{{ toastMessage() }}</span>
+          <button 
+            (click)="toastMessage.set(''); openCheckoutModal()" 
+            class="ml-2 px-3 py-1.5 bg-primary text-on-primary rounded-lg text-xs font-bold hover:opacity-90 cursor-pointer shadow-xs">
+            Enroll Now
+          </button>
+          <button 
+            (click)="toastMessage.set('')" 
+            class="text-white/60 hover:text-white cursor-pointer ml-1">
+            <span class="material-symbols-outlined text-sm">close</span>
+          </button>
+        </div>
+      }
     </main>
   `
 })
@@ -822,6 +947,10 @@ export class CourseLippanComponent implements OnInit {
   enrolling = signal<boolean>(false);
   enrolled = signal<boolean>(false);
   enrollmentError = signal<string>('');
+
+  toastMessage = signal<string>('');
+  lockedPrompt = signal<string>('');
+  private toastTimer: any = null;
 
   showCheckoutModal = signal<boolean>(false);
   showSuccessModal = signal<boolean>(false);
@@ -850,7 +979,7 @@ export class CourseLippanComponent implements OnInit {
     'Sealing, durability protection & packaging for commercial markets'
   ];
 
-  defaultCurriculum = [
+  defaultCurriculum: CourseCurriculumModule[] = [
     {
       title: 'Module 1: Foundations & Studio Safety',
       lessonsCount: 4,
@@ -897,10 +1026,15 @@ export class CourseLippanComponent implements OnInit {
     }
   ];
 
+  hasPreviewVideo = computed<boolean>(() => {
+    const rawUrl = this.course()?.previewVideoUrl;
+    return typeof rawUrl === 'string' && rawUrl.trim().length > 0;
+  });
+
   safePreviewVideoUrl = computed<SafeResourceUrl | null>(() => {
     const rawUrl = this.course()?.previewVideoUrl;
-    if (!rawUrl) return null;
-    return this.sanitizer.bypassSecurityTrustResourceUrl(rawUrl);
+    if (!rawUrl || !rawUrl.trim()) return null;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(rawUrl.trim());
   });
 
   roundRating(rating: number): number {
@@ -952,6 +1086,8 @@ export class CourseLippanComponent implements OnInit {
         this.enrollmentError.set('');
         this.couponDiscount.set(0);
         this.couponMessage.set('');
+        this.lockedPrompt.set('');
+        this.toastMessage.set('');
 
         return this.courseService.getCourse(courseId).pipe(
           switchMap(found => {
@@ -1001,7 +1137,9 @@ export class CourseLippanComponent implements OnInit {
   }
 
   openVideoModal(): void {
-    this.showVideoModal.set(true);
+    if (this.hasPreviewVideo()) {
+      this.showVideoModal.set(true);
+    }
   }
 
   closeVideoModal(): void {
@@ -1098,6 +1236,19 @@ export class CourseLippanComponent implements OnInit {
     if (instructor.includes('Manishi')) return 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200&h=200';
     if (instructor.includes('Shivani')) return 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200&h=200';
     return 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200&h=200';
+  }
+
+  handleLockedLessonClick(lesson?: any): void {
+    const msg = 'Enroll in this course to unlock studio lessons.';
+    this.lockedPrompt.set(msg);
+    this.toastMessage.set(msg);
+
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
+    }
+    this.toastTimer = setTimeout(() => {
+      this.toastMessage.set('');
+    }, 4500);
   }
 
   handleEnrollClick(): void {

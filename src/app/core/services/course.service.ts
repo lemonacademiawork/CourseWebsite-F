@@ -430,7 +430,8 @@ export class CourseService {
         duration: m.description || '',
         lessons: (m.lessons || []).map((l: any) => ({
           title: l.title,
-          duration: l.durationSeconds ? `${Math.round(l.durationSeconds / 60)} min` : (l.duration || '')
+          duration: l.durationSeconds ? `${Math.round(l.durationSeconds / 60)} min` : (l.duration || ''),
+          videoUrl: l.videoUrl || l.youtubeUrl || null
         }))
       })) : []),
       reviewsList: c.reviewsList || []

@@ -16,11 +16,17 @@ export interface CourseMaterialItem {
   included?: boolean;
 }
 
+export interface CourseCurriculumLesson {
+  title: string;
+  duration: string;
+  videoUrl?: string | null;
+}
+
 export interface CourseCurriculumModule {
   title: string;
   lessonsCount?: number;
   duration?: string;
-  lessons?: { title: string; duration: string }[];
+  lessons?: CourseCurriculumLesson[];
 }
 
 export interface Course {
