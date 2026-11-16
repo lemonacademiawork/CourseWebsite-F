@@ -1400,6 +1400,12 @@ export class CourseLippanComponent implements OnInit {
           return;
         }
 
+        if (!rzpKey.startsWith('rzp_test_') && !rzpKey.startsWith('rzp_live_')) {
+          this.enrolling.set(false);
+          this.enrollmentError.set('Invalid Key: You entered the Key Secret (' + rzpKey.substring(0, 8) + '...). Razorpay checkout requires the Key ID, which always starts with "rzp_test_" or "rzp_live_". Please copy the Key ID from your Razorpay Dashboard.');
+          return;
+        }
+
         this.ensureRazorpayScript().then((scriptLoaded) => {
           if (scriptLoaded && typeof (window as any).Razorpay !== 'undefined') {
             const rzpOptions: any = {
@@ -1459,6 +1465,16 @@ export class CourseLippanComponent implements OnInit {
                 this.enrollmentError.set(failResp?.error?.description || 'Payment was unsuccessful. Please try again.');
               });
               rzp.open();
+
+              setTimeout(() => {
+                if (this.enrolling()) {
+                  const rzpFrame = document.querySelector('.razorpay-container') || document.querySelector('iframe[src*="razorpay"]');
+                  if (!rzpFrame) {
+                    this.enrolling.set(false);
+                    this.enrollmentError.set('Could not open payment window. Please ensure your Key ID is valid and starts with rzp_test_ or rzp_live_.');
+                  }
+                }
+              }, 4500);
             } catch (err: any) {
               console.error('[Razorpay Checkout Error]', err);
               this.enrolling.set(false);
