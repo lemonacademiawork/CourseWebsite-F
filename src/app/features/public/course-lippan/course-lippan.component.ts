@@ -1203,18 +1203,6 @@ export class CourseLippanComponent implements OnInit {
         },
         error: () => {}
       });
-
-      if (found.id) {
-        this.enrollmentService.checkEnrollment(found.id).subscribe({
-          next: (res) => {
-            if (res && res.isEnrolled) {
-              this.enrolled.set(true);
-              this.syncPurchasedStorage(found.id);
-            }
-          },
-          error: () => {}
-        });
-      }
     }
   }
 
@@ -1418,8 +1406,17 @@ export class CourseLippanComponent implements OnInit {
                   amount: payableAmount,
                   paymentMethod: this.paymentMethod
                 }).subscribe({
-                  next: () => this.completeEnrollmentStep(currentCourse.id, orderId, orderNumber, paymentRef),
-                  error: () => this.completeEnrollmentStep(currentCourse.id, orderId, orderNumber, paymentRef)
+                  next: () => {
+                    this.onEnrollmentSuccess(currentCourse.id, orderNumber, paymentRef);
+                  },
+                  error: (payErr) => {
+                    const payMsg = payErr?.error?.message || payErr?.message || '';
+                    if (payMsg.toLowerCase().includes('already enrolled') || payErr?.status === 409) {
+                      this.onEnrollmentSuccess(currentCourse.id, orderNumber, paymentRef);
+                    } else {
+                      this.completeEnrollmentStep(currentCourse.id, orderId, orderNumber, paymentRef);
+                    }
+                  }
                 });
               } else {
                 this.completeEnrollmentStep(currentCourse.id, null, orderNumber, paymentRef);
@@ -1450,8 +1447,17 @@ export class CourseLippanComponent implements OnInit {
               amount: payableAmount,
               paymentMethod: this.paymentMethod
             }).subscribe({
-              next: () => this.completeEnrollmentStep(currentCourse.id, orderId, orderNumber, paymentRef),
-              error: () => this.completeEnrollmentStep(currentCourse.id, orderId, orderNumber, paymentRef)
+              next: () => {
+                this.onEnrollmentSuccess(currentCourse.id, orderNumber, paymentRef);
+              },
+              error: (payErr) => {
+                const payMsg = payErr?.error?.message || payErr?.message || '';
+                if (payMsg.toLowerCase().includes('already enrolled') || payErr?.status === 409) {
+                  this.onEnrollmentSuccess(currentCourse.id, orderNumber, paymentRef);
+                } else {
+                  this.completeEnrollmentStep(currentCourse.id, orderId, orderNumber, paymentRef);
+                }
+              }
             });
           } else {
             this.completeEnrollmentStep(currentCourse.id, null, orderNumber, paymentRef);
@@ -1465,6 +1471,16 @@ export class CourseLippanComponent implements OnInit {
     });
   }
 
+  private onEnrollmentSuccess(courseId: string, orderNumber: string, paymentRef: string): void {
+    this.enrolled.set(true);
+    this.syncPurchasedStorage(courseId);
+    this.enrolling.set(false);
+    this.showCheckoutModal.set(false);
+    this.lastOrderRef.set(orderNumber);
+    this.lastPaymentRef.set(paymentRef);
+    this.showSuccessModal.set(true);
+  }
+
   private completeEnrollmentStep(courseId: string, orderId: string | null, orderNumber: string, paymentRef: string): void {
     this.enrollmentService.createEnrollment({
       courseId: courseId,
@@ -1472,24 +1488,13 @@ export class CourseLippanComponent implements OnInit {
       source: 'ONLINE_PAYMENT'
     }).subscribe({
       next: () => {
-        this.enrolled.set(true);
-        this.syncPurchasedStorage(courseId);
-        this.enrolling.set(false);
-        this.showCheckoutModal.set(false);
-        this.lastOrderRef.set(orderNumber);
-        this.lastPaymentRef.set(paymentRef);
-        this.showSuccessModal.set(true);
+        this.onEnrollmentSuccess(courseId, orderNumber, paymentRef);
       },
       error: (err) => {
         this.enrolling.set(false);
         const errMsg = err?.error?.message || err?.message || 'Failed to complete enrollment.';
         if (errMsg.toLowerCase().includes('already enrolled') || err?.status === 409) {
-          this.enrolled.set(true);
-          this.syncPurchasedStorage(courseId);
-          this.showCheckoutModal.set(false);
-          this.lastOrderRef.set(orderNumber);
-          this.lastPaymentRef.set(paymentRef);
-          this.showSuccessModal.set(true);
+          this.onEnrollmentSuccess(courseId, orderNumber, paymentRef);
         } else {
           this.enrollmentError.set(errMsg);
         }

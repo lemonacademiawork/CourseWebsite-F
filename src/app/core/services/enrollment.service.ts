@@ -34,10 +34,21 @@ export class EnrollmentService {
     );
   }
 
-  /** GET /api/v1/enrollments/check/:courseId — Check enrollment status for course */
+  /** Check enrollment status for course via my-courses */
   checkEnrollment(courseId: string): Observable<{ isEnrolled: boolean; enrollmentId?: string }> {
-    return this.http.get<any>(`${this.apiUrl}/enrollments/check/${courseId}`).pipe(
-      map(res => res.data || res || { isEnrolled: false }),
+    return this.getMyCourses().pipe(
+      map(enrollments => {
+        const found = (Array.isArray(enrollments) ? enrollments : []).find((e: any) =>
+          e.courseId === courseId ||
+          e.course?.id === courseId ||
+          e.course?.slug === courseId ||
+          e.id === courseId
+        );
+        return {
+          isEnrolled: !!found,
+          enrollmentId: found?.id
+        };
+      }),
       catchError(() => of({ isEnrolled: false }))
     );
   }
