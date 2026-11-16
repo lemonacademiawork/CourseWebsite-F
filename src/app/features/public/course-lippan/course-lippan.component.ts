@@ -1394,6 +1394,12 @@ export class CourseLippanComponent implements OnInit {
         const rzpKey = (typeof window !== 'undefined' && ((window as any).RAZORPAY_KEY_ID || localStorage.getItem('razorpay_key')))
           || environment.razorpayKeyId;
 
+        if (!rzpKey || rzpKey.includes('YOUR_KEY_HERE') || rzpKey.includes('placeholder')) {
+          this.enrolling.set(false);
+          this.enrollmentError.set('Please add your actual Razorpay Key ID (rzp_test_... or rzp_live_...) in environment.ts or in browser console: localStorage.setItem("razorpay_key", "your_key")');
+          return;
+        }
+
         this.ensureRazorpayScript().then((scriptLoaded) => {
           if (scriptLoaded && typeof (window as any).Razorpay !== 'undefined') {
             const rzpOptions: any = {
