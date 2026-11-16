@@ -1206,6 +1206,27 @@ export class CourseLippanComponent implements OnInit {
     }
   }
 
+  private ensureRazorpayScript(): Promise<boolean> {
+    if (typeof window === 'undefined') return Promise.resolve(false);
+    if ((window as any).Razorpay) return Promise.resolve(true);
+
+    return new Promise((resolve) => {
+      const existing = document.getElementById('razorpay-checkout-script') as HTMLScriptElement;
+      if (existing) {
+        existing.addEventListener('load', () => resolve(true));
+        existing.addEventListener('error', () => resolve(false));
+        return;
+      }
+      const script = document.createElement('script');
+      script.id = 'razorpay-checkout-script';
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.head.appendChild(script);
+    });
+  }
+
   private syncPurchasedStorage(courseId: string): void {
     if (typeof window === 'undefined' || !courseId) return;
     try {
@@ -1369,100 +1390,79 @@ export class CourseLippanComponent implements OnInit {
         const orderId = orderData.id || orderData._id || null;
         const rzpOrderId = orderData.razorpayOrderId || null;
 
-        // Step 2: Check for configured Razorpay Frontend Key
-        const rzpKey = environment.razorpayKeyId;
-        const isPlaceholderKey = !rzpKey || rzpKey.includes('YOUR_KEY_HERE') || rzpKey.includes('placeholder') || rzpKey.includes('xxxxxxxx');
+        // Step 2: Ensure Razorpay Script is loaded and open checkout modal
+        const rzpKey = (typeof window !== 'undefined' && ((window as any).RAZORPAY_KEY_ID || localStorage.getItem('razorpay_key')))
+          || environment.razorpayKeyId;
 
-        if (!isPlaceholderKey && typeof window !== 'undefined' && (window as any).Razorpay) {
-          const rzpOptions: any = {
-            key: rzpKey,
-            amount: Math.round(payableAmount * 100), // in paise
-            currency: 'INR',
-            name: 'Lemon Academia',
-            description: currentCourse.title,
-            image: '/logo.png',
-            order_id: rzpOrderId || undefined,
-            prefill: {
-              name: this.authService.userName() || '',
-              email: this.authService.userEmail() || ''
-            },
-            theme: {
-              color: '#5b5d19'
-            },
-            modal: {
-              ondismiss: () => {
-                this.enrolling.set(false);
-              }
-            },
-            handler: (response: any) => {
-              const paymentRef = response.razorpay_payment_id || `pay_${Date.now()}`;
-              const signature = response.razorpay_signature || '';
-
-              if (orderId) {
-                this.paymentService.createPayment({
-                  orderId: orderId,
-                  razorpayPaymentId: paymentRef,
-                  razorpaySignature: signature,
-                  amount: payableAmount,
-                  paymentMethod: this.paymentMethod
-                }).subscribe({
-                  next: () => {
-                    this.onEnrollmentSuccess(currentCourse.id, orderNumber, paymentRef);
-                  },
-                  error: (payErr) => {
-                    const payMsg = payErr?.error?.message || payErr?.message || '';
-                    if (payMsg.toLowerCase().includes('already enrolled') || payErr?.status === 409) {
-                      this.onEnrollmentSuccess(currentCourse.id, orderNumber, paymentRef);
-                    } else {
-                      this.completeEnrollmentStep(currentCourse.id, orderId, orderNumber, paymentRef);
-                    }
-                  }
-                });
-              } else {
-                this.completeEnrollmentStep(currentCourse.id, null, orderNumber, paymentRef);
-              }
-            }
-          };
-
-          try {
-            const rzp = new (window as any).Razorpay(rzpOptions);
-            rzp.on('payment.failed', (failResp: any) => {
-              this.enrolling.set(false);
-              this.enrollmentError.set(failResp?.error?.description || 'Payment was unsuccessful. Please try again.');
-            });
-            rzp.open();
-          } catch (err: any) {
-            console.error('[Razorpay Checkout Error]', err);
-            this.enrolling.set(false);
-            this.enrollmentError.set('Unable to launch Razorpay checkout modal. Please check your network or try again.');
-          }
-        } else {
-          // Dev / Fallback Simulation Mode (when razorpayKeyId is not configured yet)
-          const paymentRef = `pay_rzp_${Math.random().toString(36).substring(2, 10)}`;
-          if (orderId) {
-            this.paymentService.createPayment({
-              orderId: orderId,
-              razorpayPaymentId: paymentRef,
-              razorpaySignature: `sig_${Math.random().toString(36).substring(2, 12)}`,
-              amount: payableAmount,
-              paymentMethod: this.paymentMethod
-            }).subscribe({
-              next: () => {
-                this.onEnrollmentSuccess(currentCourse.id, orderNumber, paymentRef);
+        this.ensureRazorpayScript().then((scriptLoaded) => {
+          if (scriptLoaded && typeof (window as any).Razorpay !== 'undefined') {
+            const rzpOptions: any = {
+              key: rzpKey,
+              amount: Math.round(payableAmount * 100), // in paise
+              currency: 'INR',
+              name: 'Lemon Academia',
+              description: currentCourse.title,
+              image: '/logo.png',
+              order_id: rzpOrderId || undefined,
+              prefill: {
+                name: this.authService.userName() || '',
+                email: this.authService.userEmail() || ''
               },
-              error: (payErr) => {
-                const payMsg = payErr?.error?.message || payErr?.message || '';
-                if (payMsg.toLowerCase().includes('already enrolled') || payErr?.status === 409) {
-                  this.onEnrollmentSuccess(currentCourse.id, orderNumber, paymentRef);
+              theme: {
+                color: '#5b5d19'
+              },
+              modal: {
+                ondismiss: () => {
+                  this.enrolling.set(false);
+                }
+              },
+              handler: (response: any) => {
+                const paymentRef = response.razorpay_payment_id || `pay_${Date.now()}`;
+                const signature = response.razorpay_signature || '';
+
+                if (orderId) {
+                  this.paymentService.createPayment({
+                    orderId: orderId,
+                    razorpayPaymentId: paymentRef,
+                    razorpaySignature: signature,
+                    amount: payableAmount,
+                    paymentMethod: this.paymentMethod
+                  }).subscribe({
+                    next: () => {
+                      this.onEnrollmentSuccess(currentCourse.id, orderNumber, paymentRef);
+                    },
+                    error: (payErr) => {
+                      const payMsg = payErr?.error?.message || payErr?.message || '';
+                      if (payMsg.toLowerCase().includes('already enrolled') || payErr?.status === 409) {
+                        this.onEnrollmentSuccess(currentCourse.id, orderNumber, paymentRef);
+                      } else {
+                        this.completeEnrollmentStep(currentCourse.id, orderId, orderNumber, paymentRef);
+                      }
+                    }
+                  });
                 } else {
-                  this.completeEnrollmentStep(currentCourse.id, orderId, orderNumber, paymentRef);
+                  this.completeEnrollmentStep(currentCourse.id, null, orderNumber, paymentRef);
                 }
               }
-            });
+            };
+
+            try {
+              const rzp = new (window as any).Razorpay(rzpOptions);
+              rzp.on('payment.failed', (failResp: any) => {
+                this.enrolling.set(false);
+                this.enrollmentError.set(failResp?.error?.description || 'Payment was unsuccessful. Please try again.');
+              });
+              rzp.open();
+            } catch (err: any) {
+              console.error('[Razorpay Checkout Error]', err);
+              this.enrolling.set(false);
+              this.enrollmentError.set('Unable to launch Razorpay checkout modal: ' + (err?.message || 'Check key configuration.'));
+            }
           } else {
-            this.completeEnrollmentStep(currentCourse.id, null, orderNumber, paymentRef);
+            this.enrolling.set(false);
+            this.enrollmentError.set('Razorpay checkout script could not be loaded. Please check your internet connection.');
           }
-        }
+        });
       },
       error: (err) => {
         this.enrolling.set(false);
