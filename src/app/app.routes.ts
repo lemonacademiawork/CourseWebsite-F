@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { adminGuard, trainerGuard } from './core/guards/auth.guard';
+import { authGuard, adminGuard, trainerGuard } from './core/guards/auth.guard';
 
 // Layouts
 import { PublicLayoutComponent } from './layouts/public-layout/public-layout.component';
@@ -92,9 +92,9 @@ export const routes: Routes = [
       { path: 'forgot-password', component: ResetPasswordComponent },
       { path: 'reset-password', component: ResetPasswordComponent },
 
-      { path: 'profile', component: ProfileComponent },
-      { path: 'my-courses', component: MyCoursesComponent },
-      { path: 'my-courses/:courseId', component: MyCourseDetailComponent },
+      { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
+      { path: 'my-courses', component: MyCoursesComponent, canActivate: [authGuard] },
+      { path: 'my-courses/:courseId', component: MyCourseDetailComponent, canActivate: [authGuard] },
       { path: 'become-a-trainer', component: BecomeTrainerComponent },
       { path: 'become-trainer', redirectTo: 'become-a-trainer', pathMatch: 'full' },
       { path: 'prototype', component: PrototypeComponent },

@@ -9,8 +9,14 @@ import { environment } from '../../../environments/environment';
 })
 export class PaymentService {
   private apiUrl = environment.apiUrl;
+  readonly razorpayKeyId = environment.razorpayKeyId || '';
 
   constructor(private http: HttpClient) {}
+
+  /** Get configured Razorpay frontend key ID */
+  getRazorpayKey(): string {
+    return this.razorpayKeyId;
+  }
 
   /** GET /api/v1/payments — Get student's payments */
   getPayments(): Observable<Payment[]> {

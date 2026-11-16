@@ -13,6 +13,7 @@ import { CouponService } from '../../../core/services/coupon.service';
 import { ReviewService } from '../../../core/services/review.service';
 import { Course, CourseCurriculumModule } from '../../../core/models/course.model';
 import { Review, RatingBreakdown } from '../../../core/models/review.model';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-course-lippan',
@@ -1342,10 +1343,30 @@ export class CourseLippanComponent implements OnInit {
 
     const payableAmount = this.finalPayableAmount();
     const orderNumber = `ORD-${Date.now().toString().slice(-6)}`;
-    const paymentRef = `pay_rzp_${Math.random().toString(36).substring(2, 10)}`;
 
     this.enrolling.set(true);
     this.enrollmentError.set('');
+
+    // If 100% discount or free course, enroll directly without payment gateway
+    if (payableAmount <= 0) {
+      this.orderService.createOrder({
+        courseId: currentCourse.id,
+        orderNumber: orderNumber,
+        amount: 0,
+        currency: 'INR',
+        appliedReferralCode: this.couponCode.trim() || undefined
+      }).subscribe({
+        next: (orderRes) => {
+          const orderData = orderRes?.data || orderRes || {};
+          const orderId = orderData.id || orderData._id || null;
+          this.completeEnrollmentStep(currentCourse.id, orderId, orderNumber, 'FREE_OFFER');
+        },
+        error: () => {
+          this.completeEnrollmentStep(currentCourse.id, null, orderNumber, 'FREE_OFFER');
+        }
+      });
+      return;
+    }
 
     // Step 1: Create Order on backend
     this.orderService.createOrder({
@@ -1358,25 +1379,88 @@ export class CourseLippanComponent implements OnInit {
       next: (orderRes) => {
         const orderData = orderRes?.data || orderRes || {};
         const orderId = orderData.id || orderData._id || null;
+        const rzpOrderId = orderData.razorpayOrderId || null;
 
-        // Step 2: Record Payment on backend
-        if (orderId) {
-          this.paymentService.createPayment({
-            orderId: orderId,
-            razorpayPaymentId: paymentRef,
-            razorpaySignature: `sig_${Math.random().toString(36).substring(2, 12)}`,
-            amount: payableAmount,
-            paymentMethod: this.paymentMethod
-          }).subscribe({
-            next: () => this.completeEnrollmentStep(currentCourse.id, orderId, orderNumber, paymentRef),
-            error: () => this.completeEnrollmentStep(currentCourse.id, orderId, orderNumber, paymentRef)
-          });
+        // Step 2: Check for configured Razorpay Frontend Key
+        const rzpKey = environment.razorpayKeyId;
+        const isPlaceholderKey = !rzpKey || rzpKey.includes('YOUR_KEY_HERE') || rzpKey.includes('placeholder') || rzpKey.includes('xxxxxxxx');
+
+        if (!isPlaceholderKey && typeof window !== 'undefined' && (window as any).Razorpay) {
+          const rzpOptions: any = {
+            key: rzpKey,
+            amount: Math.round(payableAmount * 100), // in paise
+            currency: 'INR',
+            name: 'Lemon Academia',
+            description: currentCourse.title,
+            image: '/logo.png',
+            order_id: rzpOrderId || undefined,
+            prefill: {
+              name: this.authService.userName() || '',
+              email: this.authService.userEmail() || ''
+            },
+            theme: {
+              color: '#5b5d19'
+            },
+            modal: {
+              ondismiss: () => {
+                this.enrolling.set(false);
+              }
+            },
+            handler: (response: any) => {
+              const paymentRef = response.razorpay_payment_id || `pay_${Date.now()}`;
+              const signature = response.razorpay_signature || '';
+
+              if (orderId) {
+                this.paymentService.createPayment({
+                  orderId: orderId,
+                  razorpayPaymentId: paymentRef,
+                  razorpaySignature: signature,
+                  amount: payableAmount,
+                  paymentMethod: this.paymentMethod
+                }).subscribe({
+                  next: () => this.completeEnrollmentStep(currentCourse.id, orderId, orderNumber, paymentRef),
+                  error: () => this.completeEnrollmentStep(currentCourse.id, orderId, orderNumber, paymentRef)
+                });
+              } else {
+                this.completeEnrollmentStep(currentCourse.id, null, orderNumber, paymentRef);
+              }
+            }
+          };
+
+          try {
+            const rzp = new (window as any).Razorpay(rzpOptions);
+            rzp.on('payment.failed', (failResp: any) => {
+              this.enrolling.set(false);
+              this.enrollmentError.set(failResp?.error?.description || 'Payment was unsuccessful. Please try again.');
+            });
+            rzp.open();
+          } catch (err: any) {
+            console.error('[Razorpay Checkout Error]', err);
+            this.enrolling.set(false);
+            this.enrollmentError.set('Unable to launch Razorpay checkout modal. Please check your network or try again.');
+          }
         } else {
-          this.completeEnrollmentStep(currentCourse.id, null, orderNumber, paymentRef);
+          // Dev / Fallback Simulation Mode (when razorpayKeyId is not configured yet)
+          const paymentRef = `pay_rzp_${Math.random().toString(36).substring(2, 10)}`;
+          if (orderId) {
+            this.paymentService.createPayment({
+              orderId: orderId,
+              razorpayPaymentId: paymentRef,
+              razorpaySignature: `sig_${Math.random().toString(36).substring(2, 12)}`,
+              amount: payableAmount,
+              paymentMethod: this.paymentMethod
+            }).subscribe({
+              next: () => this.completeEnrollmentStep(currentCourse.id, orderId, orderNumber, paymentRef),
+              error: () => this.completeEnrollmentStep(currentCourse.id, orderId, orderNumber, paymentRef)
+            });
+          } else {
+            this.completeEnrollmentStep(currentCourse.id, null, orderNumber, paymentRef);
+          }
         }
       },
-      error: () => {
-        this.completeEnrollmentStep(currentCourse.id, null, orderNumber, paymentRef);
+      error: (err) => {
+        this.enrolling.set(false);
+        this.enrollmentError.set(err?.error?.message || 'Failed to initiate course checkout. Please try again.');
       }
     });
   }
