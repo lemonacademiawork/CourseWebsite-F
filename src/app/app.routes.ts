@@ -25,7 +25,6 @@ import { CourseLearningComponent } from './features/student/course-learning/cour
 import { CourseModule1Component } from './features/student/course-module-1/course-module-1.component';
 import { BecomeTrainerComponent } from './features/public/become-trainer/become-trainer.component';
 import { PrototypeComponent } from './features/public/prototype/prototype.component';
-import { SupportComponent } from './features/public/support/support.component';
 import { PrivacyComponent } from './features/public/privacy/privacy.component';
 import { TermsComponent } from './features/public/terms/terms.component';
 import { ForbiddenComponent } from './features/public/forbidden/forbidden.component';
@@ -98,7 +97,7 @@ export const routes: Routes = [
       { path: 'become-a-trainer', component: BecomeTrainerComponent },
       { path: 'become-trainer', redirectTo: 'become-a-trainer', pathMatch: 'full' },
       { path: 'prototype', component: PrototypeComponent },
-      { path: 'support', component: SupportComponent },
+      { path: 'support', redirectTo: '', pathMatch: 'full' },
       { path: 'privacy', component: PrivacyComponent },
       { path: 'terms', component: TermsComponent },
       { path: '403', component: ForbiddenComponent }

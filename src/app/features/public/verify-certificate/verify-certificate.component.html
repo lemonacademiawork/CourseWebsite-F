@@ -123,11 +123,11 @@
         </div>
         <h3 class="playfair text-xl font-bold text-red-700">Verification Failed</h3>
         <p class="text-[#5B5650] max-w-md mx-auto text-sm">
-          {{ errorMessage() || 'We could not verify a certificate with the provided code. Please check the code or contact support.' }}
+          {{ errorMessage() || 'We could not verify a certificate with the provided code. Please verify your certificate ID and try again.' }}
         </p>
         <div class="pt-2">
-          <a routerLink="/support" class="text-[#6E5410] hover:underline text-sm font-semibold inline-flex items-center gap-1">
-            <span>Contact Lemon Academia Support</span>
+          <a routerLink="/courses" class="text-[#6E5410] hover:underline text-sm font-semibold inline-flex items-center gap-1">
+            <span>Browse All Courses</span>
             <span class="material-symbols-outlined text-base">arrow_forward</span>
           </a>
         </div>
