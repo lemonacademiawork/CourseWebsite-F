@@ -73,6 +73,9 @@ export class CoursesComponent implements OnInit, OnDestroy {
       if (params['search']) {
         this.searchQuery.set(params['search']);
       }
+      if (params['level']) {
+        this.selectedLevel.set(params['level']);
+      }
       if (params['page']) {
         const p = parseInt(params['page'], 10);
         if (!isNaN(p) && p > 0) this.currentPage.set(p);
@@ -154,19 +157,45 @@ export class CoursesComponent implements OnInit, OnDestroy {
   }
 
   onCategorySelect(categorySlugOrId: string): void {
-    const current = this.selectedCategory();
-    const nextVal = current === categorySlugOrId ? '' : categorySlugOrId;
+    const current = this.selectedCategory().toLowerCase().trim();
+    const next = (categorySlugOrId || '').toLowerCase().trim();
+    const nextVal = current === next ? '' : categorySlugOrId;
     this.selectedCategory.set(nextVal);
     this.currentPage.set(1); // Reset page on filter change
     this.fetchCourses();
   }
 
+  isCategorySelected(cat: Category): boolean {
+    if (!this.selectedCategory()) return false;
+    const selected = this.selectedCategory().toLowerCase().trim();
+    const id = (cat.id || '').toLowerCase();
+    const slug = (cat.slug || '').toLowerCase();
+    const name = (cat.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    return selected === id || selected === slug || selected === name;
+  }
+
   onLevelSelect(level: string): void {
     const current = this.selectedLevel();
-    const nextVal = current === level ? '' : level;
+    const nextVal = (!level || current.toLowerCase() === level.toLowerCase()) ? '' : level;
     this.selectedLevel.set(nextVal);
     this.currentPage.set(1); // Reset page on filter change
     this.fetchCourses();
+  }
+
+  isLevelSelected(level: string): boolean {
+    if (!level && !this.selectedLevel()) return true;
+    if (!level || !this.selectedLevel()) return false;
+    return this.selectedLevel().toLowerCase() === level.toLowerCase();
+  }
+
+  formatLevel(level?: string): string {
+    if (!level) return 'All Levels';
+    const l = level.toUpperCase();
+    if (l === 'BEGINNER') return 'Beginner';
+    if (l === 'INTERMEDIATE') return 'Intermediate';
+    if (l === 'ADVANCED') return 'Advanced';
+    if (l === 'ALL_LEVELS') return 'All Levels';
+    return level;
   }
 
   setPage(pageNum: number): void {

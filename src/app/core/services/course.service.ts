@@ -58,14 +58,20 @@ export class CourseService {
     courses: Course[];
     pagination: { page: number; limit: number; total: number; totalPages: number; hasMore?: boolean };
   }> {
-    let httpParams = new HttpParams();
     const page = params?.page || 1;
     const limit = params?.limit || 6;
-    httpParams = httpParams.set('page', String(page));
-    httpParams = httpParams.set('limit', String(limit));
+
+    // Fetch all courses from backend (limit=100)
+    // NOTE: Backend database requires categoryId to be a valid UUID. If a slug like 'texture-art' is passed,
+    // the backend returns 0 results. Therefore, we do not pass non-UUID categoryId to the backend query,
+    // but filter all returned courses cleanly in memory across ID, slug, and category name.
+    let httpParams = new HttpParams()
+      .set('page', '1')
+      .set('limit', '100');
     if (params?.search) httpParams = httpParams.set('search', params.search);
-    if (params?.categoryId) httpParams = httpParams.set('categoryId', params.categoryId);
-    if (params?.level) httpParams = httpParams.set('level', params.level);
+    if (params?.categoryId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(params.categoryId)) {
+      httpParams = httpParams.set('categoryId', params.categoryId);
+    }
     if (params?.isPublished !== undefined) httpParams = httpParams.set('isPublished', String(params.isPublished));
 
     return this.http.get<any>(this.apiUrl, { params: httpParams }).pipe(
@@ -74,19 +80,61 @@ export class CourseService {
         const apiList = Array.isArray(rawData)
           ? rawData
           : (rawData?.courses || json?.courses || []);
-        const mappedList = apiList.map((c: any) => this.mapCourse(c));
+        let mappedList: Course[] = apiList.map((c: any) => this.mapCourse(c));
 
-        const rawPagination = rawData?.pagination || json?.pagination || {};
-        const total = typeof rawPagination.total === 'number' ? rawPagination.total : mappedList.length;
-        const totalPages = typeof rawPagination.totalPages === 'number'
-          ? rawPagination.totalPages
-          : (Math.ceil(total / limit) || 1);
-        const hasMore = rawPagination.hasMore !== undefined ? rawPagination.hasMore : page < totalPages;
+        // Filter by category if specified (matching UUID, slug, or name)
+        if (params?.categoryId) {
+          const rawTarget = params.categoryId.trim().toLowerCase();
+          const targetSlug = rawTarget.replace(/[^a-z0-9]+/g, '-');
+          mappedList = mappedList.filter(c => {
+            const cId = (c.categoryId || '').toLowerCase();
+            const cSlug = (c.categorySlug || '').toLowerCase();
+            const cName = (c.category || '').toLowerCase();
+            const cNameSlug = cName.replace(/[^a-z0-9]+/g, '-');
+            return (
+              cId === rawTarget ||
+              cSlug === rawTarget ||
+              cSlug === targetSlug ||
+              cName === rawTarget ||
+              cNameSlug === targetSlug ||
+              cSlug.includes(targetSlug) ||
+              targetSlug.includes(cSlug) ||
+              cNameSlug.includes(targetSlug) ||
+              targetSlug.includes(cNameSlug)
+            );
+          });
+        }
+
+        // Filter by search query if specified
+        if (params?.search && params.search.trim()) {
+          const q = params.search.trim().toLowerCase();
+          mappedList = mappedList.filter(c =>
+            c.title.toLowerCase().includes(q) ||
+            (c.description && c.description.toLowerCase().includes(q)) ||
+            (c.instructor && c.instructor.toLowerCase().includes(q)) ||
+            (c.category && c.category.toLowerCase().includes(q))
+          );
+        }
+
+        // Filter strictly by level if specified
+        if (params?.level) {
+          const target = params.level.trim().toUpperCase();
+          if (target && target !== 'ALL' && target !== 'ALL_LEVELS') {
+            mappedList = mappedList.filter(c => (c.level || '').toUpperCase() === target);
+          }
+        }
+
+        const total = mappedList.length;
+        const totalPages = Math.ceil(total / limit) || 1;
+        const safePage = Math.min(Math.max(1, page), totalPages);
+        const startIndex = (safePage - 1) * limit;
+        const pagedCourses = mappedList.slice(startIndex, startIndex + limit);
+        const hasMore = safePage < totalPages;
 
         return {
-          courses: mappedList,
+          courses: pagedCourses,
           pagination: {
-            page,
+            page: safePage,
             limit,
             total,
             totalPages,
@@ -99,7 +147,7 @@ export class CourseService {
         return of({
           courses: [],
           pagination: {
-            page,
+            page: 1,
             limit,
             total: 0,
             totalPages: 0,
@@ -124,8 +172,9 @@ export class CourseService {
       if (params.page) httpParams = httpParams.set('page', String(params.page));
       if (params.limit) httpParams = httpParams.set('limit', String(params.limit));
       if (params.search) httpParams = httpParams.set('search', params.search);
-      if (params.categoryId) httpParams = httpParams.set('categoryId', params.categoryId);
-      if (params.level) httpParams = httpParams.set('level', params.level);
+      if (params.categoryId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(params.categoryId)) {
+        httpParams = httpParams.set('categoryId', params.categoryId);
+      }
       if (params.isPublished !== undefined) httpParams = httpParams.set('isPublished', String(params.isPublished));
     }
 
@@ -133,7 +182,37 @@ export class CourseService {
       map(json => {
         const rawData = json?.data || json;
         const list = Array.isArray(rawData) ? rawData : (rawData?.courses || json?.courses || []);
-        return list.map((c: any) => this.mapCourse(c));
+        let mapped: Course[] = list.map((c: any) => this.mapCourse(c));
+
+        if (params?.categoryId) {
+          const rawTarget = params.categoryId.trim().toLowerCase();
+          const targetSlug = rawTarget.replace(/[^a-z0-9]+/g, '-');
+          mapped = mapped.filter(c => {
+            const cId = (c.categoryId || '').toLowerCase();
+            const cSlug = (c.categorySlug || '').toLowerCase();
+            const cName = (c.category || '').toLowerCase();
+            const cNameSlug = cName.replace(/[^a-z0-9]+/g, '-');
+            return (
+              cId === rawTarget ||
+              cSlug === rawTarget ||
+              cSlug === targetSlug ||
+              cName === rawTarget ||
+              cNameSlug === targetSlug ||
+              cSlug.includes(targetSlug) ||
+              targetSlug.includes(cSlug) ||
+              cNameSlug.includes(targetSlug) ||
+              targetSlug.includes(cNameSlug)
+            );
+          });
+        }
+
+        if (params?.level) {
+          const target = params.level.trim().toUpperCase();
+          if (target && target !== 'ALL' && target !== 'ALL_LEVELS') {
+            mapped = mapped.filter(c => (c.level || '').toUpperCase() === target);
+          }
+        }
+        return mapped;
       }),
       catchError(err => {
         console.error('Failed to get courses from backend:', err);
@@ -371,6 +450,61 @@ export class CourseService {
   }
 
   // --- HELPER MAPPER ---
+  public inferCourseLevel(c: any): 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'ALL_LEVELS' {
+    if (c.level && typeof c.level === 'string') {
+      const normalized = c.level.trim().toUpperCase();
+      if (['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'ALL_LEVELS'].includes(normalized)) {
+        return normalized as any;
+      }
+      if (normalized.includes('ADVANCE')) return 'ADVANCED';
+      if (normalized.includes('INTERMEDIATE')) return 'INTERMEDIATE';
+      if (normalized.includes('BASIC') || normalized.includes('BEGIN')) return 'BEGINNER';
+    }
+
+    const title = (c.title || c.name || '').toLowerCase();
+    const desc = (c.description || c.shortDescription || '').toLowerCase();
+
+    // 1. Explicit Advanced courses
+    if (title.includes('advanced') || title.includes('masterclass advanced')) {
+      return 'ADVANCED';
+    }
+
+    // 2. Explicit Intermediate courses (including specific masterclass techniques like Varmala preservation & Terrazzo whipping)
+    if (
+      title.includes('intermediate') ||
+      title.includes('varmala') ||
+      title.includes('preservation') ||
+      title.includes('terrazzo') ||
+      title.includes('whipping')
+    ) {
+      return 'INTERMEDIATE';
+    }
+
+    // 3. Multi-level / bundle courses
+    if (title.includes('all 3 levels') || title.includes('combo') || title.includes('all levels')) {
+      return 'ALL_LEVELS';
+    }
+
+    // 4. Explicit Beginner courses
+    if (
+      title.includes('basic') ||
+      title.includes('beginner') ||
+      title.includes('diwali') ||
+      title.includes('soap making') ||
+      title.includes('melt & pour') ||
+      title.includes('introduction')
+    ) {
+      return 'BEGINNER';
+    }
+
+    // 5. Fallback check in description
+    if (desc.includes('advanced')) return 'ADVANCED';
+    if (desc.includes('intermediate') || desc.includes('varmala') || desc.includes('terrazzo')) return 'INTERMEDIATE';
+    if (desc.includes('beginner') || desc.includes('basic')) return 'BEGINNER';
+
+    return 'BEGINNER';
+  }
+
   public mapCourse(c: any): Course {
     const id = c.id || c._id || '';
     const trainerName = c.trainer?.user?.name || c.trainer?.name || c.instructor || (typeof c.trainer === 'string' ? c.trainer : 'Artisan Master');
@@ -406,7 +540,7 @@ export class CourseService {
       price: priceVal,
       discountedPrice: discountVal,
       discountPrice: discountVal,
-      level: c.level || 'BEGINNER',
+      level: this.inferCourseLevel(c),
       durationHours: c.durationHours || 1,
       language: c.language || 'Hindi / English',
       isPublished: c.isPublished !== false,

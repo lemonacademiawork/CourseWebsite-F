@@ -44,6 +44,36 @@ export class HomeComponent implements OnInit, OnDestroy {
   enrolledCourses = signal<any[]>([]);
   private timer: any;
 
+  // FAQ Accordion State & Data
+  openFaqIndex = signal<number | null>(0);
+
+  faqs = [
+    {
+      question: 'Will I receive a certificate upon completing a course?',
+      answer: 'Yes! Once you complete all video modules and finish your hands-on craft project, you will be awarded an official Lemon Academy Certificate of Completion signed by your master artisan to celebrate and showcase your craft accomplishment.'
+    },
+    {
+      question: 'Is learning flexible with lifetime access?',
+      answer: 'Yes, completely. Every masterclass enrollment includes unrestricted lifetime access to HD video tutorials, material guides, and process checklists. You can learn at your own pace, anytime, anywhere, on desktop or mobile.'
+    },
+    {
+      question: 'Do I need any prior art or crafting experience?',
+      answer: 'Not at all! Our courses are built for complete beginners as well as experienced hobbyists. Master artisans break down every technique from basic material handling and tools to advanced embellishment step-by-step.'
+    },
+    {
+      question: 'Are raw materials and DIY kits included?',
+      answer: 'Yes! Our masterclasses feature complete DIY craft kits curated in partnership with Lemon House Craft, delivered straight to your doorstep so you have everything needed to create right out of the box.'
+    },
+    {
+      question: 'How can I ask questions if I need help during the class?',
+      answer: 'You have direct access to live instructor Q&A sessions, community student galleries, and dedicated class support to clear any questions about craft techniques, drying times, or materials.'
+    }
+  ];
+
+  toggleFaq(index: number): void {
+    this.openFaqIndex.update(current => (current === index ? null : index));
+  }
+
   ngOnInit(): void {
     // Dynamic SEO
     this.titleService.setTitle('Lemon Academy | Learn Artisan Crafts, Lippan Art & Soap Making');
