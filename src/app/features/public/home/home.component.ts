@@ -50,9 +50,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   categoryImages: Record<string, string> = {
     'texture-art': 'https://i.pinimg.com/736x/04/51/1b/04511b15d6dc9c0dc1fb937862cfa820.jpg',
     'lippan-art': 'https://i.pinimg.com/736x/5f/79/50/5f7950ee34ed08c6742c9b94a28a4ada.jpg',
-    'resin-art': 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&q=80&w=800',
-    'candle-making': 'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=800',
-    'pipe-cleaners': 'https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&q=80&w=800',
+    'pipe-cleaners': 'https://i.pinimg.com/736x/35/73/7f/35737f65e7b60630f82c3d4f0bca1ab4.jpg',
+    'resin-art': 'https://i.pinimg.com/736x/3e/6d/45/3e6d457c07029e2fd6904cf4b7beb11a.jpg',
+    'candle-making': 'https://i.pinimg.com/736x/90/0e/aa/900eaaeede865070448f865f3afc9185.jpg',
     'artisan-soap-making': 'https://images.unsplash.com/photo-1607006314164-946761596700?auto=format&fit=crop&q=80&w=800'
   };
 
@@ -118,7 +118,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         if (cats && cats.length > 0) {
           const top3 = cats.slice(0, 3).map(c => {
             const slug = (c.slug || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
-            const img = c.imageUrl || this.categoryImages[slug] || 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&q=80&w=800';
+            const img = this.getCategoryImageUrl(c);
             return {
               id: c.id,
               name: c.name,
@@ -133,6 +133,17 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.featuredCategories.set(this.defaultFeaturedCategories);
       }
     });
+  }
+
+  getCategoryImageUrl(c: any): string {
+    const slug = (c.slug || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    if (this.categoryImages[slug]) {
+      return this.categoryImages[slug];
+    }
+    if (c.imageUrl && !c.imageUrl.includes('photo-1584992236310-6edddc08acff')) {
+      return c.imageUrl;
+    }
+    return this.categoryImages[slug] || 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&q=80&w=800';
   }
 
   loadEnrolledCourses(): void {
