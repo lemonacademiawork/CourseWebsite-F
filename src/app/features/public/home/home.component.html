@@ -34,23 +34,15 @@
                   {{ getSlideDescription(slide, $index) }}
                 </p>
 
-                <!-- Dual Action CTA Buttons -->
+                <!-- Action CTA Button -->
                 <div class="pt-2 sm:pt-3 flex flex-wrap items-center gap-3">
-                  <!-- Explore Slide Course Button -->
-                  <a 
-                    [routerLink]="getSlideRoute(slide, $index)" 
-                    [queryParams]="getSlideQueryParams(slide, $index)"
-                    class="inline-flex items-center gap-2 text-xs sm:text-sm md:text-base font-bold text-on-primary bg-primary hover:bg-primary/90 px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl transition-all shadow-md cursor-pointer hover:scale-[1.02]">
-                    <span>Explore Course</span>
-                    <span class="material-symbols-outlined text-sm sm:text-base">arrow_forward</span>
-                  </a>
-
                   <!-- Explore All Courses Button -->
                   <a 
                     routerLink="/courses" 
-                    class="inline-flex items-center gap-2 text-xs sm:text-sm md:text-base font-bold text-white bg-white/20 hover:bg-white/30 px-5 py-2.5 sm:px-6 sm:py-3 rounded-xl backdrop-blur-md transition-all border border-white/30 shadow-md cursor-pointer hover:scale-[1.02]">
-                    <span class="material-symbols-outlined text-sm sm:text-base text-primary-fixed">school</span>
+                    class="inline-flex items-center gap-2 text-xs sm:text-sm md:text-base font-bold text-on-primary bg-primary hover:bg-primary/90 px-6 py-3 rounded-xl transition-all shadow-md cursor-pointer hover:scale-[1.02]">
+                    <span class="material-symbols-outlined text-sm sm:text-base">school</span>
                     <span>Explore All Courses</span>
+                    <span class="material-symbols-outlined text-sm sm:text-base">arrow_forward</span>
                   </a>
                 </div>
               </div>
@@ -175,9 +167,8 @@
       
       <!-- Step 1: Discover -->
       <div class="relative flex flex-col items-center text-center space-y-2 group">
-        <div class="relative w-16 h-16 rounded-2xl bg-primary/10 text-primary border border-primary/25 flex items-center justify-center shadow-xs group-hover:scale-110 group-hover:bg-primary group-hover:text-on-primary transition-all duration-300 mb-2">
+        <div class="w-16 h-16 rounded-2xl bg-primary/10 text-primary border border-primary/25 flex items-center justify-center shadow-xs group-hover:scale-110 group-hover:bg-primary group-hover:text-on-primary transition-all duration-300 mb-2">
           <span class="material-symbols-outlined text-2xl">explore</span>
-          <span class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] font-black flex items-center justify-center shadow-sm">1</span>
         </div>
         <h3 class="text-base md:text-lg font-bold text-on-surface">Discover</h3>
         <p class="text-xs md:text-sm text-on-surface-variant leading-relaxed">Find the craft that sparks your curiosity and creativity.</p>
@@ -185,9 +176,8 @@
 
       <!-- Step 2: Enroll -->
       <div class="relative flex flex-col items-center text-center space-y-2 group">
-        <div class="relative w-16 h-16 rounded-2xl bg-primary/10 text-primary border border-primary/25 flex items-center justify-center shadow-xs group-hover:scale-110 group-hover:bg-primary group-hover:text-on-primary transition-all duration-300 mb-2">
+        <div class="w-16 h-16 rounded-2xl bg-primary/10 text-primary border border-primary/25 flex items-center justify-center shadow-xs group-hover:scale-110 group-hover:bg-primary group-hover:text-on-primary transition-all duration-300 mb-2">
           <span class="material-symbols-outlined text-2xl">school</span>
-          <span class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] font-black flex items-center justify-center shadow-sm">2</span>
         </div>
         <h3 class="text-base md:text-lg font-bold text-on-surface">Enroll</h3>
         <p class="text-xs md:text-sm text-on-surface-variant leading-relaxed">Join the masterclass and access high-definition lessons.</p>
@@ -195,9 +185,8 @@
 
       <!-- Step 3: Create -->
       <div class="relative flex flex-col items-center text-center space-y-2 group">
-        <div class="relative w-16 h-16 rounded-2xl bg-primary/10 text-primary border border-primary/25 flex items-center justify-center shadow-xs group-hover:scale-110 group-hover:bg-primary group-hover:text-on-primary transition-all duration-300 mb-2">
+        <div class="w-16 h-16 rounded-2xl bg-primary/10 text-primary border border-primary/25 flex items-center justify-center shadow-xs group-hover:scale-110 group-hover:bg-primary group-hover:text-on-primary transition-all duration-300 mb-2">
           <span class="material-symbols-outlined text-2xl">brush</span>
-          <span class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] font-black flex items-center justify-center shadow-sm">3</span>
         </div>
         <h3 class="text-base md:text-lg font-bold text-on-surface">Create</h3>
         <p class="text-xs md:text-sm text-on-surface-variant leading-relaxed">Follow step-by-step guidance and build beautiful projects.</p>
@@ -205,9 +194,8 @@
 
       <!-- Step 4: Share -->
       <div class="relative flex flex-col items-center text-center space-y-2 group">
-        <div class="relative w-16 h-16 rounded-2xl bg-primary/10 text-primary border border-primary/25 flex items-center justify-center shadow-xs group-hover:scale-110 group-hover:bg-primary group-hover:text-on-primary transition-all duration-300 mb-2">
+        <div class="w-16 h-16 rounded-2xl bg-primary/10 text-primary border border-primary/25 flex items-center justify-center shadow-xs group-hover:scale-110 group-hover:bg-primary group-hover:text-on-primary transition-all duration-300 mb-2">
           <span class="material-symbols-outlined text-2xl">share</span>
-          <span class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] font-black flex items-center justify-center shadow-sm">4</span>
         </div>
         <h3 class="text-base md:text-lg font-bold text-on-surface">Share</h3>
         <p class="text-xs md:text-sm text-on-surface-variant leading-relaxed">Showcase your creations in the student community showcase.</p>
@@ -220,17 +208,10 @@
     <div class="max-w-3xl mx-auto">
       
       <!-- Section Header -->
-      <div class="text-center mb-10 md:mb-12 space-y-3">
-        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-widest uppercase bg-primary/10 text-primary">
-          <span class="material-symbols-outlined text-sm">help</span>
-          Frequently Asked Questions
-        </span>
+      <div class="text-center mb-10 md:mb-12">
         <h2 class="text-2xl md:text-4xl font-bold text-on-surface tracking-tight playfair">
-          Common Questions &amp; Answers
+          Frequently Asked Questions
         </h2>
-        <p class="text-xs md:text-sm text-on-surface-variant max-w-xl mx-auto leading-relaxed">
-          Everything you need to know about our craft workshops, certifications, lifetime access, and materials kits.
-        </p>
       </div>
 
       <!-- FAQ Accordion List -->

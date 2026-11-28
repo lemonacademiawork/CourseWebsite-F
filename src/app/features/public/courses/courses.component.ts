@@ -27,9 +27,20 @@ export class CoursesComponent implements OnInit, OnDestroy {
 
   // Instant first paint: read cached courses if available immediately
   courses = signal<Course[]>([]);
+  allCourses = signal<Course[]>([]);
   categories = signal<Category[]>([]);
   loading = signal<boolean>(false);
   enrolledCourseIds = signal<Set<string>>(new Set());
+
+  // Category card images mapping for artisan aesthetic (Screenshot 2 style)
+  categoryImages: Record<string, string> = {
+    'texture-art': 'https://i.pinimg.com/736x/04/51/1b/04511b15d6dc9c0dc1fb937862cfa820.jpg',
+    'lippan-art': 'https://i.pinimg.com/736x/5f/79/50/5f7950ee34ed08c6742c9b94a28a4ada.jpg',
+    'resin-art': 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&q=80&w=800',
+    'candle-making': 'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=800',
+    'pipe-cleaners': 'https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&q=80&w=800',
+    'artisan-soap-making': 'https://images.unsplash.com/photo-1607006314164-946761596700?auto=format&fit=crop&q=80&w=800'
+  };
 
   // Waitlist pre-registration state for upcoming categories (guards dead-end navigation)
   waitlistEmail = signal<string>('');
@@ -37,7 +48,7 @@ export class CoursesComponent implements OnInit, OnDestroy {
 
   // Pagination & Filtering state
   currentPage = signal<number>(1);
-  pageSize = signal<number>(6);
+  pageSize = signal<number>(8);
   pagination = signal<{
     page: number;
     limit: number;
@@ -46,7 +57,7 @@ export class CoursesComponent implements OnInit, OnDestroy {
     hasMore?: boolean;
   }>({
     page: 1,
-    limit: 6,
+    limit: 8,
     total: 0,
     totalPages: 1,
     hasMore: false
@@ -84,6 +95,7 @@ export class CoursesComponent implements OnInit, OnDestroy {
     });
 
     this.fetchCategories();
+    this.fetchAllCoursesForCounts();
     this.fetchEnrolledCourses();
 
     if (typeof window !== 'undefined') {
@@ -101,6 +113,17 @@ export class CoursesComponent implements OnInit, OnDestroy {
     }
   }
 
+  fetchAllCoursesForCounts(): void {
+    this.courseService.getCourses().subscribe({
+      next: (list) => {
+        this.allCourses.set(list || []);
+      },
+      error: () => {
+        this.allCourses.set([]);
+      }
+    });
+  }
+
   fetchCategories(): void {
     this.categoryService.getCategories().subscribe({
       next: (cats) => {
@@ -110,6 +133,43 @@ export class CoursesComponent implements OnInit, OnDestroy {
         this.categories.set([]);
       }
     });
+  }
+
+  getDisplayCategories(): Category[] {
+    const list = this.categories().filter(c => this.getCategoryCount(c.slug || c.id) > 0);
+    return list.length > 0 ? list : this.categories();
+  }
+
+  getCategoryCount(catKey: string): number {
+    if (!catKey) return 0;
+    const key = catKey.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
+    return this.allCourses().filter(c => {
+      const cSlug = (c.categorySlug || '').toLowerCase();
+      const cName = (c.category || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const cId = (c.categoryId || '').toLowerCase();
+      return (
+        cId === catKey.toLowerCase() ||
+        cSlug === key ||
+        cName === key ||
+        cSlug.includes(key) ||
+        key.includes(cSlug)
+      );
+    }).length;
+  }
+
+  getCategoryImageUrl(cat: Category): string {
+    const slug = (cat.slug || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    if (this.categoryImages[slug]) return this.categoryImages[slug];
+    if (cat.imageUrl && !cat.imageUrl.includes('unsplash.com/photo-1584992236310-6edddc08acff')) {
+      return cat.imageUrl;
+    }
+    const match = this.allCourses().find(c => {
+      const cSlug = (c.categorySlug || '').toLowerCase();
+      const cId = (c.categoryId || '').toLowerCase();
+      return cSlug === slug || cId === (cat.id || '').toLowerCase();
+    });
+    if (match?.imageUrl) return match.imageUrl;
+    return this.categoryImages[slug] || 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&q=80&w=800';
   }
 
   fetchCourses(): void {
