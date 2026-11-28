@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, ActivatedRoute } from '@angular/router';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { CourseService } from '../../../core/services/course.service';
 import { CategoryService } from '../../../core/services/category.service';
@@ -22,8 +22,19 @@ export class CoursesComponent implements OnInit, OnDestroy {
   private enrollmentService = inject(EnrollmentService);
   public authService = inject(AuthService);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private titleService = inject(Title);
   private metaService = inject(Meta);
+
+  // Fallback craft categories for instant display
+  defaultCraftCategories: Category[] = [
+    { id: 'texture-art', name: 'Texture Art', slug: 'texture-art', description: 'Modern 3D canvas and textured relief art masterclasses' },
+    { id: 'lippan-art', name: 'Lippan Art', slug: 'lippan-art', description: 'Traditional Indian mud and mirror relief artwork' },
+    { id: 'resin-art', name: 'Resin Art', slug: 'resin-art', description: 'Crystal-clear epoxy ocean waves, geode coasters and clocks' },
+    { id: 'candle-making', name: 'Candle Making', slug: 'candle-making', description: 'Botanical soy and beeswax scented candle crafting' },
+    { id: 'pipe-cleaners', name: 'Pipe Cleaners', slug: 'pipe-cleaners', description: 'Creative fuzzy wire flower bouquet and miniature art' },
+    { id: 'artisan-soap-making', name: 'Artisan Soap Making', slug: 'artisan-soap-making', description: 'Cold-process and melt-and-pour natural herbal soaps' }
+  ];
 
   // Instant first paint: read cached courses if available immediately
   courses = signal<Course[]>([]);
@@ -78,20 +89,15 @@ export class CoursesComponent implements OnInit, OnDestroy {
     this.metaService.updateTag({ property: 'og:description', content: 'Hands-on creative courses with complete materials kits delivered to your doorstep.' });
 
     this.route.queryParams.subscribe(params => {
-      if (params['category']) {
-        this.selectedCategory.set(params['category']);
+      this.selectedCategory.set(params['category'] || '');
+      this.selectedLevel.set(params['level'] || '');
+      this.searchQuery.set(params['search'] || '');
+      const p = parseInt(params['page'], 10);
+      this.currentPage.set(!isNaN(p) && p > 0 ? p : 1);
+      
+      if (this.selectedCategory()) {
+        this.fetchCourses();
       }
-      if (params['search']) {
-        this.searchQuery.set(params['search']);
-      }
-      if (params['level']) {
-        this.selectedLevel.set(params['level']);
-      }
-      if (params['page']) {
-        const p = parseInt(params['page'], 10);
-        if (!isNaN(p) && p > 0) this.currentPage.set(p);
-      }
-      this.fetchCourses();
     });
 
     this.fetchCategories();
@@ -136,8 +142,9 @@ export class CoursesComponent implements OnInit, OnDestroy {
   }
 
   getDisplayCategories(): Category[] {
-    const list = this.categories().filter(c => this.getCategoryCount(c.slug || c.id) > 0);
-    return list.length > 0 ? list : this.categories();
+    const source = this.categories().length > 0 ? this.categories() : this.defaultCraftCategories;
+    const list = source.filter(c => this.getCategoryCount(c.slug || c.id) > 0);
+    return list.length > 0 ? list : source;
   }
 
   getCategoryCount(catKey: string): number {
@@ -221,8 +228,16 @@ export class CoursesComponent implements OnInit, OnDestroy {
     const next = (categorySlugOrId || '').toLowerCase().trim();
     const nextVal = current === next ? '' : categorySlugOrId;
     this.selectedCategory.set(nextVal);
-    this.currentPage.set(1); // Reset page on filter change
-    this.fetchCourses();
+    this.selectedLevel.set(''); // Reset level when switching category
+    this.currentPage.set(1);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { category: nextVal || null, level: null, page: null },
+      queryParamsHandling: 'merge'
+    });
+    if (nextVal) {
+      this.fetchCourses();
+    }
   }
 
   isCategorySelected(cat: Category): boolean {
@@ -238,7 +253,12 @@ export class CoursesComponent implements OnInit, OnDestroy {
     const current = this.selectedLevel();
     const nextVal = (!level || current.toLowerCase() === level.toLowerCase()) ? '' : level;
     this.selectedLevel.set(nextVal);
-    this.currentPage.set(1); // Reset page on filter change
+    this.currentPage.set(1);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { level: nextVal || null, page: null },
+      queryParamsHandling: 'merge'
+    });
     this.fetchCourses();
   }
 

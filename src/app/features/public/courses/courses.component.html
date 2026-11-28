@@ -1,354 +1,300 @@
-<main class="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-8 md:py-12 text-sm text-on-surface space-y-8 md:space-y-10">
-  
-  <!-- Page Header: Title, Search & Top Skill Level Filter -->
-  <div class="space-y-6">
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
-      <div>
-        <h1 class="text-2xl md:text-3xl font-extrabold text-on-surface tracking-tight playfair">Explore Artisan Craft Courses</h1>
-        <p class="text-xs md:text-sm text-on-surface-variant mt-1 max-w-2xl leading-relaxed">
-          Master traditional and modern craft techniques under master artisans. Learn Lippan Art, Botanical Candle Making, Resin Crafts, and more.
-        </p>
-      </div>
+<main class="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-8 md:py-12 text-sm text-on-surface">
 
-      <!-- Live Search Box -->
-      <div class="relative w-full md:w-80 shrink-0">
-        <span class="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant text-sm">search</span>
-        <input 
-          type="text" 
-          [ngModel]="searchQuery()"
-          (ngModelChange)="onSearchInput($event)"
-          placeholder="Search courses, crafts, trainers..."
-          class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-xl pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-primary shadow-2xs"
-        />
-        @if (searchQuery()) {
-          <button 
-            (click)="onSearchInput('')" 
-            class="absolute right-2.5 top-2.5 text-on-surface-variant hover:text-on-surface cursor-pointer">
-            <span class="material-symbols-outlined text-xs">close</span>
-          </button>
-        }
-      </div>
-    </div>
-
-    <!-- Top Skill Level Filter Pills Bar -->
-    <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-outline-variant/20">
-      <div class="flex items-center gap-2 flex-wrap">
-        <span class="text-xs font-bold text-on-surface uppercase tracking-wider flex items-center gap-1.5 mr-1">
-          <span class="material-symbols-outlined text-sm text-primary">tune</span>
-          Skill Level:
+  <!-- ======================================================== -->
+  <!-- VIEW 1: Categories View (Shown when no category is selected) -->
+  <!-- ======================================================== -->
+  @if (!selectedCategory()) {
+    <div class="space-y-6">
+      
+      <!-- Section Header -->
+      <div class="flex items-center justify-between pb-2">
+        <div>
+          <h1 class="text-2xl md:text-3xl font-extrabold text-on-surface playfair tracking-tight">Craft Categories</h1>
+          <p class="text-xs md:text-sm text-on-surface-variant mt-1">Select a craft category to explore masterclasses</p>
+        </div>
+        <span class="text-xs text-on-surface-variant font-medium bg-surface-container-low px-3 py-1 rounded-full border border-outline-variant/20">
+          {{ getDisplayCategories().length }} Categories
         </span>
+      </div>
 
-        <!-- All Levels Pill -->
-        <button
-          (click)="onLevelSelect('')"
-          class="px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
-          [class]="!selectedLevel() ? 'bg-primary text-on-primary shadow-xs' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high border border-outline-variant/30'">
-          @if (!selectedLevel()) {
-            <span class="material-symbols-outlined text-xs">check</span>
-          }
-          <span>All Levels</span>
-        </button>
+      <!-- Responsive Category Cards Grid (Rounded cards with craft image, [📖 X] badge, title, 'Explore courses', and arrow) -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 md:gap-4">
+        @for (cat of getDisplayCategories(); track cat.id || cat.slug) {
+          <div 
+            (click)="onCategorySelect(cat.slug || cat.id)"
+            class="group relative h-52 sm:h-60 md:h-68 rounded-2xl overflow-hidden cursor-pointer shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg border border-outline-variant/20 hover:border-outline-variant/60">
+            
+            <!-- Card Image Background -->
+            <img 
+              [src]="getCategoryImageUrl(cat)" 
+              [alt]="cat.name" 
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
 
-        <!-- Beginner, Intermediate, Advanced Pills -->
-        @for (level of ['Beginner', 'Intermediate', 'Advanced']; track level) {
-          <button
-            (click)="onLevelSelect(level)"
-            class="px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
-            [class]="isLevelSelected(level) ? 'bg-primary text-on-primary shadow-xs' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high border border-outline-variant/30'">
-            @if (isLevelSelected(level)) {
-              <span class="material-symbols-outlined text-xs">check</span>
-            }
-            <span>{{ level }}</span>
-          </button>
+            <!-- Dark Gradient Overlay for Readability -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10"></div>
+
+            <!-- Top-Right: Course Count Badge ([📖 X]) -->
+            <div class="absolute top-3 right-3">
+              <span class="bg-surface-container-lowest/90 backdrop-blur-md text-on-surface text-[11px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-xs border border-white/20">
+                <span class="material-symbols-outlined text-[13px] text-primary">menu_book</span>
+                <span>{{ getCategoryCount(cat.slug || cat.id) }}</span>
+              </span>
+            </div>
+
+            <!-- Bottom Content: Title, Explore courses, and Arrow -->
+            <div class="absolute inset-x-0 bottom-0 p-3.5 sm:p-4 flex items-end justify-between gap-2">
+              <div>
+                <h3 class="text-white font-bold text-xs sm:text-sm leading-snug group-hover:text-amber-300 transition-colors">
+                  {{ cat.name }}
+                </h3>
+                <p class="text-[11px] text-white/80 font-medium">Explore courses</p>
+              </div>
+              <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 bg-white/20 text-white group-hover:bg-primary group-hover:text-on-primary group-hover:scale-110 transition-all duration-300 shadow-xs">
+                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+              </div>
+            </div>
+
+          </div>
         }
       </div>
-
-      <!-- Reset All Filters -->
-      @if (selectedCategory() || selectedLevel() || searchQuery()) {
-        <button 
-          (click)="onCategorySelect(''); onLevelSelect(''); onSearchInput('')" 
-          class="text-xs text-primary hover:underline font-bold cursor-pointer flex items-center gap-1">
-          <span class="material-symbols-outlined text-xs">restart_alt</span>
-          <span>Reset All Filters</span>
-        </button>
-      }
     </div>
-  </div>
+  }
 
-  <!-- Category Cards Section (Card Format - Screenshot 2 style) -->
-  <div class="space-y-4">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <span class="material-symbols-outlined text-primary text-xl">palette</span>
-        <h2 class="text-base md:text-lg font-bold text-on-surface playfair">Craft Categories</h2>
-        <span class="text-xs text-on-surface-variant font-normal">({{ getDisplayCategories().length }} categories)</span>
-      </div>
+  <!-- ======================================================== -->
+  <!-- VIEW 2: Category Courses View (Opened when category is tapped) -->
+  <!-- ======================================================== -->
+  @if (selectedCategory()) {
+    <div class="space-y-6">
 
-      @if (selectedCategory()) {
+      <!-- Back Navigation, Category Title & Horizontal Skill Level Bar -->
+      <div class="space-y-4 border-b border-outline-variant/15 pb-5">
+        
+        <!-- Back Button to Categories -->
         <button 
           (click)="onCategorySelect('')" 
-          class="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer">
-          <span>Show All Categories</span>
-          <span class="material-symbols-outlined text-xs">close</span>
+          class="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-primary hover:text-primary/80 transition-colors cursor-pointer group py-1">
+          <span class="material-symbols-outlined text-base group-hover:-translate-x-1 transition-transform">arrow_back</span>
+          <span>Back to All Categories</span>
         </button>
-      }
-    </div>
 
-    <!-- Responsive Card Grid (Screenshot 2: Rounded cards with background image, badge [📖 X], title, 'Explore courses', and arrow) -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 md:gap-4">
-      @for (cat of getDisplayCategories(); track cat.id || cat.slug) {
-        <div 
-          (click)="onCategorySelect(cat.slug || cat.id)"
-          class="group relative h-48 sm:h-52 md:h-60 rounded-2xl overflow-hidden cursor-pointer shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md border"
-          [class]="isCategorySelected(cat) ? 'ring-3 ring-primary border-primary shadow-md scale-[1.02]' : 'border-outline-variant/20 hover:border-outline-variant/60'">
-          
-          <!-- Card Image Background -->
-          <img 
-            [src]="getCategoryImageUrl(cat)" 
-            [alt]="cat.name" 
-            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-
-          <!-- Dark Gradient Overlay for Readability -->
-          <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10"></div>
-
-          <!-- Top-Right: Course Count Badge (Screenshot 2 style: [📖 X]) -->
-          <div class="absolute top-3 right-3">
-            <span class="bg-surface-container-lowest/90 backdrop-blur-md text-on-surface text-[11px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-xs border border-white/20">
-              <span class="material-symbols-outlined text-[13px] text-primary">menu_book</span>
-              <span>{{ getCategoryCount(cat.slug || cat.id) }}</span>
-            </span>
+        <!-- Category Title & Course Count -->
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+          <div>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-on-surface playfair tracking-tight">
+              {{ getCategoryDisplayName(selectedCategory()) }} Masterclasses
+            </h1>
+            <p class="text-xs text-on-surface-variant mt-1">
+              Showing {{ courses().length }} {{ courses().length === 1 ? 'masterclass' : 'masterclasses' }}
+            </p>
           </div>
-
-          <!-- Bottom Content: Title, Explore courses, and Arrow (Screenshot 2 style) -->
-          <div class="absolute inset-x-0 bottom-0 p-3.5 sm:p-4 flex items-end justify-between gap-2">
-            <div>
-              <h3 class="text-white font-bold text-xs sm:text-sm leading-snug group-hover:text-amber-300 transition-colors">
-                {{ cat.name }}
-              </h3>
-              <p class="text-[11px] text-white/80 font-medium">Explore courses</p>
-            </div>
-            <div 
-              class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 shadow-xs"
-              [class]="isCategorySelected(cat) ? 'bg-primary text-on-primary scale-110' : 'bg-white/20 text-white group-hover:bg-primary group-hover:text-on-primary group-hover:scale-110'">
-              <span class="material-symbols-outlined text-sm">arrow_forward</span>
-            </div>
-          </div>
-
         </div>
-      }
-    </div>
-  </div>
 
-  <!-- Full-Width Courses Section -->
-  <div class="space-y-6 pt-2">
-    <!-- Top Info Row -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-outline-variant/15 pb-4">
-      <div class="flex items-center gap-2 flex-wrap">
-        <h2 class="font-bold text-base text-on-surface playfair">
-          @if (selectedCategory()) {
-            <span>{{ getCategoryDisplayName(selectedCategory()) }} Masterclasses</span>
-          } @else {
-            <span>All Available Courses</span>
-          }
-        </h2>
-        <span class="text-on-surface-variant/75 text-xs font-normal">
-          (Showing {{ courses().length }} of {{ pagination().total }} total courses)
-        </span>
-      </div>
-
-      @if (selectedCategory() || selectedLevel() || searchQuery()) {
-        <div class="flex flex-wrap items-center gap-1.5 text-xs">
-          <span class="text-on-surface-variant text-[11px]">Active Filters:</span>
-          @if (selectedCategory()) {
-            <span class="bg-primary/15 text-primary font-bold px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1">
-              Category: {{ getCategoryDisplayName(selectedCategory()) }}
-              <button (click)="onCategorySelect('')" class="hover:text-primary/70 cursor-pointer font-bold">×</button>
+        <!-- Horizontal Top Skill Level Selection (Screenshot style) -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs font-bold text-on-surface uppercase tracking-wider flex items-center gap-1.5 mr-1">
+              <span class="material-symbols-outlined text-sm text-primary">tune</span>
+              SKILL LEVEL:
             </span>
-          }
+
+            <button
+              (click)="onLevelSelect('')"
+              class="px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+              [class]="!selectedLevel() ? 'bg-primary text-on-primary shadow-xs' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high border border-outline-variant/30'">
+              @if (!selectedLevel()) {
+                <span class="material-symbols-outlined text-xs">check</span>
+              }
+              <span>All Levels</span>
+            </button>
+
+            @for (level of ['Beginner', 'Intermediate', 'Advanced']; track level) {
+              <button
+                (click)="onLevelSelect(level)"
+                class="px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                [class]="isLevelSelected(level) ? 'bg-primary text-on-primary shadow-xs' : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high border border-outline-variant/30'">
+                @if (isLevelSelected(level)) {
+                  <span class="material-symbols-outlined text-xs">check</span>
+                }
+                <span>{{ level }}</span>
+              </button>
+            }
+          </div>
+
           @if (selectedLevel()) {
-            <span class="bg-primary/15 text-primary font-bold px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1">
-              Level: {{ selectedLevel() }}
-              <button (click)="onLevelSelect('')" class="hover:text-primary/70 cursor-pointer font-bold">×</button>
-            </span>
+            <button 
+              (click)="onLevelSelect('')" 
+              class="text-xs text-primary hover:underline font-bold cursor-pointer flex items-center gap-1">
+              <span class="material-symbols-outlined text-xs">restart_alt</span>
+              <span>Reset All Filters</span>
+            </button>
           }
-          @if (searchQuery()) {
-            <span class="bg-primary/15 text-primary font-bold px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1">
-              "{{ searchQuery() }}"
-              <button (click)="onSearchInput('')" class="hover:text-primary/70 cursor-pointer font-bold">×</button>
-            </span>
-          }
+        </div>
+      </div>
+
+      <!-- Subtle Progress Indicator on Background Refresh -->
+      @if (loading() && courses().length > 0) {
+        <div class="w-full h-1 bg-surface-container-high rounded-full overflow-hidden">
+          <div class="h-full bg-primary animate-pulse w-1/2"></div>
         </div>
       }
-    </div>
 
-    <!-- Subtle Top Refresh Bar when re-fetching in background -->
-    @if (loading() && courses().length > 0) {
-      <div class="w-full h-1 bg-surface-container-high rounded-full overflow-hidden">
-        <div class="h-full bg-primary animate-pulse w-1/2"></div>
-      </div>
-    }
-
-    <!-- Loading State on initial fetch -->
-    @if (loading() && courses().length === 0) {
-      <div class="flex flex-col items-center justify-center py-24 space-y-4 bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-8 shadow-sm">
-        <div class="relative flex items-center justify-center">
-          <div class="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-          <div class="absolute w-12 h-12 rounded-full border border-primary/10 animate-ping"></div>
+      <!-- Loading State on Initial Fetch -->
+      @if (loading() && courses().length === 0) {
+        <div class="flex flex-col items-center justify-center py-24 space-y-4 bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-8 shadow-sm">
+          <div class="relative flex items-center justify-center">
+            <div class="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+            <div class="absolute w-12 h-12 rounded-full border border-primary/10 animate-ping"></div>
+          </div>
+          <div class="text-center space-y-1 max-w-sm">
+            <p class="font-bold text-on-surface text-base">Loading masterclasses...</p>
+            <p class="text-xs text-on-surface-variant leading-relaxed">
+              Curating craft workshops and masterclass studios...
+            </p>
+          </div>
         </div>
-        <div class="text-center space-y-1 max-w-sm">
-          <p class="font-bold text-on-surface text-base">Loading masterclasses...</p>
-          <p class="text-xs text-on-surface-variant leading-relaxed">
-            Curating craft workshops and masterclass studios...
+      } @else if (courses().length === 0) {
+        <!-- Empty State for this Category / Level -->
+        <div class="text-center py-16 text-on-surface-variant bg-surface-container-lowest border border-outline-variant/30 rounded-2xl space-y-3 max-w-xl mx-auto p-8 shadow-xs">
+          <div class="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-2">
+            <span class="material-symbols-outlined text-3xl">school</span>
+          </div>
+          <p class="font-bold text-base text-on-surface">No courses found</p>
+          <p class="text-xs text-on-surface-variant max-w-sm mx-auto leading-relaxed">
+            @if (selectedLevel()) {
+              No {{ selectedLevel() }} masterclasses currently available in {{ getCategoryDisplayName(selectedCategory()) }}.
+            } @else {
+              Our master artisans are preparing upcoming masterclasses in {{ getCategoryDisplayName(selectedCategory()) }}. Check back soon!
+            }
           </p>
-        </div>
-      </div>
-    } @else if (courses().length === 0) {
-      <!-- Clean No Results Display -->
-      <div class="text-center py-16 text-on-surface-variant bg-surface-container-lowest border border-outline-variant/30 rounded-2xl space-y-3 max-w-xl mx-auto p-8 shadow-xs">
-        <div class="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-2">
-          <span class="material-symbols-outlined text-3xl">school</span>
-        </div>
-        <p class="font-bold text-base text-on-surface">No courses found</p>
-        <p class="text-xs text-on-surface-variant max-w-sm mx-auto leading-relaxed">
-          @if (searchQuery()) {
-            No masterclasses match "{{ searchQuery() }}".
-          } @else if (selectedCategory() && selectedLevel()) {
-            No {{ selectedLevel() }} courses found in {{ getCategoryDisplayName(selectedCategory()) }}.
-          } @else if (selectedCategory()) {
-            No courses found in {{ getCategoryDisplayName(selectedCategory()) }}.
-          } @else if (selectedLevel()) {
-            No {{ selectedLevel() }} courses found.
-          } @else {
-            Our master artisans are preparing upcoming courses. Check back soon!
+          @if (selectedLevel()) {
+            <div class="pt-2">
+              <button 
+                (click)="onLevelSelect('')"
+                class="bg-primary text-on-primary font-bold px-5 py-2.5 rounded-xl hover:opacity-90 cursor-pointer text-xs shadow-xs transition-all">
+                Show All {{ getCategoryDisplayName(selectedCategory()) }} Levels
+              </button>
+            </div>
           }
-        </p>
-        <div class="pt-2">
-          <button 
-            (click)="onCategorySelect(''); onLevelSelect(''); onSearchInput('')"
-            class="bg-primary text-on-primary font-bold px-5 py-2.5 rounded-xl hover:opacity-90 cursor-pointer text-xs shadow-xs transition-all">
-            Clear All Filters &amp; Browse All Courses
-          </button>
         </div>
-      </div>
-    } @else {
-      <!-- Full-Width Course Cards Grid (3 or 4 columns!) -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-        @for (course of courses(); track course.id) {
-          <div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300 group flex flex-col h-full border border-outline-variant/25">
-            
-            <!-- Thumbnail & Badges -->
-            <a [routerLink]="isEnrolled(course) ? ['/my-courses', course.id] : ['/courses', course.id]" class="block relative h-48 overflow-hidden bg-surface-variant cursor-pointer">
-              <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" [alt]="course.title" [src]="course.imageUrl || course.thumbnailUrl" />
-              <div class="absolute top-3 left-3 flex flex-col gap-1.5">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="bg-tertiary-fixed px-3 py-1 rounded-full text-on-tertiary-fixed text-[10px] font-bold uppercase tracking-wider shadow-xs w-fit">
-                    {{ course.category }}
-                  </span>
-                  @if (course.level) {
-                    <span class="bg-surface-container-lowest/95 backdrop-blur-md text-on-surface px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-xs border border-outline-variant/30 w-fit">
-                      {{ formatLevel(course.level) }}
+      } @else {
+        <!-- Full-Width Responsive Course Cards Grid (up to 4 cols) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+          @for (course of courses(); track course.id) {
+            <div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300 group flex flex-col h-full border border-outline-variant/25">
+              
+              <!-- Thumbnail & Badges -->
+              <a [routerLink]="isEnrolled(course) ? ['/my-courses', course.id] : ['/courses', course.id]" class="block relative h-48 overflow-hidden bg-surface-variant cursor-pointer">
+                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" [alt]="course.title" [src]="course.imageUrl || course.thumbnailUrl" />
+                <div class="absolute top-3 left-3 flex flex-col gap-1.5">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="bg-tertiary-fixed px-3 py-1 rounded-full text-on-tertiary-fixed text-[10px] font-bold uppercase tracking-wider shadow-xs w-fit">
+                      {{ course.category }}
+                    </span>
+                    @if (course.level) {
+                      <span class="bg-surface-container-lowest/95 backdrop-blur-md text-on-surface px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-xs border border-outline-variant/30 w-fit">
+                        {{ formatLevel(course.level) }}
+                      </span>
+                    }
+                  </div>
+                  @if (course.startDate || course.endDate) {
+                    <span class="bg-black/60 backdrop-blur-md text-white px-2.5 py-0.5 rounded-full text-[9px] font-bold flex items-center gap-1 shadow-sm w-fit">
+                      <span class="material-symbols-outlined text-[11px]">calendar_month</span>
+                      Batch: {{ formatDateRange(course.startDate, course.endDate) }}
                     </span>
                   }
                 </div>
-                @if (course.startDate || course.endDate) {
-                  <span class="bg-black/60 backdrop-blur-md text-white px-2.5 py-0.5 rounded-full text-[9px] font-bold flex items-center gap-1 shadow-sm w-fit">
-                    <span class="material-symbols-outlined text-[11px]">calendar_month</span>
-                    Batch: {{ formatDateRange(course.startDate, course.endDate) }}
-                  </span>
+                @if (isEnrolled(course)) {
+                  <div class="absolute top-3 right-3 bg-green-700/95 backdrop-blur-sm text-white px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 shadow-sm">
+                    <span class="material-symbols-outlined text-xs">check_circle</span>
+                    Enrolled
+                  </div>
                 }
-              </div>
-              @if (isEnrolled(course)) {
-                <div class="absolute top-3 right-3 bg-green-700/95 backdrop-blur-sm text-white px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 shadow-sm">
-                  <span class="material-symbols-outlined text-xs">check_circle</span>
-                  Enrolled
-                </div>
-              }
-            </a>
+              </a>
 
-            <!-- Card Body -->
-            <div class="p-5 flex flex-col flex-grow justify-between gap-4">
-              <div class="space-y-2">
-                <h3 class="font-bold text-on-surface text-sm leading-snug group-hover:text-primary transition-colors line-clamp-2">
-                  <a [routerLink]="isEnrolled(course) ? ['/my-courses', course.id] : ['/courses', course.id]">{{ course.title }}</a>
-                </h3>
-                <p class="text-on-surface-variant line-clamp-2 text-xs leading-relaxed">
-                  {{ course.shortDescription || course.description || "Master new artisanal skills from foundation to advanced studio techniques." }}
-                </p>
-              </div>
-
-              <!-- Instructor, Rating & Price Footer -->
-              <div class="space-y-3">
-                <div class="flex items-center gap-2">
-                  <div class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center text-[10px] font-bold shrink-0">
-                    {{ getInitials(course.instructor) }}
-                  </div>
-                  <span class="text-on-surface-variant font-semibold text-xs truncate">{{ course.instructor }}</span>
+              <!-- Card Body -->
+              <div class="p-5 flex flex-col flex-grow justify-between gap-4">
+                <div class="space-y-2">
+                  <h3 class="font-bold text-on-surface text-sm leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                    <a [routerLink]="isEnrolled(course) ? ['/my-courses', course.id] : ['/courses', course.id]">{{ course.title }}</a>
+                  </h3>
+                  <p class="text-on-surface-variant line-clamp-2 text-xs leading-relaxed">
+                    {{ course.shortDescription || course.description || "Master new artisanal skills from foundation to advanced studio techniques." }}
+                  </p>
                 </div>
 
-                <div class="flex justify-between items-center border-t border-surface-variant/45 pt-3">
-                  <div class="flex items-center text-amber-500 text-xs font-bold">
-                    <span class="material-symbols-outlined filled text-xs">star</span>
-                    <span class="ml-1 text-on-surface font-semibold text-xs">4.9</span>
-                    <span class="text-on-surface-variant ml-1 text-[11px] font-normal">({{ course.studentsCount || 48 }})</span>
+                <!-- Instructor, Rating & Price Footer -->
+                <div class="space-y-3">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center text-[10px] font-bold shrink-0">
+                      {{ getInitials(course.instructor) }}
+                    </div>
+                    <span class="text-on-surface-variant font-semibold text-xs truncate">{{ course.instructor }}</span>
                   </div>
 
-                  <div class="text-right">
-                    @if (isEnrolled(course)) {
-                      <a [routerLink]="['/my-courses', course.id]" class="text-primary font-bold text-xs hover:underline flex items-center gap-1">
-                        <span>Start Learning</span>
-                        <span class="material-symbols-outlined text-xs">arrow_forward</span>
-                      </a>
-                    } @else {
-                      <div class="font-extrabold text-primary text-base">₹{{ course.price }}</div>
-                    }
+                  <div class="flex justify-between items-center border-t border-surface-variant/45 pt-3">
+                    <div class="flex items-center text-amber-500 text-xs font-bold">
+                      <span class="material-symbols-outlined filled text-xs">star</span>
+                      <span class="ml-1 text-on-surface font-semibold text-xs">4.9</span>
+                      <span class="text-on-surface-variant ml-1 text-[11px] font-normal">({{ course.studentsCount || 48 }})</span>
+                    </div>
+
+                    <div class="text-right">
+                      @if (isEnrolled(course)) {
+                        <a [routerLink]="['/my-courses', course.id]" class="text-primary font-bold text-xs hover:underline flex items-center gap-1">
+                          <span>Start Learning</span>
+                          <span class="material-symbols-outlined text-xs">arrow_forward</span>
+                        </a>
+                      } @else {
+                        <div class="font-extrabold text-primary text-base">₹{{ course.price }}</div>
+                      }
+                    </div>
                   </div>
                 </div>
-              </div>
 
+              </div>
             </div>
-          </div>
-        }
-      </div>
-
-      <!-- Pagination Controls -->
-      <div class="border-t border-outline-variant/20 pt-8 mt-10">
-        <div class="flex items-center justify-center gap-2">
-          <!-- Previous Button -->
-          <button
-            (click)="prevPage()"
-            [disabled]="currentPage() === 1 || loading()"
-            class="px-4 py-2 border border-outline-variant/40 rounded-lg text-xs font-semibold disabled:opacity-40 hover:bg-surface-container-high transition-colors cursor-pointer disabled:cursor-not-allowed flex items-center gap-1">
-            <span>←</span>
-            <span>Previous</span>
-          </button>
-
-          <!-- Page Number Buttons -->
-          @for (pageNum of getPageNumbers(); track pageNum) {
-            <button
-              (click)="setPage(pageNum)"
-              class="px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer"
-              [class]="currentPage() === pageNum ? 'bg-amber-500 text-white shadow-xs' : 'border border-outline-variant/40 hover:bg-surface-container-high text-on-surface'">
-              {{ pageNum }}
-            </button>
           }
-
-          <!-- Next Button -->
-          <button
-            (click)="nextPage()"
-            [disabled]="currentPage() >= pagination().totalPages || loading()"
-            class="px-4 py-2 border border-outline-variant/40 rounded-lg text-xs font-semibold disabled:opacity-40 hover:bg-surface-container-high transition-colors cursor-pointer disabled:cursor-not-allowed flex items-center gap-1">
-            <span>Next</span>
-            <span>→</span>
-          </button>
         </div>
 
-        <!-- Total Count Info -->
-        <p class="text-center text-xs text-on-surface-variant mt-3 font-medium">
-          Showing Page {{ pagination().page }} of {{ pagination().totalPages }} ({{ pagination().total }} total courses)
-        </p>
-      </div>
-    }
+        <!-- Pagination Controls -->
+        @if (pagination().totalPages > 1) {
+          <div class="border-t border-outline-variant/20 pt-8 mt-10">
+            <div class="flex items-center justify-center gap-2">
+              <button
+                (click)="prevPage()"
+                [disabled]="currentPage() === 1 || loading()"
+                class="px-4 py-2 border border-outline-variant/40 rounded-lg text-xs font-semibold disabled:opacity-40 hover:bg-surface-container-high transition-colors cursor-pointer disabled:cursor-not-allowed flex items-center gap-1">
+                <span>←</span>
+                <span>Previous</span>
+              </button>
 
-  </div>
+              @for (pageNum of getPageNumbers(); track pageNum) {
+                <button
+                  (click)="setPage(pageNum)"
+                  class="px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                  [class]="currentPage() === pageNum ? 'bg-amber-500 text-white shadow-xs' : 'border border-outline-variant/40 hover:bg-surface-container-high text-on-surface'">
+                  {{ pageNum }}
+                </button>
+              }
+
+              <button
+                (click)="nextPage()"
+                [disabled]="currentPage() >= pagination().totalPages || loading()"
+                class="px-4 py-2 border border-outline-variant/40 rounded-lg text-xs font-semibold disabled:opacity-40 hover:bg-surface-container-high transition-colors cursor-pointer disabled:cursor-not-allowed flex items-center gap-1">
+                <span>Next</span>
+                <span>→</span>
+              </button>
+            </div>
+
+            <p class="text-center text-xs text-on-surface-variant mt-3 font-medium">
+              Showing Page {{ pagination().page }} of {{ pagination().totalPages }} ({{ pagination().total }} total courses)
+            </p>
+          </div>
+        }
+      }
+
+    </div>
+  }
+
 </main>
