@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { Title, Meta } from '@angular/platform-browser';
 import { AuthService } from '../../../core/services/auth.service';
 import { EnrollmentService } from '../../../core/services/enrollment.service';
+import { CategoryService } from '../../../core/services/category.service';
 import { environment } from '../../../../environments/environment';
 
 export interface CarouselSlide {
@@ -35,6 +36,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   public authService = inject(AuthService);
   private enrollmentService = inject(EnrollmentService);
+  private categoryService = inject(CategoryService);
   private titleService = inject(Title);
   private metaService = inject(Meta);
 
@@ -43,6 +45,24 @@ export class HomeComponent implements OnInit, OnDestroy {
   isLoadingCarousel = signal<boolean>(true);
   enrolledCourses = signal<any[]>([]);
   private timer: any;
+
+  // Category images mapping for artisan aesthetic
+  categoryImages: Record<string, string> = {
+    'texture-art': 'https://i.pinimg.com/736x/04/51/1b/04511b15d6dc9c0dc1fb937862cfa820.jpg',
+    'lippan-art': 'https://i.pinimg.com/736x/5f/79/50/5f7950ee34ed08c6742c9b94a28a4ada.jpg',
+    'resin-art': 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&q=80&w=800',
+    'candle-making': 'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=800',
+    'pipe-cleaners': 'https://images.unsplash.com/photo-1584992236310-6edddc08acff?auto=format&fit=crop&q=80&w=800',
+    'artisan-soap-making': 'https://images.unsplash.com/photo-1607006314164-946761596700?auto=format&fit=crop&q=80&w=800'
+  };
+
+  defaultFeaturedCategories = [
+    { name: 'Texture Art', slug: 'texture-art', imageUrl: 'https://i.pinimg.com/736x/04/51/1b/04511b15d6dc9c0dc1fb937862cfa820.jpg' },
+    { name: 'Lippan Art', slug: 'lippan-art', imageUrl: 'https://i.pinimg.com/736x/5f/79/50/5f7950ee34ed08c6742c9b94a28a4ada.jpg' },
+    { name: 'Candle Making', slug: 'candle-making', imageUrl: 'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=800' }
+  ];
+
+  featuredCategories = signal<any[]>(this.defaultFeaturedCategories);
 
   // FAQ Accordion State & Data
   openFaqIndex = signal<number | null>(0);
@@ -83,12 +103,36 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     this.loadCarousel();
     this.loadEnrolledCourses();
+    this.loadCategories();
 
     if (typeof window !== 'undefined') {
       window.addEventListener('carousel_updated', () => this.loadCarousel());
       window.addEventListener('storage', () => this.loadCarousel());
       window.addEventListener('auth_state_changed', () => this.loadEnrolledCourses());
     }
+  }
+
+  loadCategories(): void {
+    this.categoryService.getCategories().subscribe({
+      next: (cats) => {
+        if (cats && cats.length > 0) {
+          const top3 = cats.slice(0, 3).map(c => {
+            const slug = (c.slug || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            const img = c.imageUrl || this.categoryImages[slug] || 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&q=80&w=800';
+            return {
+              id: c.id,
+              name: c.name,
+              slug: c.slug || slug,
+              imageUrl: img
+            };
+          });
+          this.featuredCategories.set(top3);
+        }
+      },
+      error: () => {
+        this.featuredCategories.set(this.defaultFeaturedCategories);
+      }
+    });
   }
 
   loadEnrolledCourses(): void {

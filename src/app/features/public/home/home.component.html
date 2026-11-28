@@ -124,7 +124,6 @@
       <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
         <div>
           <h2 class="text-xl md:text-3xl font-bold text-on-surface tracking-tight playfair">Master a Craft</h2>
-          <p class="text-xs md:text-sm text-on-surface-variant mt-1">Discover curated masterclasses across traditional and modern craft arts.</p>
         </div>
         <a 
           routerLink="/courses" 
@@ -135,26 +134,23 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div [routerLink]="['/courses']" [queryParams]="{ category: 'crochet-fiber-arts' }" class="group relative h-68 md:h-72 rounded-2xl overflow-hidden cursor-pointer shadow-sm border border-outline-variant/15">
-          <img alt="Crochet" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPiWCQJI93PXDk9BOTIapmtikie4-YaxmLh1RRYduOa_TDE4AQZkdf8DEkTVGR5nS9OSCOgXvKuV_YYJl7XOPbMsOJ2NapTo5sBgHWGuqHmqZjabmFElFjDdYfpq8LsUXrV3nz9yX7Abr5E1fWw9PM_lVq-u8188AjgPz0txpaTpIy1QYYWuyXi3IwoSn_vw542oHbUWJhQ2iOxYf0kpLG7nJ1g6ftWcf9R78bsl9rLf2ndCoywsoF" />
-          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-5">
-            <h3 class="text-base md:text-lg font-bold text-white group-hover:text-primary-fixed transition-colors">Crochet &amp; Fiber Arts</h3>
+        @for (cat of featuredCategories(); track cat.id || cat.slug) {
+          <div 
+            [routerLink]="['/courses']" 
+            [queryParams]="{ category: cat.slug || cat.id }" 
+            class="group relative h-68 md:h-72 rounded-2xl overflow-hidden cursor-pointer shadow-sm border border-outline-variant/15 transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+            <img 
+              [alt]="cat.name" 
+              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+              [src]="cat.imageUrl" 
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-5">
+              <h3 class="text-base md:text-lg font-bold text-white group-hover:text-primary-fixed transition-colors">
+                {{ cat.name }}
+              </h3>
+            </div>
           </div>
-        </div>
-
-        <div [routerLink]="['/courses']" [queryParams]="{ category: 'mosaic-art' }" class="group relative h-68 md:h-72 rounded-2xl overflow-hidden cursor-pointer shadow-sm border border-outline-variant/15">
-          <img alt="Mosaic Art" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXiQLIEpsHtGrZbryHVG2dOarl_iT9qvnszntbv8Io-HDvulcLxdeW-m1Y1LvLsZVTdyll6k3sqZuLN0jnUa8PmjFtQMe1mAq8CIzvCN0yaT2ObdUfIPU2XuH0CbkJ-ZzjHMPf30gtRgX14D6XM6dRo4nkeus9cqsp61icBWZjJAhChFKP93gBX9kTPkDU0dKVth2hhMx3C1QEtY_8tkNWkbpTpJ4ASJfAgMhyr-lLHkbEwd9CJP6X" />
-          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-5">
-            <h3 class="text-base md:text-lg font-bold text-white group-hover:text-primary-fixed transition-colors">Mosaic &amp; Glass Art</h3>
-          </div>
-        </div>
-
-        <div [routerLink]="['/courses']" [queryParams]="{ category: 'candle-making' }" class="group relative h-68 md:h-72 rounded-2xl overflow-hidden cursor-pointer shadow-sm border border-outline-variant/15">
-          <img alt="Candle Making" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdWftkk77PEWsXT0X8Idf_5qfShUey9va1f3wum-E0_wQoJNhH8DlzGO1jy22TTPACpLEnQy1abVm1vhUtDsMA62pD83tLRBO8N6-irLAYagp8jz-xagrBPejAcQrBrwZzDiv9yycKXiyMImwz2fXE8Ti75v-LV1oM7TZC1DEpm5zIscCEoA4rnAVGfQcAfxeIOZaJ1Y7It8VGiYZDtwrBh2OS8uEZ9TL5ABRz7RQ6Rwxmr6C65H3E" />
-          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-5">
-            <h3 class="text-base md:text-lg font-bold text-white group-hover:text-primary-fixed transition-colors">Botanical Candle Making</h3>
-          </div>
-        </div>
+        }
       </div>
     </div>
   </section>
